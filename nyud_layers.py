@@ -3,6 +3,7 @@ import caffe
 import numpy as np
 from PIL import Image
 import scipy.io
+import glob
 
 import random
 
@@ -115,7 +116,8 @@ class NYUDSegDataLayer(caffe.Layer):
         - subtract mean
         - transpose to channel x height x width order
         """
-        im = Image.open('{}/data/images/img_{}.png'.format(self.nyud_dir, idx))
+        color_image_name = glob.glob()
+        im = Image.open('{}/data/images_rgb/img_{}.png'.format(self.nyud_dir, idx))
         in_ = np.array(im, dtype=np.float32)
         in_ = in_[:,:,::-1]
         in_ -= self.mean_bgr
@@ -137,7 +139,7 @@ class NYUDSegDataLayer(caffe.Layer):
         """
         Load pre-processed depth for NYUDv2 segmentation set.
         """
-        im = Image.open('{}/data/depth/img_{}.png'.format(self.nyud_dir, idx))
+        im = Image.open('{}/data/images_depth/img_{}.png'.format(self.nyud_dir, idx))
         d = np.array(im, dtype=np.float32)
         d = np.log(d)
         d -= self.mean_logd
