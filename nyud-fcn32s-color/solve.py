@@ -10,6 +10,9 @@ setproctitle.setproctitle(os.path.basename(os.getcwd()))
 weights = 'nyud-fcn32s-color-heavy.caffemodel'
 
 # init
+# caffe_root = '/home/sean/src/caffe'
+# filename, path, desc =  imp.find_module('caffe', [caffe_root+'/python/'])
+# caffe = imp.load_module('caffe', filename, path, desc)
 caffe.set_device(int(sys.argv[1]))
 caffe.set_mode_gpu()
 
@@ -21,7 +24,7 @@ interp_layers = [k for k in solver.net.params.keys() if 'up' in k]
 surgery.interp(solver.net, interp_layers)
 
 # scoring
-test = np.loadtxt('../data/nyud/test.txt', dtype=str)
+val = np.loadtxt('/home/sean/hpc-cyphy/Datasets/NYU2/val.txt', dtype=str)
 
 for _ in range(50):
     solver.step(2000)
