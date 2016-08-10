@@ -38,6 +38,7 @@ class NYUDSegDataLayer(caffe.Layer):
                                tops=['color', 'hha', 'label'])
         """
         # config
+        print 'nyud_layer: beginning setup'
         params = eval(self.param_str)
         self.nyud_dir = params['nyud_dir']
         self.split = params['split']
@@ -73,12 +74,14 @@ class NYUDSegDataLayer(caffe.Layer):
         if self.random:
             random.seed(self.seed)
             self.idx = random.randint(0, len(self.indices)-1)
+        print 'nyud_layer: completed setup.'
 
     def reshape(self, bottom, top):
         # load data for tops and  reshape tops to fit (1 is the batch dim)
         for i, t in enumerate(self.tops):
             self.data[t] = self.load(t, self.indices[self.idx])
             top[i].reshape(1, *self.data[t].shape)
+        print 'nyud_layer: loading and reshaping complete'
 
     def forward(self, bottom, top):
         # assign output
@@ -97,6 +100,7 @@ class NYUDSegDataLayer(caffe.Layer):
         pass
 
     def load(self, top, idx):
+        print 'nyud_layer: loading data or labels, ', top
         if top == 'color':
             return self.load_image(idx)
         elif top == 'label':
@@ -117,7 +121,8 @@ class NYUDSegDataLayer(caffe.Layer):
         - transpose to channel x height x width order
         """
         idx_str = str(idx).zfill(4)
-        im = Image.open(glob.glob(self.nyud_dir+'/images_rgb/'+idx_str + '_*'))
+        # im = Image.open(glob.glob(self.nyud_dir+'/images_rgb/'+idx_str + '_*')[0])
+        im = Image.open('{}/images_rgb_fullsize/image-{}.png'.format(self.nyud_dir, idx))
         in_ = np.array(im, dtype=np.float32)
         in_ = in_[:,:,::-1]
         in_ -= self.mean_bgr
