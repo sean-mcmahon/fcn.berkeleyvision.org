@@ -6,7 +6,7 @@ layer {
   python_param {
     module: "nyud_layers"
     layer: "NYUDSegDataLayer"
-    param_str: "{\'tops\': [\'color\', \'label\'], \'seed\': 1337, \'nyud_dir\': \'/home/sean/hpc-cyphy/Datasets/NYU2\', \'split\': \'trainval\'}"
+    param_str: "{\'tops\': [\'color\', \'label\'], \'seed\': 1337, \'nyud_dir\': \'/home/sean/hpc-cyphy/Datasets/NYU2\', \'split\': \'train\'}"
   }
 }
 layer {
