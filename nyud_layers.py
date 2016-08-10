@@ -130,7 +130,8 @@ class NYUDSegDataLayer(caffe.Layer):
         Shift labels so that classes are 0-39 and void is 255 (to ignore it).
         The leading singleton dimension is required by the loss.
         """
-        label = scipy.io.loadmat('{}/segmentation/img_{}.mat'.format(self.nyud_dir, idx))['segmentation'].astype(np.uint8)
+        # generated these segmentation .mat files using export_depth_and_labels.m (hpc-cyphy/Datasets/NYU2)
+        label = scipy.io.loadmat('{}/image_labels/seg_label_{}.mat'.format(self.nyud_dir, idx))['label_instance'].astype(np.uint8)
         label -= 1  # rotate labels
         label = label[np.newaxis, ...]
         return label
