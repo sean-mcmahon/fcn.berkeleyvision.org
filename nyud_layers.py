@@ -116,8 +116,8 @@ class NYUDSegDataLayer(caffe.Layer):
         - subtract mean
         - transpose to channel x height x width order
         """
-        color_image_name = glob.glob()
-        im = Image.open('{}/data/images_rgb/img_{}.png'.format(self.nyud_dir, idx))
+        idx_str = str(idx).zfill(4)
+        im = Image.open(glob.glob(self.nyud_dir+'/images_rgb/'+idx_str + '_*'))
         in_ = np.array(im, dtype=np.float32)
         in_ = in_[:,:,::-1]
         in_ -= self.mean_bgr
