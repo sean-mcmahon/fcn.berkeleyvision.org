@@ -7,7 +7,7 @@ import os
 import setproctitle
 setproctitle.setproctitle(os.path.basename(os.getcwd()))
 
-weights = '../vgg16fc.caffemodel'
+weights = 'nyud-fcn32s-color-heavy.caffemodel'
 
 # init
 caffe.set_device(int(sys.argv[1]))
