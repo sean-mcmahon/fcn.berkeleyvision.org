@@ -13,7 +13,7 @@ weights = 'nyud-fcn32s-color-heavy.caffemodel'
 # caffe_root = '/home/sean/src/caffe'
 # filename, path, desc =  imp.find_module('caffe', [caffe_root+'/python/'])
 # caffe = imp.load_module('caffe', filename, path, desc)
-caffe.set_device(int(sys.argv[1]))
+# caffe.set_device(int(sys.argv[1]))
 caffe.set_mode_gpu()
 
 solver = caffe.SGDSolver('solver.prototxt')
