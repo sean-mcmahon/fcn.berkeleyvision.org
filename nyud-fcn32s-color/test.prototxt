@@ -1,18 +1,13 @@
-layer {
-  name: "data"
-  type: "Python"
-  top: "data"
-  top: "label"
-  python_param {
-    module: "nyud_layers"
-    layer: "NYUDSegDataLayer"
-    param_str: "{\'tops\': [\'color\', \'label\'], \'seed\': 1337, \'nyud_dir\': \'/home/sean/hpc-cyphy/Datasets/NYU2\', \'split\': \'test\'}"
-  }
-}
+input: 'bgr_data'
+input_dim: 1
+input_dim: 3
+input_dim: 50
+input_dim: 50
+
 layer {
   name: "conv1_1"
   type: "Convolution"
-  bottom: "data"
+  bottom: "bgr_data"
   top: "conv1_1"
   param {
     lr_mult: 1
@@ -510,21 +505,10 @@ layer {
   name: "score"
   type: "Crop"
   bottom: "upscore"
-  bottom: "data"
+  bottom: "bgr_data"
   top: "score"
   crop_param {
     axis: 2
     offset: 19
-  }
-}
-layer {
-  name: "loss"
-  type: "SoftmaxWithLoss"
-  bottom: "score"
-  bottom: "label"
-  top: "loss"
-  loss_param {
-    ignore_label: 255
-    normalize: false
   }
 }
