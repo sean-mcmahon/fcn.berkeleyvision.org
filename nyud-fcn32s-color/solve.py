@@ -1,20 +1,24 @@
-import caffe
-import surgery, score
-
+# import caffe
 import numpy as np
-import os
+import os, sys
+import imp
+# add '../' directory to path for importing score.py and surgery.py
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import setproctitle
-setproctitle.setproctitle(os.path.basename(os.getcwd()))
+# import setproctitle
+# setproctitle.setproctitle(os.path.basename(os.getcwd()))
 
 weights = 'nyud-fcn32s-color-heavy.caffemodel'
 
 # init
-# caffe_root = '/home/sean/src/caffe'
+# caffe_root = '/home/n8307628/Fully-Conv-Network/Resources/caffe'
 # filename, path, desc =  imp.find_module('caffe', [caffe_root+'/python/'])
 # caffe = imp.load_module('caffe', filename, path, desc)
 # caffe.set_device(int(sys.argv[1]))
-caffe.set_mode_gpu()
+# caffe.set_mode_cpu()
+
+# with caffe found load remaining files
+import surgery, score
 
 solver = caffe.SGDSolver('solver.prototxt')
 solver.net.copy_from(weights)
