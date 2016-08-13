@@ -4,6 +4,7 @@ import os, sys
 import imp
 # add '../' directory to path for importing score.py and surgery.py
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append('/pkg/suse11/caffe/glog/0.3.3/lib/')
 
 # import setproctitle
 # setproctitle.setproctitle(os.path.basename(os.getcwd()))
