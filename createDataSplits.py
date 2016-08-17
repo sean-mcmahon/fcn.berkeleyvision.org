@@ -44,16 +44,13 @@ args = parser.parse_args()
 
 train_image_names = []; test_image_names = []
 for train_path in args.training_dir:
-    directory = getSubSetName(train_path)
+    current_training_dir = getSubSetName(train_path)
     img_fullnames = glob.glob(train_path+'/colour/*.png')
     for image_name in img_fullnames:
         img_index = getImgIndex(os.path.basename(image_name))
-        train_image_names.append([directory, img_index])
-        print 'Index {}\nDirectory {}'.format(img_index,directory)
-        # this is creating a list of lists!
+        train_image_names.append([current_training_dir, img_index])
 
-    print 'looping, train_path={}'.format(train_path)
 for test_path in args.testing_dir:
     test_image_names.append(glob.glob(test_path+'/colour/*.png'))
 
-print 'train list has {} elements, sub-element length {}\nExample sub-sub-element: {}'.format(len(train_image_names),len(train_image_names[-1]), train_image_names[-1][-1])
+print 'train list has {} elements, sub-element length {}\nExample sub-element: {}'.format(len(train_image_names),len(train_image_names[-1]), train_image_names[-1])
