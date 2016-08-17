@@ -1,3 +1,4 @@
+#! /usr/bin/python
 # import caffe
 import numpy as np
 import os, sys
