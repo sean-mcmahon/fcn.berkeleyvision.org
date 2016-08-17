@@ -37,20 +37,38 @@ def getSubSetName(filename):
     return filename[last_slash+1:]
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--training_dir', nargs='+', help='List of directories', default='/home/sean/hpc-home/Construction_Site/Springfield/12Aug16/K2/2016-08-12-10-36-59_4thFloorApartments')
+parser.add_argument('--training_dir', nargs='+', help='List of directories')
 parser.add_argument('--testing_dir', default='')
 parser.add_argument('--val_percentage', default=0.15)
+parser.add_argument('--out_dir', default='/home/sean/hpc-home/Construction_Site/Springfield/12Aug16')
 args = parser.parse_args()
 
-train_image_names = []; test_image_names = []
+# Get train directory and indices
+train_dir_index = []; test_dir_index = []
 for train_path in args.training_dir:
     current_training_dir = getSubSetName(train_path)
     img_fullnames = glob.glob(train_path+'/colour/*.png')
     for image_name in img_fullnames:
         img_index = getImgIndex(os.path.basename(image_name))
-        train_image_names.append([current_training_dir, img_index])
+        train_dir_index.append([current_training_dir, img_index])
 
+# Get test directory and indecies
 for test_path in args.testing_dir:
-    test_image_names.append(glob.glob(test_path+'/colour/*.png'))
+    current_testing_dir = getSubSetName(test_path)
+    img_fullnames = glob.glob(test_path+'colour/*.png')
+    for image_name in img_fullnames:
+        img_index = getImgIndex(os.path.basename(image_name))
+        test_dir_index.append([current_testing_dir, img_index])
 
-print 'train list has {} elements, sub-element length {}\nExample sub-element: {}'.format(len(train_image_names),len(train_image_names[-1]), train_image_names[-1])
+# create val directory and indecies list
+num_val_instances = int( (args.val_percentage * len(train_dir_index)) /2)
+val_dir_index = train_dir_index[0:num_val_instances]
+val_dir_index.append(train_dir_index[-num_val_instances:])
+train_dir_index[0:num_val_instances] = []
+train_dir_index[-num_val_instances:] = []
+
+testfile = open(args.out_dir + '/test.txt','w')
+for item in test_dir_index:
+    testfile.write('%s %s\n',item[0],item[1] )
+
+print 'train list has {} elements, sub-element length {}\nExample sub-element: {}'.format(len(train_dir_index),len(train_dir_index[-1]), train_dir_index[-1])
