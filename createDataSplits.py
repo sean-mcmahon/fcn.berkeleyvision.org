@@ -38,12 +38,13 @@ def getSubSetName(filename):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--training_dir', nargs='+', help='List of directories')
-parser.add_argument('--testing_dir', default='')
+parser.add_argument('--testing_dir', nargs='+')
 parser.add_argument('--val_percentage', default=0.15)
 parser.add_argument('--out_dir', default='/home/sean/hpc-home/Construction_Site/Springfield/12Aug16')
 args = parser.parse_args()
 
 # Get train directory and indices
+print 'Getting train directory and indecies'
 train_dir_index = []; test_dir_index = []
 for train_path in args.training_dir:
     current_training_dir = getSubSetName(train_path)
@@ -53,22 +54,36 @@ for train_path in args.training_dir:
         train_dir_index.append([current_training_dir, img_index])
 
 # Get test directory and indecies
+print 'Getting test directory and indecies'
 for test_path in args.testing_dir:
     current_testing_dir = getSubSetName(test_path)
-    img_fullnames = glob.glob(test_path+'colour/*.png')
+    img_fullnames = glob.glob(test_path+'/colour/*.png')
     for image_name in img_fullnames:
         img_index = getImgIndex(os.path.basename(image_name))
         test_dir_index.append([current_testing_dir, img_index])
 
 # create val directory and indecies list
+print 'Extracting val directory and indices from training set'
 num_val_instances = int( (args.val_percentage * len(train_dir_index)) /2)
+print num_val_instances
 val_dir_index = train_dir_index[0:num_val_instances]
 val_dir_index.append(train_dir_index[-num_val_instances:])
 train_dir_index[0:num_val_instances] = []
 train_dir_index[-num_val_instances:] = []
 
+print 'Saving to text files'
 testfile = open(args.out_dir + '/test.txt','w')
 for item in test_dir_index:
-    testfile.write('%s %s\n',item[0],item[1] )
+    testfile.write('{} {}\n'.format(item[0], item[1]) )
+testfile.close()
 
-print 'train list has {} elements, sub-element length {}\nExample sub-element: {}'.format(len(train_dir_index),len(train_dir_index[-1]), train_dir_index[-1])
+trainfile = open(args.out_dir + '/train.txt','w')
+for item in train_dir_index:
+    trainfile.write('{} {}\n'.format(item[0], item[1]) )
+trainfile.close()
+
+valfile = open(args.out_dir + '/val.txt','w')
+for item in val_dir_index:
+    valfile.write('{} {}\n'.format(item[0], item[1]) )
+valfile.close()
+print 'Text files saved to {}.'.format(args.out_dir)
