@@ -62,7 +62,7 @@ class NYUDSegDataLayer(caffe.Layer):
             raise Exception("Do not define a bottom.")
 
         # load indices for images and labels
-        split_f = '{}/{}.txt'.format(self.nyud_dir, self.split)
+        split_f  = '{}/{}.txt'.format(self.nyud_dir, self.split)
         self.indices = open(split_f, 'r').read().splitlines()
         self.idx = 0
 
@@ -136,9 +136,11 @@ class NYUDSegDataLayer(caffe.Layer):
         The leading singleton dimension is required by the loss.
         """
         # generated these segmentation .mat files using export_depth_and_labels.m (hpc-cyphy/Datasets/NYU2)
-        label = scipy.io.loadmat('{}/image_labels/seg_label_{}.mat'.format(self.nyud_dir, idx))['binary_labels'].astype(np.uint8)
+        # Having issue loading these, my .mat labels have too many classes (like 600 instread of the 39 expected here)
+        label = scipy.io.loadmat('{}/image_labels/seg_label_{}.mat'.format(self.nyud_dir, idx))['label_instance'].astype(np.uint8)
         label -= 1  # rotate labels
         label = label[np.newaxis, ...]
+        print 'label image shape is {}...\nand has labels {}'.format(np.shape(label), np.unique(label))
         return label
 
     def load_depth(self, idx):
