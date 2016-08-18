@@ -14,7 +14,7 @@ sys.path.append(file_location[:file_location.rfind('/')])
 caffe_root = '/home/n8307628/Fully-Conv-Network/Resources/caffe'
 filename, path, desc =  imp.find_module('caffe', [caffe_root+'/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
-caffe.set_mode_gpu()
+caffe.set_mode_cpu()
 # caffe.set_device(1)
 # with caffe found load remaining files (they use caffe too)
 
