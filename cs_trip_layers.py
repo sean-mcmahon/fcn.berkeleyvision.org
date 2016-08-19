@@ -4,6 +4,7 @@ import numpy as np
 from PIL import Image
 import scipy.io
 import glob
+import os
 from os.path import expanduser, join, dirname, realpath
 from os import getcwd
 
