@@ -4,7 +4,8 @@ import numpy as np
 from PIL import Image
 import scipy.io
 import glob
-from os.path import expanduser
+from os.path import expanduser, join, dirname, realpath
+from os import getcwd
 
 import random
 
@@ -44,6 +45,7 @@ class CStripSegDataLayer(caffe.Layer):
         self.tops = params['tops']
         self.random = params.get('randomize', True)
         self.seed = params.get('seed', None)
+        self.file_location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
         # store top data for reshape + forward
         self.data = {}
@@ -61,7 +63,7 @@ class CStripSegDataLayer(caffe.Layer):
             raise Exception("Do not define a bottom.")
 
         # load indices for images and labels
-        split_f = '{}/{}.txt'.format(self.cstrip_dir, self.split)
+        split_f = '{}/{}.txt'.format(self.file_location+'/data/cs-trip', self.split)
         dir_indices_list = open(split_f, 'r').read().splitlines()
         # Because my txt file has layout 'sub_dir idx\n' I have to do some more
         # parsing, not the prettiest way but it'll work
