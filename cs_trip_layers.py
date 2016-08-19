@@ -7,17 +7,12 @@ import glob
 
 import random
 
-class NYUDSegDataLayer(caffe.Layer):
+class CStripSegDataLayer(caffe.Layer):
     """
-    Load (input image, label image) pairs from NYUDv2
+    Load (input image, label image) pairs from Construction Site Trip
     one-at-a-time while reshaping the net to preserve dimensions.
 
-    The labels follow the 40 class task defined by
-
-        S. Gupta, R. Girshick, p. Arbelaez, and J. Malik. Learning rich features
-        from RGB-D images for object detection and segmentation. ECCV 2014.
-
-    with 0 as the void label and 1-40 the classes.
+    The labels consist of trip (1) and non-trip (2)
 
     Use this to feed data to a fully convolutional network.
     """
@@ -26,21 +21,21 @@ class NYUDSegDataLayer(caffe.Layer):
         """
         Setup data layer according to parameters:
 
-        - nyud_dir: path to NYUDv2 dir
+        - cstrip_dir: path to CS_trip dir
         - split: train / val / test
         - tops: list of tops to output from {color, depth, hha, label}
         - randomize: load in random order (default: True)
         - seed: seed for randomization (default: None / current time)
 
-        for NYUDv2 semantic segmentation.
+        for trip hazard semantic segmentation.
 
-        example: params = dict(nyud_dir="/path/to/NYUDVOC2011", split="val",
+        example: params = dict(cstrip_dir="/path/to/cstrip_dir", split="val",
                                tops=['color', 'hha', 'label'])
         """
         # config
-        print 'nyud_layer: beginning setup'
+        print 'cs_trip_layer: beginning setup'
         params = eval(self.param_str)
-        self.nyud_dir = params['nyud_dir']
+        self.cstrip_dir = params['cstrip_dir']
         self.split = params['split']
         self.tops = params['tops']
         self.random = params.get('randomize', True)
@@ -49,10 +44,10 @@ class NYUDSegDataLayer(caffe.Layer):
         # store top data for reshape + forward
         self.data = {}
 
-        # means
-        self.mean_bgr = np.array((116.190, 97.203, 92.318), dtype=np.float32)
-        self.mean_hha = np.array((132.431, 94.076, 118.477), dtype=np.float32)
-        self.mean_logd = np.array((7.844,), dtype=np.float32)
+        # TODO: Find means of images in CS dataset
+        self.mean_bgr = np.array((0,0,0), dtype=np.float32)
+        self.mean_hha = np.array((0,0,0), dtype=np.float32)
+        self.mean_logd = np.array((0,), dtype=np.float32)
 
         # tops: check configuration
         if len(top) != len(self.tops):
@@ -62,8 +57,15 @@ class NYUDSegDataLayer(caffe.Layer):
             raise Exception("Do not define a bottom.")
 
         # load indices for images and labels
-        split_f = '{}/{}.txt'.format(self.nyud_dir, self.split)
-        self.indices = open(split_f, 'r').read().splitlines()
+        split_f = '{}/{}.txt'.format(self.cstrip_dir, self.split)
+        dir_indices_list = open(split_f, 'r').read().splitlines()
+        # Because my txt file has layout 'sub_dir idx\n' I have to do some more
+        # parsing, not the prettiest way but it'll work
+        self.indices = []; self.sub_dir = []
+        for item in dir_indices_list:
+            split_list = item.split(' ')
+            self.sub_dir.append(split_list[0])
+            self.indices.append(split_list[1])
         self.idx = 0
 
         # make eval deterministic
@@ -74,14 +76,14 @@ class NYUDSegDataLayer(caffe.Layer):
         if self.random:
             random.seed(self.seed)
             self.idx = random.randint(0, len(self.indices)-1)
-        print 'nyud_layer: completed setup.'
+        print 'cs_trip_layer: completed setup.'
 
     def reshape(self, bottom, top):
         # load data for tops and  reshape tops to fit (1 is the batch dim)
         for i, t in enumerate(self.tops):
-            self.data[t] = self.load(t, self.indices[self.idx])
+            self.data[t] = self.load(t, self.indices[self.idx], self.sub_dir[self.idx])
             top[i].reshape(1, *self.data[t].shape)
-        print 'nyud_layer: loading and reshaping complete'
+        print 'cs_trip_layer: loading and reshaping complete'
 
     def forward(self, bottom, top):
         # assign output
@@ -99,20 +101,20 @@ class NYUDSegDataLayer(caffe.Layer):
     def backward(self, top, propagate_down, bottom):
         pass
 
-    def load(self, top, idx):
-        print 'nyud_layer: loading data or labels, ', top
+    def load(self, top, idx, sub_dir):
+        print 'cs_trip_layer: loading data or labels, ', top
         if top == 'color':
-            return self.load_image(idx)
+            return self.load_image(idx, sub_dir)
         elif top == 'label':
-            return self.load_label(idx)
+            return self.load_label(idx, sub_dir)
         elif top == 'depth':
-            return self.load_depth(idx)
+            return self.load_depth(idx, sub_dir)
         elif top == 'hha':
-            return self.load_hha(idx)
+            return self.load_hha(idx, sub_dir)
         else:
             raise Exception("Unknown output type: {}".format(top))
 
-    def load_image(self, idx):
+    def load_image(self, idx, sub_dir):
         """
         Load input image and preprocess for Caffe:
         - cast to float
@@ -120,44 +122,44 @@ class NYUDSegDataLayer(caffe.Layer):
         - subtract mean
         - transpose to channel x height x width order
         """
-        idx_str = str(idx).zfill(4)
-        # im = Image.open(glob.glob(self.nyud_dir+'/images_rgb/'+idx_str + '_*')[0])
-        im = Image.open('{}/images_rgb_fullsize/image-{}.png'.format(self.nyud_dir, idx))
+        # idx_str = str(idx).zfill(4)
+        im = Image.open(glob.glob('{}/{}/colour/colourimg_{}_*'.format(self.cstrip_dir, sub_dir, idx))[0])
+        # im = Image.open('{}/{}/colour/colourimg{}.png'.format(self.cstrip_dir, idx))
         in_ = np.array(im, dtype=np.float32)
         in_ = in_[:,:,::-1]
         in_ -= self.mean_bgr
         in_ = in_.transpose((2,0,1))
         return in_
 
-    def load_label(self, idx):
+    def load_label(self, idx, sub_dir):
         """
         Load label image as 1 x height x width integer array of label indices.
         Shift labels so that classes are 0-39 and void is 255 (to ignore it).
         The leading singleton dimension is required by the loss.
         """
         # generated these segmentation .mat files using export_depth_and_labels.m (hpc-cyphy/Datasets/NYU2)
-        label = scipy.io.loadmat('{}/image_labels/seg_label_{}.mat'.format(self.nyud_dir, idx))['binary_labels'].astype(np.uint8)
+        label = scipy.io.loadmat(glob.glob('{}/{}/labels/colourimg_{}_*'.format(self.cstrip_dir, sub_dir, idx))[0])['binary_labels'].astype(np.uint8)
         label -= 1  # rotate labels
         label = label[np.newaxis, ...]
         return label
 
-    def load_depth(self, idx):
+    def load_depth(self, idx, sub_dir):
         """
         Load pre-processed depth for NYUDv2 segmentation set.
         """
-        im = Image.open('{}/data/images_depth/img_{}.png'.format(self.nyud_dir, idx))
+        im = Image.open(glob.glob('{}/{}/depth/depthimg_{}_*'.format(self.cstrip_dir, sub_dir, idx))[0])
         d = np.array(im, dtype=np.float32)
         d = np.log(d)
         d -= self.mean_logd
         d = d[np.newaxis, ...]
         return d
 
-    def load_hha(self, idx):
+    def load_hha(self, idx, sub_dir):
         """
         Load HHA features from Gupta et al. ECCV14.
         See https://github.com/s-gupta/rcnn-depth/blob/master/rcnn/saveHHA.m
         """
-        im = Image.open('{}/data/hha/img_{}.png'.format(self.nyud_dir, idx))
+        im = Image.open('{}/data/hha/img_{}.png'.format(self.cstrip_dir, idx))
         hha = np.array(im, dtype=np.float32)
         hha -= self.mean_hha
         hha = hha.transpose((2,0,1))
