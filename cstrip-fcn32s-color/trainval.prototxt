@@ -4,9 +4,9 @@ layer {
   top: "data"
   top: "label"
   python_param {
-    module: "nyud_layers"
-    layer: "NYUDSegDataLayer"
-    param_str: "{\'tops\': [\'color\', \'label\'], \'seed\': 1337, \'nyud_dir\': \'/work/cyphy/Datasets/NYU2\', \'split\': \'train\'}"
+    module: "cs_trip_layers"
+    layer: "CStripSegDataLayer"
+    param_str: "{\'tops\': [\'color\', \'label\'], \'seed\': 1337, \'cstrip_dir\': \'/Construction_Site/Springfield/12Aug16/K2\', \'split\': \'train\'}"
   }
 }
 layer {
@@ -524,7 +524,6 @@ layer {
   bottom: "label"
   top: "loss"
   loss_param {
-    ignore_label: 255
     normalize: false
   }
 }
