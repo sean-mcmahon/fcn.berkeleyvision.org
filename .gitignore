@@ -2,3 +2,4 @@
 *.caffemodel
 *.png
 snapshot/
+.txt
