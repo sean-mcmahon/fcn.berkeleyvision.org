@@ -19,7 +19,7 @@ elif 'sean' in home_dir:
     weights = home_dir+'/hpc-home/Fully-Conv-Network/Resources/FCN_models/pretrained_weights/nyud-fcn32s-color-heavy.caffemodel'
 filename, path, desc =  imp.find_module('caffe', [caffe_root+'/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
-caffe.set_mode_cpu()
+caffe.set_mode_gpu()
 # caffe.set_device(1)
 import surgery, score
 
@@ -29,7 +29,7 @@ solver.net.copy_from(weights)
 
 # surgeries
 interp_layers = [k for k in solver.net.params.keys() if 'up' in k]
-print 'performing surgery'
+print 'performing surgery on {}'.format(interp_layers)
 surgery.interp(solver.net, interp_layers)
 
 # scoring
