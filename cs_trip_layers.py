@@ -4,6 +4,7 @@ import numpy as np
 from PIL import Image
 import scipy.io
 import glob
+from os.path import expanduser
 
 import random
 
@@ -35,7 +36,10 @@ class CStripSegDataLayer(caffe.Layer):
         # config
         print 'cs_trip_layer: beginning setup'
         params = eval(self.param_str)
-        self.cstrip_dir = params['cstrip_dir']
+        if 'sean' in expanduser("~"):
+            self.cstrip_dir = '/home/sean/hpc-home'+params['cstrip_dir']
+        else:
+            self.cstrip_dir = '/home/n8307628'+params['cstrip_dir']
         self.split = params['split']
         self.tops = params['tops']
         self.random = params.get('randomize', True)
@@ -76,7 +80,7 @@ class CStripSegDataLayer(caffe.Layer):
         if self.random:
             random.seed(self.seed)
             self.idx = random.randint(0, len(self.indices)-1)
-        print 'cs_trip_layer: completed setup.'
+        print 'cs_trip_layer: completed setup. Data in {}'.format(self.cstrip_dir)
 
     def reshape(self, bottom, top):
         # load data for tops and  reshape tops to fit (1 is the batch dim)
@@ -129,6 +133,7 @@ class CStripSegDataLayer(caffe.Layer):
         in_ = in_[:,:,::-1]
         in_ -= self.mean_bgr
         in_ = in_.transpose((2,0,1))
+        print 'Shape of colour image {}'.format(np.shape(in_))
         return in_
 
     def load_label(self, idx, sub_dir):
@@ -141,6 +146,7 @@ class CStripSegDataLayer(caffe.Layer):
         label = scipy.io.loadmat(glob.glob('{}/{}/labels/colourimg_{}_*'.format(self.cstrip_dir, sub_dir, idx))[0])['binary_labels'].astype(np.uint8)
         label -= 1  # rotate labels
         label = label[np.newaxis, ...]
+        print 'Label shape {}'.format(np.shape(label))
         return label
 
     def load_depth(self, idx, sub_dir):
