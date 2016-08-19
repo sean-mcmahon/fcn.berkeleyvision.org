@@ -1,13 +1,18 @@
-input: 'bgr_data'
-input_dim: 1
-input_dim: 3
-input_dim: 50
-input_dim: 50
-
+layer {
+  name: "data"
+  type: "Python"
+  top: "data"
+  top: "label"
+  python_param {
+    module: "cs_trip_layers"
+    layer: "CStripSegDataLayer"
+    param_str: "{\'tops\': [\'color\', \'label\'], \'seed\': 1337, \'cstrip_dir\': \'/Construction_Site/Springfield/12Aug16/K2\', \'split\': \'train\'}"
+  }
+}
 layer {
   name: "conv1_1"
   type: "Convolution"
-  bottom: "bgr_data"
+  bottom: "data"
   top: "conv1_1"
   param {
     lr_mult: 1
@@ -468,7 +473,7 @@ layer {
   }
 }
 layer {
-  name: "score_fr"
+  name: "score_fr_trip"
   type: "Convolution"
   bottom: "fc7"
   top: "score_fr"
@@ -481,13 +486,13 @@ layer {
     decay_mult: 0
   }
   convolution_param {
-    num_output: 40
+    num_output: 2
     pad: 0
     kernel_size: 1
   }
 }
 layer {
-  name: "upscore"
+  name: "upscore_trip"
   type: "Deconvolution"
   bottom: "score_fr"
   top: "upscore"
@@ -495,7 +500,7 @@ layer {
     lr_mult: 0
   }
   convolution_param {
-    num_output: 40
+    num_output: 2
     bias_term: false
     kernel_size: 64
     stride: 32
@@ -505,7 +510,7 @@ layer {
   name: "score"
   type: "Crop"
   bottom: "upscore"
-  bottom: "bgr_data"
+  bottom: "data"
   top: "score"
   crop_param {
     axis: 2
