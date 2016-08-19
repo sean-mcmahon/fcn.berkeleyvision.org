@@ -473,7 +473,7 @@ layer {
   }
 }
 layer {
-  name: "score_fr"
+  name: "score_fr_trip"
   type: "Convolution"
   bottom: "fc7"
   top: "score_fr"
@@ -486,13 +486,13 @@ layer {
     decay_mult: 0
   }
   convolution_param {
-    num_output: 40
+    num_output: 2
     pad: 0
     kernel_size: 1
   }
 }
 layer {
-  name: "upscore"
+  name: "upscore_trip"
   type: "Deconvolution"
   bottom: "score_fr"
   top: "upscore"
@@ -500,7 +500,7 @@ layer {
     lr_mult: 0
   }
   convolution_param {
-    num_output: 40
+    num_output: 2
     bias_term: false
     kernel_size: 64
     stride: 32
