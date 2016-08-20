@@ -1,6 +1,15 @@
 from __future__ import division
-import caffe
+import imp
 import numpy as np
+from os.path import expanduser
+
+home_dir = expanduser("~")
+if 'n8307628' in home_dir:
+    caffe_root = home_dir+'/Fully-Conv-Network/Resources/caffe'
+elif 'sean' in home_dir:
+    caffe_root = home_dir+'/src/caffe'
+filename, path, desc =  imp.find_module('caffe', [caffe_root+'/python/'])
+caffe = imp.load_module('caffe', filename, path, desc)
 
 def transplant(new_net, net, suffix=''):
     for p in net.params:
