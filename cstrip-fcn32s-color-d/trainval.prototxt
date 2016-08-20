@@ -5,9 +5,9 @@ layer {
   top: "depth"
   top: "label"
   python_param {
-    module: "nyud_layers"
-    layer: "NYUDSegDataLayer"
-    param_str: "{\'tops\': [\'color\', \'depth\', \'label\'], \'seed\': 1337, \'nyud_dir\': \'../../data/nyud\', \'split\': \'trainval\'}"
+    module: "cs_trip_layers"
+    layer: "CStripSegDataLayer"
+    param_str: "{\'tops\': [\'color\', \'depth\', \'label\'], \'seed\': 1337, \'cstrip_dir\': \'/Construction_Site/Springfield/12Aug16/K2\', \'split\': \'train\'}"
   }
 }
 layer {
@@ -481,7 +481,7 @@ layer {
   }
 }
 layer {
-  name: "score_fr"
+  name: "score_fr_trip"
   type: "Convolution"
   bottom: "fc7"
   top: "score_fr"
@@ -494,13 +494,13 @@ layer {
     decay_mult: 0
   }
   convolution_param {
-    num_output: 40
+    num_output: 2
     pad: 0
     kernel_size: 1
   }
 }
 layer {
-  name: "upscore"
+  name: "upscore_trip"
   type: "Deconvolution"
   bottom: "score_fr"
   top: "upscore"
@@ -508,7 +508,7 @@ layer {
     lr_mult: 0
   }
   convolution_param {
-    num_output: 40
+    num_output: 2
     bias_term: false
     kernel_size: 64
     stride: 32
@@ -532,7 +532,6 @@ layer {
   bottom: "label"
   top: "loss"
   loss_param {
-    ignore_label: 255
     normalize: false
   }
 }
