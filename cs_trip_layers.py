@@ -89,14 +89,17 @@ class CStripSegDataLayer(caffe.Layer):
         if self.random:
             random.seed(self.seed)
             self.idx = random.randint(0, len(self.indices)-1)
+        print 'cs_trip_layers: setup complete.'
 
     def reshape(self, bottom, top):
         # load data for tops and  reshape tops to fit (1 is the batch dim)
         for i, t in enumerate(self.tops):
             self.data[t] = self.load(t, self.indices[self.idx], self.sub_dir[self.idx])
             top[i].reshape(1, *self.data[t].shape)
+        # print 'cs_trip_layers: Reshaped top {}'.format(top[:])
 
     def forward(self, bottom, top):
+        # print 'cs_trip_layers: forward method: top {}'.format(top[:])
         # assign output
         for i, t in enumerate(self.tops):
             top[i].data[...] = self.data[t]
@@ -108,11 +111,13 @@ class CStripSegDataLayer(caffe.Layer):
             self.idx += 1
             if self.idx == len(self.indices):
                 self.idx = 0
+        # print 'cs_trip_layers: forward complete.'
 
     def backward(self, top, propagate_down, bottom):
         pass
 
     def load(self, top, idx, sub_dir):
+        # print 'cs_trip_layers: Loading top {}'.format(top)
         if top == 'color':
             return self.load_image(idx, sub_dir)
         elif top == 'label':
@@ -139,6 +144,7 @@ class CStripSegDataLayer(caffe.Layer):
         in_ = in_[:,:,::-1]
         in_ -= self.mean_bgr
         in_ = in_.transpose((2,0,1))
+        # print 'cs_trip_layers: colour image loaded shape={}'.format(np.shape(in_))
         return in_
 
     def load_label(self, idx, sub_dir):
@@ -149,8 +155,9 @@ class CStripSegDataLayer(caffe.Layer):
         """
         # generated these segmentation .mat files using export_depth_and_labels.m (hpc-cyphy/Datasets/NYU2)
         label = scipy.io.loadmat(glob.glob('{}/{}/labels/colourimg_{}_*'.format(self.cstrip_dir, sub_dir, idx))[0])['binary_labels'].astype(np.uint8)
-        label -= 1  # rotate labels
+        # label -= 1  # rotate labels
         label = label[np.newaxis, ...]
+        # print 'cs_trip_layers: Label loaded, shape {}, has values {} and id {}/{}'.format(np.shape(label), np.unique(label),sub_dir, idx)
         return label
 
     def load_depth(self, idx, sub_dir):
