@@ -107,7 +107,6 @@ class CStripSegDataLayer(caffe.Layer):
         pass
 
     def load(self, top, idx, sub_dir):
-        print 'cs_trip_layer: loading data or labels, ', top
         if top == 'color':
             return self.load_image(idx, sub_dir)
         elif top == 'label':
