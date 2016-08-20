@@ -13,7 +13,7 @@ home_dir = expanduser("~")
 # import support functions
 if 'n8307628' in home_dir:
     caffe_root = home_dir+'/Fully-Conv-Network/Resources/caffe'
-    weights = home_dir+'/Fully-Conv-Network/Resources/FCN_models/model_weights/nyud-fcn32s-color-heavy.caffemodel'
+    weights = home_dir+'/Fully-Conv-Network/Resources/FCN_models/pretrained_weights/nyud-fcn32s-color-heavy.caffemodel'
 elif 'sean' in home_dir:
     caffe_root = home_dir+'/src/caffe'
     weights = home_dir+'/hpc-home/Fully-Conv-Network/Resources/FCN_models/pretrained_weights/nyud-fcn32s-color-heavy.caffemodel'
