@@ -1,5 +1,3 @@
-import caffe
-
 import numpy as np
 from PIL import Image
 import scipy.io
@@ -7,7 +5,15 @@ import glob
 import os
 from os.path import expanduser, join, dirname, realpath
 from os import getcwd
+import imp
 
+home_dir = expanduser("~")
+if 'n8307628' in home_dir:
+    caffe_root = home_dir+'/Fully-Conv-Network/Resources/caffe'
+elif 'sean' in home_dir:
+    caffe_root = home_dir+'/src/caffe'
+filename, path, desc =  imp.find_module('caffe', [caffe_root+'/python/'])
+caffe = imp.load_module('caffe', filename, path, desc)
 import random
 
 class CStripSegDataLayer(caffe.Layer):

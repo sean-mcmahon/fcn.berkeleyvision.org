@@ -2,5 +2,5 @@
 *.caffemodel
 *.png
 snapshot/
-.txt
+*.txt
 core
