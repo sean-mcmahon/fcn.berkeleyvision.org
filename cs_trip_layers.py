@@ -83,14 +83,12 @@ class CStripSegDataLayer(caffe.Layer):
         if self.random:
             random.seed(self.seed)
             self.idx = random.randint(0, len(self.indices)-1)
-        print 'cs_trip_layer: completed setup. Data in {}'.format(self.cstrip_dir)
 
     def reshape(self, bottom, top):
         # load data for tops and  reshape tops to fit (1 is the batch dim)
         for i, t in enumerate(self.tops):
             self.data[t] = self.load(t, self.indices[self.idx], self.sub_dir[self.idx])
             top[i].reshape(1, *self.data[t].shape)
-        print 'cs_trip_layer: loading and reshaping complete'
 
     def forward(self, bottom, top):
         # assign output
@@ -136,7 +134,6 @@ class CStripSegDataLayer(caffe.Layer):
         in_ = in_[:,:,::-1]
         in_ -= self.mean_bgr
         in_ = in_.transpose((2,0,1))
-        print 'Shape of colour image {}'.format(np.shape(in_))
         return in_
 
     def load_label(self, idx, sub_dir):
@@ -149,7 +146,6 @@ class CStripSegDataLayer(caffe.Layer):
         label = scipy.io.loadmat(glob.glob('{}/{}/labels/colourimg_{}_*'.format(self.cstrip_dir, sub_dir, idx))[0])['binary_labels'].astype(np.uint8)
         label -= 1  # rotate labels
         label = label[np.newaxis, ...]
-        print 'Label shape {}'.format(np.shape(label))
         return label
 
     def load_depth(self, idx, sub_dir):
