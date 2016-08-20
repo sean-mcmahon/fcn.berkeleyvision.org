@@ -27,6 +27,7 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label'):
     loss = 0
     for idx in dataset:
         net.forward()
+        print '> Foward pass for {} complete'.format(idx)
         hist += fast_hist(net.blobs[gt].data[0, 0].flatten(),
                                 net.blobs[layer].data[0].argmax(0).flatten(),
                                 n_cl)
@@ -47,6 +48,7 @@ def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label'):
     n_cl = net.blobs[layer].channels
     if save_format:
         save_format = save_format.format(iter)
+    print '> Computing Histagram'
     hist, loss = compute_hist(net, save_format, dataset, layer, gt)
     # mean loss
     print '>>>', datetime.now(), 'Iteration', iter, 'loss', loss
