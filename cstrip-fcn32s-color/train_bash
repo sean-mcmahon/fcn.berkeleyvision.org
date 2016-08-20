@@ -4,7 +4,7 @@
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=4GB
-#PBS -l walltime=24:00:00
+#PBS -l walltime=4:00:00
 
 module load python
 module load caffe
@@ -42,7 +42,13 @@ else
     echo "Using cpu"
     gpu=-1
 fi
+# Because using MKL Blas
+export MKL_CBWR=AUTO
+if [$HOME='/home/sean']; then
+  python_script=$HOME'/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/solve.py'
+fi
+if [$HOME='/home/n8307628']; then
+  python_script=$HOME'/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/solve.py'
+fi
 
-localTest='/home/sean/hpc-home/'
-hpcTest='/home/n8307628/'
-workingDir=$hpcTest
+python $python_script 2>&1 | tee FCNcolor_train.log
