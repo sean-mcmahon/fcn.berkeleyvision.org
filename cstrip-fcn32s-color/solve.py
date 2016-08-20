@@ -19,7 +19,7 @@ elif 'sean' in home_dir:
     weights = home_dir+'/hpc-home/Fully-Conv-Network/Resources/FCN_models/pretrained_weights/nyud-fcn32s-color-heavy.caffemodel'
 filename, path, desc =  imp.find_module('caffe', [caffe_root+'/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
-caffe.set_mode_gpu()
+caffe.set_mode_cpu()
 # caffe.set_device(1)
 import surgery, score
 
@@ -39,7 +39,7 @@ for _ in range(50):
     print '------------------------------'
     print 'Running solver.step iter {}'.format(_)
     print '------------------------------'
-    solver.step(2000)
+    solver.step(1)
     # if getting issues on HPC try
     # export MKL_CBWR=AUTO
     # and 'export CUDA_VISIBLE_DEVICES=1'
