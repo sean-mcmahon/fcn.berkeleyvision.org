@@ -51,5 +51,6 @@ if [$HOME='/home/n8307628']; then
   # Because using MKL Blas on HPC
   export MKL_CBWR=AUTO
 fi
+current_date=`date +%Y-%m-%d.%H:%M:%S`
 
-python $python_script 2>&1 | tee FCNcolor_train.log
+python $python_script 2>&1 | tee "FCNcolor_train_$current_date.log"
