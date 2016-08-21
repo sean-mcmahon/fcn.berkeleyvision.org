@@ -478,7 +478,7 @@ layer {
   bottom: "fc7"
   top: "score_fr"
   param {
-    lr_mult: 1
+    lr_mult: 10
     decay_mult: 1
   }
   param {
