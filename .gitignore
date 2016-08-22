@@ -4,3 +4,6 @@
 snapshot/
 *.txt
 core
+logs/
+colorDepthSnapshot/
+colorSnapshot/
