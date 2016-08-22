@@ -46,22 +46,22 @@ else:
 import surgery, score
 
 # init
-# base_net_arch  = file_location[:file_location.rfind('/')]+'/cstrip-fcn32s-color/test.prototxt'
-# base_net = caffe.Net(base_net_arch, weights,
-#         caffe.TEST)
+base_net_arch  = file_location[:file_location.rfind('/')]+'/cstrip-fcn32s-color/test.prototxt'
+base_net = caffe.Net(base_net_arch, weights,
+        caffe.TEST)
 solver = caffe.SGDSolver(file_location+'/solver.prototxt')
-# surgery.transplant(solver.net, base_net) # copy weights to solver network
+surgery.transplant(solver.net, base_net) # copy weights to solver network
 
 # surgeries
 interp_layers = [k for k in solver.net.params.keys() if 'up' in k]
 surgery.interp(solver.net, interp_layers) # calc deconv filter weights
 # Copy weights from color network into color-depth network (I think)
-# solver.net.params['conv1_1_bgrd'][0].data[:, :3] = base_net.params['conv1_1'][0].data
-# solver.net.params['conv1_1_bgrd'][0].data[:, 3] = np.mean(base_net.params['conv1_1'][0].data, axis=1)
-# solver.net.params['conv1_1_bgrd'][1].data[...] = base_net.params['conv1_1'][1].data
-# del base_net
+solver.net.params['conv1_1_bgrd'][0].data[:, :3] = base_net.params['conv1_1'][0].data
+solver.net.params['conv1_1_bgrd'][0].data[:, 3] = np.mean(base_net.params['conv1_1'][0].data, axis=1)
+solver.net.params['conv1_1_bgrd'][1].data[...] = base_net.params['conv1_1'][1].data
+del base_net
 conv1_1_bgrd = solver.net.params['conv1_1_bgrd'][0].data
-print 'conv1_1_bgrd len {}, shape {}, values {}'.format(len(conv1_1_bgrd), np.shape(conv1_1_bgrd), np.unique(conv1_1_bgrd))
+print 'layer: conv1_1_bgrd len {}, shape {}, values {}'.format(len(conv1_1_bgrd), np.shape(conv1_1_bgrd), np.unique(conv1_1_bgrd))
 
 # scoring
 val = np.loadtxt(file_location[:file_location.rfind('/')]+'/data/cs-trip/val.txt', dtype=str)
@@ -72,11 +72,11 @@ for _ in range(50):
     print '------------------------------'
     solver.step(1)
     filter_1 = solver.net.params['conv1_1_bgrd'][0].data
-    print 'filter_1 len {}, shape {}, values {}'.format(len(filter_1), np.shape(filter_1), np.unique(filter_1))
+    print 'layer: conv1_1_bgrd len {}, shape {}, values {}'.format(len(filter_1), np.shape(filter_1), np.unique(filter_1))
     filter_2 = solver.net.params['conv1_2'][0].data
-    print 'filter_2 len {}, shape {}, values {}'.format(len(filter_2), np.shape(filter_2), np.unique(filter_2))
+    print 'layer: conv1_2 len {}, shape {}, values {}'.format(len(filter_2), np.shape(filter_2), np.unique(filter_2))
     score_fr_trip = solver.net.params['score_fr_trip'][0].data
-    print 'score_fr_trip len {}, shape {}, values {}'.format(len(score_fr_trip), np.shape(score_fr_trip), np.unique(score_fr_trip))
+    print 'layer: score_fr_trip len {}, shape {}, values {}'.format(len(score_fr_trip), np.shape(score_fr_trip), np.unique(score_fr_trip))
     # if getting issues on HPC try
     # export MKL_CBWR=AUTO
     # and 'export CUDA_VISIBLE_DEVICES=1'
