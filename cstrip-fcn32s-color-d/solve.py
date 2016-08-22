@@ -17,7 +17,7 @@ home_dir = expanduser("~")
 
 # User Input
 parser = argparse.ArgumentParser()
-parser.add_argument('--mode', default='gpu')
+parser.add_argument('--mode', default='CPU')
 args = parser.parse_args()
 print 'This is the colour-DEPTH solver!'
 
@@ -30,17 +30,17 @@ elif 'sean' in home_dir:
     weights = home_dir+'/hpc-home/Fully-Conv-Network/Resources/FCN_models/pretrained_weights/nyud-fcn32s-color-heavy.caffemodel'
 filename, path, desc =  imp.find_module('caffe', [caffe_root+'/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
-if 'g' or 'G' in args.mode:
+if 'g' in args.mode or 'G' in args.mode:
     caffe.set_mode_gpu()
-    print '-- GPU Mode --'
-elif 'c' or 'C' in args.mode:
+    print '-- GPU Mode -- {}'.format(args.mode)
+elif 'c' in args.mode or 'C' in args.mode:
     caffe.set_mode_cpu()
-    print '-- CPU Mode --'
+    print '-- CPU Mode -- {}'.format(args.mode)
 else:
     caffe.set_mode_gpu()
     print '==============='
     print 'No Mode (CPU or GPU) Given'
-    print '-- GPU Mode Chosen --'
+    print '-- GPU Mode Chosen -- {}'.format(args.mode)
     print '==============='
 import surgery, score
 
