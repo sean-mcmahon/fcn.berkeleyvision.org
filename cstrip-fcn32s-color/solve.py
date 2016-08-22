@@ -62,12 +62,12 @@ for _ in range(50):
     print 'Running solver.step iter {}'.format(_)
     print '------------------------------'
     solver.step(2000)
-    filter_1 = solver.net.params['conv1_1_bgrd'][0].data
-    print 'layer: conv1_1_bgrd len {}, shape {}, values {}'.format(len(filter_1), np.shape(filter_1), np.unique(filter_1))
-    filter_2 = solver.net.params['conv1_2'][0].data
-    print 'layer: conv1_2 len {}, shape {}, values {}'.format(len(filter_2), np.shape(filter_2), np.unique(filter_2))
-    score_fr_trip = solver.net.params['score_fr_trip'][0].data
-    print 'layer: score_fr_trip len {}, shape {}, values {}'.format(len(score_fr_trip), np.shape(score_fr_trip), np.unique(score_fr_trip))
+    filter_1 = solver.net.params['conv1_1'][0].data
+    # print 'layer: conv1_1 len {}, shape {}, values {}'.format(len(filter_1), np.shape(filter_1), np.unique(filter_1))
+    # filter_2 = solver.net.params['conv1_2'][0].data
+    # print 'layer: conv1_2 len {}, shape {}, values {}'.format(len(filter_2), np.shape(filter_2), np.unique(filter_2))
+    # score_fr_trip = solver.net.params['score_fr_trip'][0].data
+    # print 'layer: score_fr_trip len {}, shape {}, values {}'.format(len(score_fr_trip), np.shape(score_fr_trip), np.unique(score_fr_trip))
     # if getting issues on HPC try
     # export MKL_CBWR=AUTO
     # and 'export CUDA_VISIBLE_DEVICES=1'
