@@ -51,5 +51,7 @@ import surgery, score
 solver = caffe.SGDSolver(file_location+'/solver.prototxt')
 solver.net.copy_from(weights)
 
+val = np.loadtxt(file_location[:file_location.rfind('/')]+'/data/cs-trip/val.txt', dtype=str)
+
 print '\n>>>> Validation <<<<\n'
 score.seg_tests(solver, False, val, layer='score')
