@@ -57,8 +57,9 @@ else
   echo "No directory found..."
 fi
 
+set_mode="$1"
 current_date=`date +%Y-%m-%d_%H-%M-%S`
 log_filename=$working_dir'/logs/FCNcolor_train'$current_date'.log'
 
-python $python_script 2>&1 | tee $log_filename
+python $python_script --mode $set_mode 2>&1 | tee $log_filename
 echo $log_filename
