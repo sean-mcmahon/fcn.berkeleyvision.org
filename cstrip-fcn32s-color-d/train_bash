@@ -42,13 +42,24 @@ else
     echo "Using cpu"
     gpu=-1
 fi
-# Because using MKL Blas
-export MKL_CBWR=AUTO
-if [$HOME='/home/sean']; then
-  python_script=$HOME'/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/solve.py'
-fi
-if [$HOME='/home/n8307628']; then
-  python_script=$HOME'/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/solve.py'
+
+hpc_dir='/home/n8307628'
+local_dir='/home/sean'
+if [[ -d $local_dir ]]; then
+  working_dir=$local_dir'/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-d'
+  python_script=$working_dir'/solve.py'
+elif [[ -d $hpc_dir ]]; then
+  working_dir=$hpc_dir'/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-d'
+  python_script=$working_dir'/solve.py'
+  # Because using MKL Blas on HPC
+  export MKL_CBWR=AUTO
+else
+  echo "No directory found..."
 fi
 
-python $python_script 2>&1 | tee FCNcolor_train.log
+set_mode="$1"
+current_date=`date +%Y-%m-%d_%H-%M-%S`
+log_filename=$working_dir'/logs/FCNcolorDepth_train'$current_date'.log'
+
+python $python_script --mode $set_mode 2>&1 | tee $log_filename
+echo $log_filename

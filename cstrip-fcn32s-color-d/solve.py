@@ -8,11 +8,18 @@ import numpy as np
 import os, sys
 from os.path import expanduser
 import imp
+import argparse
 
 # add '../' directory to path for importing score.py, surgery.py and pycaffe layer
 file_location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 sys.path.append(file_location[:file_location.rfind('/')])
 home_dir = expanduser("~")
+
+# User Input
+parser = argparse.ArgumentParser()
+parser.add_argument('--mode', default='gpu')
+args = parser.parse_args()
+print 'This is the colour-DEPTH solver!'
 
 # import support functions
 if 'n8307628' in home_dir:
@@ -23,19 +30,31 @@ elif 'sean' in home_dir:
     weights = home_dir+'/hpc-home/Fully-Conv-Network/Resources/FCN_models/pretrained_weights/nyud-fcn32s-color-heavy.caffemodel'
 filename, path, desc =  imp.find_module('caffe', [caffe_root+'/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
-caffe.set_mode_gpu()
+if 'g' or 'G' in args.mode:
+    caffe.set_mode_gpu()
+    print '-- GPU Mode --'
+elif 'c' or 'C' in args.mode:
+    caffe.set_mode_cpu()
+    print '-- CPU Mode --'
+else:
+    caffe.set_mode_gpu()
+    print '==============='
+    print 'No Mode (CPU or GPU) Given'
+    print '-- GPU Mode Chosen --'
+    print '==============='
 import surgery, score
 
 # init
 base_net_arch  = file_location[:file_location.rfind('/')]+'/cstrip-fcn32s-color/test.prototxt'
 base_net = caffe.Net(base_net_arch, weights,
         caffe.TEST)
-solver = caffe.SGDSolver('solver.prototxt')
-surgery.transplant(solver.net, base_net)
+solver = caffe.SGDSolver(file_location+'/solver.prototxt')
+surgery.transplant(solver.net, base_net) # copy weights to solver network
 
 # surgeries
 interp_layers = [k for k in solver.net.params.keys() if 'up' in k]
-surgery.interp(solver.net, interp_layers)
+surgery.interp(solver.net, interp_layers) # calc deconv filter weights
+# Copy weights from color network into color-depth network (I think)
 solver.net.params['conv1_1_bgrd'][0].data[:, :3] = base_net.params['conv1_1'][0].data
 solver.net.params['conv1_1_bgrd'][0].data[:, 3] = np.mean(base_net.params['conv1_1'][0].data, axis=1)
 solver.net.params['conv1_1_bgrd'][1].data[...] = base_net.params['conv1_1'][1].data
