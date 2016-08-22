@@ -58,6 +58,9 @@ else
 fi
 
 set_mode="$1"
+if [[ -z "$set_mode" ]]; then
+  set_mode='gpu'
+fi
 current_date=`date +%Y-%m-%d_%H-%M-%S`
 log_filename=$working_dir'/logs/FCNcolorDepth_train'$current_date'.log'
 
