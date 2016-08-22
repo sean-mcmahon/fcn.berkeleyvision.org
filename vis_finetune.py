@@ -2,13 +2,15 @@
 """
 Visualise Caffe training progress from log file
 from https://github.com/yassersouri/omgh/blob/master/src/scripts/vis_finetune.py
+and
+https://groups.google.com/forum/#!searchin/caffe-users/vis_finetune.py%7Csort:relevance/caffe-users/FJ4_mYTNK70/hAl2GhsnbbMJ
 
 """
 import numpy as np
 import re
 import click
 from matplotlib import pylab as plt
-import matplotlib.pylab.style
+import matplotlib.pyplot
 
 
 @click.command()
