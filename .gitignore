@@ -4,3 +4,4 @@
 snapshot/
 *.txt
 core
+logs/
