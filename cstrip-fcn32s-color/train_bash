@@ -45,16 +45,20 @@ fi
 
 hpc_dir='/home/n8307628'
 local_dir='/home/sean'
-if [ -d "$local_dir"]; then
-  python_script=$local_dir'/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/solve.py'
-elif [ -d "$hpc_dir"]; then
-  python_script=$hpc_dir'/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/solve.py'
+if [[ -d $local_dir ]]; then
+  working_dir=$local_dir'/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color'
+  python_script=$working_dir'/solve.py'
+elif [[ -d $hpc_dir ]]; then
+  working_dir=$hpc_dir'/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color'
+  python_script=$working_dir'/solve.py'
   # Because using MKL Blas on HPC
   export MKL_CBWR=AUTO
 else
   echo "No directory found..."
 fi
-echo "python_script=$python_script"
-current_date=`date +%Y-%m-%d.%H:%M:%S`
 
-# python $python_script 2>&1 | tee "FCNcolor_train_$current_date.log"
+current_date=`date +%Y-%m-%d_%H-%M-%S`
+log_filename=$working_dir'/logs/FCNcolor_train'$current_date'.log'
+
+python $python_script 2>&1 | tee $log_filename
+echo $log_filename
