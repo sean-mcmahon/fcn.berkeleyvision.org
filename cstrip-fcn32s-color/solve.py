@@ -52,7 +52,7 @@ solver.net.copy_from(weights)
 # surgeries
 interp_layers = [k for k in solver.net.params.keys() if 'up' in k]
 print 'performing surgery on {}'.format(interp_layers)
-surgery.interp(solver.net, interp_layers)
+surgery.interp(solver.net, interp_layers) # calc deconv filter weights
 
 # scoring
 val = np.loadtxt(file_location[:file_location.rfind('/')]+'/data/cs-trip/val.txt', dtype=str)
