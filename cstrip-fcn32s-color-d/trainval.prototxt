@@ -487,7 +487,7 @@ layer {
   name: "score_fr_trip"
   type: "Convolution"
   bottom: "fc7"
-  top: "score_fr"
+  top: "score_fr_trip"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -505,7 +505,7 @@ layer {
 layer {
   name: "upscore_trip"
   type: "Deconvolution"
-  bottom: "score_fr"
+  bottom: "score_fr_trip"
   top: "upscore"
   param {
     lr_mult: 0
