@@ -9,6 +9,7 @@ import os, sys
 from os.path import expanduser
 import imp
 import argparse
+import math
 
 # add '../' directory to path for importing score.py, surgery.py and pycaffe layer
 file_location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -55,20 +56,25 @@ surgery.transplant(solver.net, base_net) # copy weights to solver network
 interp_layers = [k for k in solver.net.params.keys() if 'up' in k]
 surgery.interp(solver.net, interp_layers) # calc deconv filter weights
 # Copy weights from color network into color-depth network (I think)
-# solver.net.params['conv1_1_bgrd'][0].data[:, :3] = base_net.params['conv1_1'][0].data
-# solver.net.params['conv1_1_bgrd'][0].data[:, 3] = np.mean(base_net.params['conv1_1'][0].data, axis=1)
-# solver.net.params['conv1_1_bgrd'][1].data[...] = base_net.params['conv1_1'][1].data
+solver.net.params['conv1_1_bgrd'][0].data[:, :3] = base_net.params['conv1_1'][0].data
+solver.net.params['conv1_1_bgrd'][0].data[:, 3] = np.mean(base_net.params['conv1_1'][0].data, axis=1)
+solver.net.params['conv1_1_bgrd'][1].data[...] = base_net.params['conv1_1'][1].data
 del base_net
 
 # scoring
 val = np.loadtxt(file_location[:file_location.rfind('/')]+'/data/cs-trip/val.txt', dtype=str)
 
-for _ in range(50):
+for _ in range(1):
     print '------------------------------'
     print 'Running solver.step iter {}'.format(_)
     print '------------------------------'
     solver.step(1)
     filter_1 = solver.net.params['conv1_1_bgrd'][0].data
+    print 'filter_1 len {}, shape {}, values, {}'.format(len(filter_1), np.shape(filter_1), np.unique(filter_1))
+    filter_2 = solver.net.params['conv1_2'][0].data
+    print 'filter_2 len {}, shape {}, values, {}'.format(len(filter_2), np.shape(filter_2), np.unique(filter_2))
+    score_fr_trip = solver.net.params['score_fr_trip'][0].data
+    print 'score_fr_trip len {}, shape {}, values, {}'.format(len(score_fr_trip), np.shape(score_fr_trip), np.unique(score_fr_trip))
     # if getting issues on HPC try
     # export MKL_CBWR=AUTO
     # and 'export CUDA_VISIBLE_DEVICES=1'
