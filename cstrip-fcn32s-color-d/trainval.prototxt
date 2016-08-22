@@ -486,7 +486,7 @@ layer {
   bottom: "fc7"
   top: "score_fr"
   param {
-    lr_mult: 10
+    lr_mult: 1
     decay_mult: 1
   }
   param {
@@ -532,6 +532,6 @@ layer {
   bottom: "label"
   top: "loss"
   loss_param {
-    normalize: false
+    normalize: true
   }
 }
