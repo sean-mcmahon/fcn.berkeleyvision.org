@@ -64,9 +64,7 @@ import surgery, score
 
 # init
 solver = caffe.SGDSolver(file_location+'/solver.prototxt')
-print 'glob snapshot folderoutput {}'.format(snapshot_dir[0])
 solver.net.copy_from(weights)
-
 
 if args.test_type=='val':
     test_set = np.loadtxt(file_location[:file_location.rfind('/')]+'/data/cs-trip/val.txt', dtype=str)
