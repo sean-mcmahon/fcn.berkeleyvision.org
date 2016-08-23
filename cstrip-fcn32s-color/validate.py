@@ -38,13 +38,13 @@ print 'This is the COLOUR only validation!'
 if 'n8307628' in home_dir:
     caffe_root = home_dir+'/Fully-Conv-Network/Resources/caffe'
     weight_dir = home_dir+ '/Fully-Conv-Network/Resources/FCN_models/' + network_dir
-    snapshot_folder = glob.glob(weight_dir+'*napshot*')
-    weights = weight_dir + snapshot_folder[0]+'/_iter_'+ str(iteration) +'.caffemodel'
+    snapshot_dir = glob.glob(weight_dir+'*napshot*')
+    weights = snapshot_dir[0]+'/_iter_'+ str(iteration) +'.caffemodel'
 elif 'sean' in home_dir:
     caffe_root = home_dir+'/src/caffe'
     weight_dir = home_dir+'/hpc-home/Fully-Conv-Network/Resources/FCN_models/'+ network_dir
-    snapshot_folder = glob.glob(weight_dir+'*napshot*')
-    weights = weight_dir + snapshot_folder[0]+'/_iter_'+ str(iteration) +'.caffemodel'
+    snapshot_dir = glob.glob(weight_dir+'*napshot*')
+    weights = snapshot_dir[0]+'/_iter_'+ str(iteration) +'.caffemodel'
 filename, path, desc =  imp.find_module('caffe', [caffe_root+'/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
 if 'g' in args.mode or 'G' in args.mode:
@@ -64,7 +64,9 @@ import surgery, score
 
 # init
 solver = caffe.SGDSolver(file_location+'/solver.prototxt')
+print 'glob snapshot folderoutput {}'.format(snapshot_dir[0])
 solver.net.copy_from(weights)
+
 
 if args.test_type=='val':
     test_set = np.loadtxt(file_location[:file_location.rfind('/')]+'/data/cs-trip/val.txt', dtype=str)
@@ -77,4 +79,4 @@ else:
     raise
 
 print '\n>>>> Validation <<<<\n'
-score.seg_tests(solver, False, test_set, layer='score')
+score.seg_tests(solver, file_location+'/images', test_set, layer='score')
