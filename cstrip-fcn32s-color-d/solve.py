@@ -24,10 +24,10 @@ print 'This is the colour-DEPTH solver!'
 # import support functions
 if 'n8307628' in home_dir:
     caffe_root = home_dir+'/Fully-Conv-Network/Resources/caffe'
-    weights = home_dir+'/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel'
+    weights = home_dir+'/Fully-Conv-Network/Resources/FCN_models/pretrained_weights/nyud-fcn32s-color-heavy.caffemodel'
 elif 'sean' in home_dir:
     caffe_root = home_dir+'/src/caffe'
-    weights = home_dir+'/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel'
+    weights = home_dir+'/hpc-home/Fully-Conv-Network/Resources/FCN_models/pretrained_weights/nyud-fcn32s-color-heavy.caffemodel'
 filename, path, desc =  imp.find_module('caffe', [caffe_root+'/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
 if 'g' in args.mode or 'G' in args.mode:
@@ -70,14 +70,15 @@ for _ in range(50):
     print 'Running solver.step iter {}'.format(_)
     print '------------------------------'
     solver.step(1)
-    filter_1 = solver.net.params['conv1_1_bgrd'][0].data
-    print 'layer: conv1_1_bgrd len {}, shape {}, values {}'.format(len(filter_1), np.shape(filter_1), np.unique(filter_1))
-    filter_2 = solver.net.params['conv1_2'][0].data
-    print 'layer: conv1_2 len {}, shape {}, values {}'.format(len(filter_2), np.shape(filter_2), np.unique(filter_2))
-    score_fr_trip = solver.net.params['score_fr_trip'][0].data
-    print 'layer: score_fr_trip len {}, shape {}, values {}'.format(len(score_fr_trip), np.shape(score_fr_trip), np.unique(score_fr_trip))
-    upscore_trip = solver.net.params['upscore_trip'][0].data
-    print 'layer: upscore_trip len {}, shape {}, values {}'.format(len(upscore_trip), np.shape(upscore_trip), np.unique(upscore_trip))
+    # filter_1 = solver.net.params['conv1_1_bgrd'][0].data
+    # print 'layer: conv1_1_bgrd len {}, shape {}, values {}'.format(len(filter_1), np.shape(filter_1), np.unique(filter_1))
+    # filter_2 = solver.net.params['conv1_2'][0].data
+    # print 'layer: conv1_2 len {}, shape {}, values {}'.format(len(filter_2), np.shape(filter_2), np.unique(filter_2))
+    # score_fr_trip = solver.net.params['score_fr_trip'][0].data
+    # print 'layer: score_fr_trip len {}, shape {}, values {}'.format(len(score_fr_trip), np.shape(score_fr_trip), np.unique(score_fr_trip))
+    # upscore_trip = solver.net.params['upscore_trip'][0].data
+    # print 'layer: upscore_trip len {}, shape {}, values {}'.format(len(upscore_trip), np.shape(upscore_trip), np.unique(upscore_trip))
+    break
     # if getting issues on HPC try
     # export MKL_CBWR=AUTO
     # and 'export CUDA_VISIBLE_DEVICES=1'
