@@ -76,6 +76,7 @@ else:
     print 'Incorrect test_type given {}; expecting "train", "val" or "test"'.format(args.test_type)
     raise
 solver.net.copy_from(weights)
+print '-- test_type is', args.test_type, ' --'
 
 print '\n>>>> Validation <<<<\n'
 score.seg_tests(solver, file_location+'/'+args.test_type+'_images', test_set, layer='score')
