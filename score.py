@@ -64,6 +64,8 @@ def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label'):
     n_cl = net.blobs[layer].channels
     if save_format:
         save_format = save_format.format(iter)
+    # TODO get better perfomance metrics
+    # as I only care about trip detection performance
     print '> Computing Histagram'
     hist, loss = compute_hist(net, save_format, dataset, layer, gt)
     # mean loss
