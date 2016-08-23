@@ -21,7 +21,7 @@ def fast_hist(a, b, n):
 
 def compute_hist(net, save_dir, dataset, layer='score', gt='label'):
     n_cl = net.blobs[layer].channels
-    if save_dir:
+    if save_dir and not os.path.isdir(save_dir):
         os.mkdir(save_dir)
     hist = np.zeros((n_cl, n_cl))
     loss = 0
@@ -34,10 +34,7 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label'):
 
         if save_dir:
             im = Image.fromarray(net.blobs[layer].data[0].argmax(0).astype(np.uint8), mode='P')
-            print '> save_dir {}; idx {}'.format(save_dir,idx)
-            save_name = os.path.join(save_dir, idx + '.png')
-            print '> save_name {}'.format(save_name)
-            im.save(save_name)
+            im.save(os.path.join(save_dir, ''.join(idx) + '.png'))
         # compute the loss as well
         loss += net.blobs['loss'].data.flat[0]
     return hist, loss / len(dataset)
@@ -49,11 +46,8 @@ def seg_tests(solver, save_format, dataset, layer='score', gt='label'):
 
 def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label'):
     n_cl = net.blobs[layer].channels
-    print '> iter={} is type {}'.format(iter,type(iter))
     if save_format:
-        print '> save_format = {}'.format(save_format)
         save_format = save_format.format(iter)
-        print '> save_format = {}'.format(save_format)
     print '> Computing Histagram'
     hist, loss = compute_hist(net, save_format, dataset, layer, gt)
     # mean loss
