@@ -24,7 +24,7 @@ home_dir = expanduser("~")
 
 # User Input
 parser = argparse.ArgumentParser()
-parser.add_argument('--mode', default='gpu')
+parser.add_argument('--mode', default='cpu')
 parser.add_argument('--iteration',default=8000)
 parser.add_argument('--test_type', default='val')
 parser.add_argument('--network_dir', default='cstrip-fcn32s-color')
@@ -63,18 +63,19 @@ else:
 import surgery, score
 
 # init
-solver = caffe.SGDSolver(file_location+'/solver.prototxt')
-solver.net.copy_from(weights)
-
 if args.test_type=='val':
+    solver = caffe.SGDSolver(file_location+'/solver.prototxt')
     test_set = np.loadtxt(file_location[:file_location.rfind('/')]+'/data/cs-trip/val.txt', dtype=str)
 elif args.test_type=='test':
+    solver = caffe.SGDSolver(file_location+'/solver_test.prototxt')
     test_set = np.loadtxt(file_location[:file_location.rfind('/')]+'/data/cs-trip/test.txt', dtype=str)
 elif args.test_type=='train':
+    solver = caffe.SGDSolver(file_location+'/solver_test-trainingSet.prototxt')
     test_set = np.loadtxt(file_location[:file_location.rfind('/')]+'/data/cs-trip/train.txt', dtype=str)
 else:
     print 'Incorrect test_type given {}; expecting "train", "val" or "test"'.format(args.test_type)
     raise
+solver.net.copy_from(weights)
 
 print '\n>>>> Validation <<<<\n'
 score.seg_tests(solver, file_location+'/images', test_set, layer='score')
