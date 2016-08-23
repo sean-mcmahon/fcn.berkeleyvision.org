@@ -65,6 +65,6 @@ def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label'):
     freq = hist.sum(1) / hist.sum()
     print '>>>', datetime.now(), 'Iteration', iter, 'fwavacc', \
             (freq[freq > 0] * iu[freq > 0]).sum()
-    print '>>>', datetime.now(), 'Iteration', iter, 'num unqiue values ', len(net_values)
-    print '>>>', datetime.now(), 'Iteration', iter, 'Unqiue values:>\n', net_values, '\n<'
+    print '>>>', datetime.now(), 'Iteration', iter, 'num unqiue values ', len(np.unique(net_values))
+    print '>>>', datetime.now(), 'Iteration', iter, 'Unqiue values:>\n', min(net_values),', ',max(net_values), '\n<'
     return hist
