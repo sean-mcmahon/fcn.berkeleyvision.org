@@ -168,11 +168,19 @@ class CStripSegDataLayer(caffe.Layer):
         """
         im = Image.open(glob.glob('{}/{}/depth/depthimg_{}_*'.format(self.cstrip_dir, sub_dir, idx))[0])
         d = np.array(im, dtype=np.float32)
-        print 'depth pixel values before log are: {}'.format(np.unique(d))
+        # print 'depth pixel values before log are: {}\nMin {}, max {} and shape {}'.format(np.unique(d), min(d.flatten()),max(d.flatten()), np.shape(d))
+        # zeroidx = np.where(d == 0)[0]
         d = np.log(d)
+        d[np.isneginf(d)] = 0
         d -= self.mean_logd
         d = d[np.newaxis, ...]
-        print 'depth pixel values are {}'.format(np.unique(d))
+        # print 'depth pixel values are {}\nNum of -infs {}\nMin {}, max {} and shape {}'.format(np.unique(d), len(zeroidx), min(d.flatten()),max(d.flatten()), np.shape(d))
+        if np.any(np.isnan(d).flatten()) or np.any(np.isinf(d).flatten()):
+            print '----------------------------------------------'
+            print '- cs_trip_layers: Invalid depth values given -'
+            print '- Setting depth image to all 0s              -'
+            print '----------------------------------------------'
+            d.fill(0)
         return d
 
     def load_hha(self, idx, sub_dir):
