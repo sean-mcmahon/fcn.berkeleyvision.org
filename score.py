@@ -27,22 +27,24 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label'):
     loss = 0
     for idx in dataset:
         net.forward()
-        print '> Foward pass for {} complete'.format(idx)
+        print '>> Foward pass for {} complete'.format(idx)
         hist += fast_hist(net.blobs[gt].data[0, 0].flatten(),
                                 net.blobs[layer].data[0].argmax(0).flatten(),
                                 n_cl)
 
         if save_dir:
-            im = Image.fromarray(net.blobs[layer].data[0].argmax(0).astype(np.uint8), mode='P')
+            im = Image.fromarray(net.blobs[layer].data[0].argmax(0).astype(np.uint8)*255, mode='P')
             im.save(os.path.join(save_dir, ''.join(idx) + '.png'))
+            im_gt = Image.fromarray(net.blobs[gt].data[0, 0].astype(np.uint8)*255, mode='P')
+            im_gt.save(os.path.join(save_dir, ''.join(idx) + '_GT.png'))
         # compute the loss as well
         loss += net.blobs['loss'].data.flat[0]
-        score_values = net.blobs[layer].data[0].argmax(0)
-        gt_values = net.blobs[gt].data[0, 0]
-        print '>', idx,'net_score_values has shape ', np.shape(net_score_values)
-        print '>', idx, 'Unqiue net_score_values values:>\n', np.unique(net_score_values), '\n<'
-        print '>', idx, 'net_gt_values has shape ', np.shape(net_gt_values)
-        print '>', idx, 'Unqiue net_gt_values values:>\n', np.unique(net_gt_values), '\n<'
+        # score_values = net.blobs[layer].data[0].argmax(0)
+        # gt_values = net.blobs[gt].data[0, 0]
+        # print '> score_values has shape ', np.shape(score_values)
+        # print '> Unqiue score_values values: ', np.unique(score_values)
+        # print '> gt_values has shape ', np.shape(gt_values)
+        # print '> Unqiue gt_values values: ', np.unique(gt_values)
     return hist, loss / len(dataset)
 
 def seg_tests(solver, save_format, dataset, layer='score', gt='label'):
