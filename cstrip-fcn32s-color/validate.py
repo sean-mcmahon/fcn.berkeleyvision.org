@@ -78,4 +78,4 @@ else:
 solver.net.copy_from(weights)
 
 print '\n>>>> Validation <<<<\n'
-score.seg_tests(solver, file_location+'/images', test_set, layer='score')
+score.seg_tests(solver, file_location+'/'+args.test_type+'_images', test_set, layer='score')
