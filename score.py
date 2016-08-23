@@ -6,12 +6,15 @@ import sys
 from datetime import datetime
 from PIL import Image
 from os.path import expanduser
+import glob
 
 home_dir = expanduser("~")
 if 'n8307628' in home_dir:
     caffe_root = home_dir+'/Fully-Conv-Network/Resources/caffe'
+    cstrip_dir = home_dir+'/Construction_Site/Springfield/12Aug16/K2'
 elif 'sean' in home_dir:
     caffe_root = home_dir+'/src/caffe'
+    cstrip_dir = home_dir+'/hpc-home/Construction_Site/Springfield/12Aug16/K2'
 filename, path, desc =  imp.find_module('caffe', [caffe_root+'/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
 
@@ -34,9 +37,14 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label'):
 
         if save_dir:
             im = Image.fromarray(net.blobs[layer].data[0].argmax(0).astype(np.uint8)*255, mode='P')
-            im.save(os.path.join(save_dir, ''.join(idx) + '.png'))
+            # im.save(os.path.join(save_dir, ''.join(idx) + '.png'))
             im_gt = Image.fromarray(net.blobs[gt].data[0, 0].astype(np.uint8)*255, mode='P')
-            im_gt.save(os.path.join(save_dir, ''.join(idx) + '_GT.png'))
+            # im_gt.save(os.path.join(save_dir, ''.join(idx) + '_GT.png'))
+            colorIm = Image.open(glob.glob('{}/{}/colour/colourimg_{}_*'.format(cstrip_dir, idx[0], idx[1]))[0])
+            overlay = Image.blend(colorIm.convert("RGBA"),im.convert("RGBA"),0.7)
+            overlay.save(os.path.join(save_dir, ''.join(idx) + '.png'))
+            gt_overlay = Image.blend(colorIm.convert("RGBA"),im_gt.convert("RGBA"),0.7)
+            gt_overlay.save(os.path.join(save_dir, ''.join(idx) + '_GT.png'))
         # compute the loss as well
         loss += net.blobs['loss'].data.flat[0]
         # score_values = net.blobs[layer].data[0].argmax(0)
