@@ -37,8 +37,13 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label'):
             im.save(os.path.join(save_dir, ''.join(idx) + '.png'))
         # compute the loss as well
         loss += net.blobs['loss'].data.flat[0]
-        values = net.blobs[layer].data[0]
-    return hist, loss / len(dataset), values
+        score_values = net.blobs[layer].data[0].argmax(0)
+        gt_values = net.blobs[gt].data[0, 0]
+        print '>', idx,'net_score_values has shape ', np.shape(net_score_values)
+        print '>', idx, 'Unqiue net_score_values values:>\n', np.unique(net_score_values), '\n<'
+        print '>', idx, 'net_gt_values has shape ', np.shape(net_gt_values)
+        print '>', idx, 'Unqiue net_gt_values values:>\n', np.unique(net_gt_values), '\n<'
+    return hist, loss / len(dataset)
 
 def seg_tests(solver, save_format, dataset, layer='score', gt='label'):
     print '>>>', datetime.now(), 'Begin seg tests'
@@ -50,7 +55,7 @@ def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label'):
     if save_format:
         save_format = save_format.format(iter)
     print '> Computing Histagram'
-    hist, loss, net_values = compute_hist(net, save_format, dataset, layer, gt)
+    hist, loss = compute_hist(net, save_format, dataset, layer, gt)
     # mean loss
     print '>>>', datetime.now(), 'Iteration', iter, 'loss', loss
     # overall accuracy
@@ -65,6 +70,5 @@ def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label'):
     freq = hist.sum(1) / hist.sum()
     print '>>>', datetime.now(), 'Iteration', iter, 'fwavacc', \
             (freq[freq > 0] * iu[freq > 0]).sum()
-    print '>>>', datetime.now(), 'Iteration', iter, 'num unqiue values ', len(np.unique(net_values))
-    print '>>>', datetime.now(), 'Iteration', iter, 'Unqiue values:>\n', min(net_values),', ',max(net_values), '\n<'
+
     return hist
