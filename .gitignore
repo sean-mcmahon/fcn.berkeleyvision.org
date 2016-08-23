@@ -7,3 +7,5 @@ core
 logs/
 colorDepthSnapshot/
 colorSnapshot/
+*.log
+*.swp
