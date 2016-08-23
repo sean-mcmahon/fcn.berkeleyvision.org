@@ -14,6 +14,7 @@ momentum: 0.99
 iter_size: 1
 max_iter: 300000
 weight_decay: 0.0005
-snapshot: 2000
+# Do not save any snapshots
+snapshot: 999999999
 snapshot_prefix: "colorSnapshot/"
 test_initialization: false
