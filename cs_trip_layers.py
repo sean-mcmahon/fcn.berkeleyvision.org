@@ -164,13 +164,15 @@ class CStripSegDataLayer(caffe.Layer):
 
     def load_depth(self, idx, sub_dir):
         """
-        Load pre-processed depth for NYUDv2 segmentation set.
+        Load pre-processed depth for my CS trip hazard segmentation set.
         """
         im = Image.open(glob.glob('{}/{}/depth/depthimg_{}_*'.format(self.cstrip_dir, sub_dir, idx))[0])
         d = np.array(im, dtype=np.float32)
+        print 'depth pixel values before log are: {}'.format(np.unique(d))
         d = np.log(d)
         d -= self.mean_logd
         d = d[np.newaxis, ...]
+        print 'depth pixel values are {}'.format(np.unique(d))
         return d
 
     def load_hha(self, idx, sub_dir):
