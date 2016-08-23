@@ -37,7 +37,7 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label'):
             im.save(os.path.join(save_dir, ''.join(idx) + '.png'))
         # compute the loss as well
         loss += net.blobs['loss'].data.flat[0]
-        values = np.unique(net.blobs[layer].data[0])
+        values = net.blobs[layer].data[0]
     return hist, loss / len(dataset), values
 
 def seg_tests(solver, save_format, dataset, layer='score', gt='label'):
@@ -66,5 +66,5 @@ def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label'):
     print '>>>', datetime.now(), 'Iteration', iter, 'fwavacc', \
             (freq[freq > 0] * iu[freq > 0]).sum()
     print '>>>', datetime.now(), 'Iteration', iter, 'num unqiue values ', len(net_values)
-    print '>>>', datetime.now(), 'Iteration', iter, 'Unqiue values:>\n', len(net_values), '\n<'
+    print '>>>', datetime.now(), 'Iteration', iter, 'Unqiue values:>\n', net_values, '\n<'
     return hist
