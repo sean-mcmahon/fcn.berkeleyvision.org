@@ -65,8 +65,7 @@ split="$2"
 if [[ -z "$split" ]]; then
   split='val'
 fi
-current_date=`date +%Y-%m-%d_%H-%M-%S`
-# log_filename=$working_dir'/logs/FCNcolor_train'$current_date'.log'
+# current_date=`date +%Y-%m-%d_%H-%M-%S`
+log_filename=$working_dir'/logs/'$split'_dataset_results.log'
 
-python $python_script --mode $set_mode --test_type $split
-echo $log_filename
+python $python_script --mode $set_mode --test_type $split 2>&1 | tee $log_filename
