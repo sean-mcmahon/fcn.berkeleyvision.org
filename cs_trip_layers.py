@@ -166,21 +166,22 @@ class CStripSegDataLayer(caffe.Layer):
         """
         Load pre-processed depth for my CS trip hazard segmentation set.
         """
+        null_value = -1
+
         im = Image.open(glob.glob('{}/{}/depth/depthimg_{}_*'.format(self.cstrip_dir, sub_dir, idx))[0])
         d = np.array(im, dtype=np.float32)
         # print 'depth pixel values before log are: {}\nMin {}, max {} and shape {}'.format(np.unique(d), min(d.flatten()),max(d.flatten()), np.shape(d))
-        # zeroidx = np.where(d == 0)[0]
         d = np.log(d)
-        d[np.isneginf(d)] = 0
+        d[np.isneginf(d)] = null_value
         d -= self.mean_logd
         d = d[np.newaxis, ...]
-        # print 'depth pixel values are {}\nNum of -infs {}\nMin {}, max {} and shape {}'.format(np.unique(d), len(zeroidx), min(d.flatten()),max(d.flatten()), np.shape(d))
+        # print 'depth pixel values are {}\nMin {}, max {} and shape {}'.format(np.unique(d), min(d.flatten()),max(d.flatten()), np.shape(d))
         if np.any(np.isnan(d).flatten()) or np.any(np.isinf(d).flatten()):
             print '----------------------------------------------'
             print '- cs_trip_layers: Invalid depth values given -'
-            print '- Setting depth image to all 0s              -'
             print '----------------------------------------------'
-            d.fill(0)
+            d[np.isinf(d)] = null_value
+            d[np.isnan(d)] = null_value
         return d
 
     def load_hha(self, idx, sub_dir):
