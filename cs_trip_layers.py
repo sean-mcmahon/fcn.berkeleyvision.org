@@ -58,6 +58,7 @@ class CStripSegDataLayer(caffe.Layer):
         self.data = {}
 
         # Null value for when depth pixels are 0
+        # - log(0) gives -inf which makes the CNN ouput NaNs
         self.null_value = -1
 
         # TODO: Find means of images in CS dataset
