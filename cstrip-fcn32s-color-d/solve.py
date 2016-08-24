@@ -55,13 +55,11 @@ surgery.transplant(solver.net, base_net) # copy weights to solver network
 interp_layers = [k for k in solver.net.params.keys() if 'up' in k]
 surgery.interp(solver.net, interp_layers) # calc deconv filter weights
 # Copy weights from color network into color-depth network (I think)
-print 'coping color params from conv1_1  ->  conv1_1_bgrd'
+print 'copying color params from conv1_1  ->  conv1_1_bgrd'
 solver.net.params['conv1_1_bgrd'][0].data[:, :3] = base_net.params['conv1_1'][0].data
 solver.net.params['conv1_1_bgrd'][0].data[:, 3] = np.mean(base_net.params['conv1_1'][0].data, axis=1)
 solver.net.params['conv1_1_bgrd'][1].data[...] = base_net.params['conv1_1'][1].data
 del base_net
-conv1_1_bgrd = solver.net.params['conv1_1_bgrd'][0].data
-print 'layer: conv1_1_bgrd len {}, shape {}, values {}'.format(len(conv1_1_bgrd), np.shape(conv1_1_bgrd), np.unique(conv1_1_bgrd))
 
 # scoring
 val = np.loadtxt(file_location[:file_location.rfind('/')]+'/data/cs-trip/val.txt', dtype=str)
