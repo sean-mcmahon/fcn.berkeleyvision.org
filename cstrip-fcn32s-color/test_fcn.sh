@@ -65,7 +65,11 @@ split="$2"
 if [[ -z "$split" ]]; then
   split='val'
 fi
+snapshot_iter="$3"
+if [[ -z "$snapshot_iter" ]]; then
+  snapshot_iter='8000'
+fi
 # current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/logs/'$split'_dataset_results.log'
+log_filename=$working_dir'/logs/'$split'_dataset_snapshot_'$snapshot_iter'_results.log'
 
-python $python_script --mode $set_mode --test_type $split 2>&1 | tee $log_filename
+python $python_script --mode $set_mode --test_type $split --iteration $snapshot_iter 2>&1 | tee $log_filename
