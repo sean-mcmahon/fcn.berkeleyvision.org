@@ -1,6 +1,6 @@
 #! /usr/bin/python
 """
-cstrip validate COLOUR only
+cstrip validate Color-DEPTH only
 
 """
 # import caffe
@@ -28,12 +28,13 @@ parser.add_argument('--mode', default='cpu')
 parser.add_argument('--iteration',default=8000)
 parser.add_argument('--test_type', default='val')
 parser.add_argument('--network_dir', default='cstrip-fcn32s-color-d')
-args = parser.add_argument('--snapshot_filter', default='train_')
+parser.add_argument('--snapshot_filter', default='train')
+args = parser.parse_args()
 iteration = args.iteration
 network_dir = args.network_dir
 network_dir = add_slash(network_dir) # ensure slash present
 snapshot_filter = args.snapshot_filter
-print 'This is the COLOUR only validation!'
+print 'This is the colour-Depth validation!'
 
 # import support functions
 if 'n8307628' in home_dir:
