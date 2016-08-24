@@ -57,6 +57,9 @@ class CStripSegDataLayer(caffe.Layer):
         # store top data for reshape + forward
         self.data = {}
 
+        # Null value for when depth pixels are 0
+        self.null_value = -1
+
         # TODO: Find means of images in CS dataset
         self.mean_bgr = np.array((0,0,0), dtype=np.float32)
         self.mean_hha = np.array((0,0,0), dtype=np.float32)
@@ -166,13 +169,12 @@ class CStripSegDataLayer(caffe.Layer):
         """
         Load pre-processed depth for my CS trip hazard segmentation set.
         """
-        null_value = -1
 
         im = Image.open(glob.glob('{}/{}/depth/depthimg_{}_*'.format(self.cstrip_dir, sub_dir, idx))[0])
         d = np.array(im, dtype=np.float32)
         # print 'depth pixel values before log are: {}\nMin {}, max {} and shape {}'.format(np.unique(d), min(d.flatten()),max(d.flatten()), np.shape(d))
         d = np.log(d)
-        d[np.isneginf(d)] = null_value
+        d[np.isneginf(d)] = self.null_value
         d -= self.mean_logd
         d = d[np.newaxis, ...]
         # print 'depth pixel values are {}\nMin {}, max {} and shape {}'.format(np.unique(d), min(d.flatten()),max(d.flatten()), np.shape(d))
