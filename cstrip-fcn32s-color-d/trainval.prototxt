@@ -23,11 +23,11 @@ layer {
   bottom: "data"
   top: "conv1_1_bgrd"
   param {
-    lr_mult: 1
+    lr_mult: 10
     decay_mult: 1
   }
   param {
-    lr_mult: 2
+    lr_mult: 20
     decay_mult: 0
   }
   convolution_param {
@@ -35,9 +35,6 @@ layer {
     pad: 100
     kernel_size: 3
     stride: 1
-    weight_filler {
-      type: "xavier"
-    }
   }
 }
 layer {
