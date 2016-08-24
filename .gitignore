@@ -9,3 +9,5 @@ colorDepthSnapshot/
 colorSnapshot/
 *.log
 *.swp
+*.o*
+*.e*
