@@ -59,7 +59,8 @@ class CStripSegDataLayer(caffe.Layer):
 
         # Null value for when depth pixels are 0
         # - log(0) gives -inf which makes the CNN ouput NaNs
-        self.null_value = -1
+        self.null_value = 0
+        print 'null_value set to {}'.format(self.null_value)
 
         # TODO: Find means of images in CS dataset
         self.mean_bgr = np.array((0,0,0), dtype=np.float32)
