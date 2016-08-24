@@ -52,6 +52,7 @@ class CStripSegDataLayer(caffe.Layer):
         self.tops = params['tops']
         self.random = params.get('randomize', True)
         self.seed = params.get('seed', None)
+        self.null_value = params.get('null_value',-1)
         self.file_location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
         # store top data for reshape + forward
