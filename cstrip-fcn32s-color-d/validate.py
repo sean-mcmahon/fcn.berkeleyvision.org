@@ -28,10 +28,11 @@ parser.add_argument('--mode', default='cpu')
 parser.add_argument('--iteration',default=8000)
 parser.add_argument('--test_type', default='val')
 parser.add_argument('--network_dir', default='cstrip-fcn32s-color-d')
-args = parser.parse_args()
+args = parser.add_argument('--snapshot_filter', default='train_')
 iteration = args.iteration
 network_dir = args.network_dir
 network_dir = add_slash(network_dir) # ensure slash present
+snapshot_filter = args.snapshot_filter
 print 'This is the COLOUR only validation!'
 
 # import support functions
@@ -39,7 +40,7 @@ if 'n8307628' in home_dir:
     caffe_root = home_dir+'/Fully-Conv-Network/Resources/caffe'
     weight_dir = home_dir+ '/Fully-Conv-Network/Resources/FCN_models/' + network_dir
     snapshot_dir = glob.glob(weight_dir+'*napshot*')
-    weights = snapshot_dir[0]+'/_iter_'+ str(iteration) +'.caffemodel'
+    weights = snapshot_dir[0]+'/'+snapshot_filter+'_iter_'+ str(iteration) +'.caffemodel'
 elif 'sean' in home_dir:
     caffe_root = home_dir+'/src/caffe'
     weight_dir = home_dir+'/hpc-home/Fully-Conv-Network/Resources/FCN_models/'+ network_dir
