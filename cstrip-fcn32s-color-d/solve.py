@@ -53,6 +53,7 @@ surgery.transplant(solver.net, base_net) # copy weights to solver network
 
 # surgeries
 interp_layers = [k for k in solver.net.params.keys() if 'up' in k]
+print 'performing surgery on {}'.format(interp_layers)
 surgery.interp(solver.net, interp_layers) # calc deconv filter weights
 # Copy weights from color network into color-depth network (I think)
 print 'copying color params from conv1_1  ->  conv1_1_bgrd'
@@ -62,13 +63,13 @@ solver.net.params['conv1_1_bgrd'][1].data[...] = base_net.params['conv1_1'][1].d
 del base_net
 
 # scoring
-val = np.loadtxt(file_location[:file_location.rfind('/')]+'/data/cs-trip/val.txt', dtype=str)
+# val = np.loadtxt(file_location[:file_location.rfind('/')]+'/data/cs-trip/val.txt', dtype=str)
 
 for _ in range(50):
     print '------------------------------'
     print 'Running solver.step iter {}'.format(_)
     print '------------------------------'
-    solver.step(1)
+    solver.step(2000)
     # filter_1 = solver.net.params['conv1_1_bgrd'][0].data
     # print 'layer: conv1_1_bgrd len {}, shape {}, values {}'.format(len(filter_1), np.shape(filter_1), np.unique(filter_1))
     # filter_2 = solver.net.params['conv1_2'][0].data
@@ -77,7 +78,8 @@ for _ in range(50):
     # print 'layer: score_fr_trip len {}, shape {}, values {}'.format(len(score_fr_trip), np.shape(score_fr_trip), np.unique(score_fr_trip))
     # upscore_trip = solver.net.params['upscore_trip'][0].data
     # print 'layer: upscore_trip len {}, shape {}, values {}'.format(len(upscore_trip), np.shape(upscore_trip), np.unique(upscore_trip))
-    break
+    # break
+
     # if getting issues on HPC try
     # export MKL_CBWR=AUTO
     # and 'export CUDA_VISIBLE_DEVICES=1'

@@ -3,7 +3,7 @@
 #PBS -N FCN_colorDepth
 #PBS -l ngpus=1
 #PBS -l ncpus=1
-#PBS -l mem=4GB
+#PBS -l mem=8GB
 #PBS -l walltime=4:00:00
 #PBS -l gputype=K40
 #PBS -l gputype=K80
