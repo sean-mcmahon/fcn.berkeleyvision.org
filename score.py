@@ -78,7 +78,7 @@ def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label'):
     # as I only care about trip detection performance
     print '> Computing Histagram'
     hist, loss = compute_hist(net, save_format, dataset, layer, gt)
-    print '>>> Hist = {}s'.format(hist)
+    print '>>> Hist = {}'.format(hist)
     # mean loss
     print '>>>', datetime.now(), 'Iteration', iter, 'loss', loss
     # overall accuracy
