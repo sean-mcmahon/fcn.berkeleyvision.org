@@ -176,12 +176,6 @@ class CStripSegDataLayer(caffe.Layer):
         d -= self.mean_logd
         d = d[np.newaxis, ...]
         # print 'depth pixel values are {}\nMin {}, max {} and shape {}'.format(np.unique(d), min(d.flatten()),max(d.flatten()), np.shape(d))
-        if np.any(np.isnan(d).flatten()) or np.any(np.isinf(d).flatten()):
-            print '----------------------------------------------'
-            print '- cs_trip_layers: Invalid depth values given -'
-            print '----------------------------------------------'
-            d[np.isinf(d)] = null_value
-            d[np.isnan(d)] = null_value
         return d
 
     def load_hha(self, idx, sub_dir):
