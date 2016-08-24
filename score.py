@@ -19,11 +19,19 @@ filename, path, desc =  imp.find_module('caffe', [caffe_root+'/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
 
 def fast_hist(a, b, n):
+    # a is GT pixel values
+    # b is binary class image of max predictions
+    # n is number of classifications (=2)
+    # This (below) removes dud labels? Yep, remove all labels less than 0 or geater than number of classifications
     k = (a >= 0) & (a < n)
+    # print 'a has {} values\nb has {} values\nand n is {}'.format(np.unique(a), np.unique(b),n)
+    # print 'n * a[k].astype(int) + b[k] has values {}. a[k] has {}, b[k] has {}'.format(np.unique(n * a[k].astype(int) + b[k]),
+    #                             np.unique(a[k]),np.unique(b[k]))
     return np.bincount(n * a[k].astype(int) + b[k], minlength=n**2).reshape(n, n)
 
 def compute_hist(net, save_dir, dataset, layer='score', gt='label'):
-    n_cl = net.blobs[layer].channels
+    n_cl = net.blobs[layer].channels # channels is shape(1) of blob dim
+    # n_cl number of classification channels? (2 for tripnet)
     if save_dir and not os.path.isdir(save_dir):
         os.mkdir(save_dir)
     hist = np.zeros((n_cl, n_cl))
@@ -31,9 +39,11 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label'):
     for idx in dataset:
         net.forward()
         print '>> Foward pass for {} complete'.format(idx)
+        # print '>> shape of score layer should be (2, 540, 960) and is: {}'.format(np.shape(net.blobs[layer].data[0]))
         hist += fast_hist(net.blobs[gt].data[0, 0].flatten(),
                                 net.blobs[layer].data[0].argmax(0).flatten(),
                                 n_cl)
+        # print 'Hist format should be \n(num 0"s, num 1"s\nnum 2"s, num 3"s)\nHist value is actually: \n{}\n'.format(hist)
 
         if save_dir:
             im = Image.fromarray(net.blobs[layer].data[0].argmax(0).astype(np.uint8)*255, mode='P')
@@ -68,6 +78,7 @@ def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label'):
     # as I only care about trip detection performance
     print '> Computing Histagram'
     hist, loss = compute_hist(net, save_format, dataset, layer, gt)
+    print '>>> Hist = {}s'.format(hist)
     # mean loss
     print '>>>', datetime.now(), 'Iteration', iter, 'loss', loss
     # overall accuracy
@@ -82,5 +93,10 @@ def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label'):
     freq = hist.sum(1) / hist.sum()
     print '>>>', datetime.now(), 'Iteration', iter, 'fwavacc', \
             (freq[freq > 0] * iu[freq > 0]).sum()
+
+    # trip hazard IU (label 1)
+    iu = np.diag(hist) / (hist.sum(1) + hist.sum(0) - np.diag(hist))
+    print '>>>', datetime.now(), 'Iteration', iter, 'trip IU', iu[1], 'non-trip IU', iu[0]
+    print '>>>', datetime.now(), 'Iteration', iter, 'trip accuracy', acc[1], 'non-trip accuracy', acc[0]
 
     return hist
