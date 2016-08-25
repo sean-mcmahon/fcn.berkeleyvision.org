@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #:
-#PBS -N FCN_colorDepth2
+#PBS -N FCN_cD_hLR2
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=8GB

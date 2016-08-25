@@ -7,7 +7,7 @@ display: 20
 average_loss: 20
 lr_policy: "fixed"
 # lr for unnormalized softmax
-base_lr: 1e-10
+base_lr: 1e-9
 # high momentum
 momentum: 0.99
 # no gradient accumulation
@@ -15,5 +15,5 @@ iter_size: 1
 max_iter: 300000
 weight_decay: 0.0005
 snapshot: 2000
-snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-d/colorDepthSnapshot/colorInit"
+snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-d/colorDepthSnapshot/colorInit_higherLR"
 test_initialization: false
