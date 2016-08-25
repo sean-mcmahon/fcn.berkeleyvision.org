@@ -24,10 +24,10 @@ print 'This is the colour-DEPTH solver!'
 # import support functions
 if 'n8307628' in home_dir:
     caffe_root = home_dir+'/Fully-Conv-Network/Resources/caffe'
-    weights = home_dir+'/Fully-Conv-Network/Resources/FCN_models/pretrained_weights/nyud-fcn32s-color-heavy.caffemodel'
+    weights = home_dir+'/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel'
 elif 'sean' in home_dir:
     caffe_root = home_dir+'/src/caffe'
-    weights = home_dir+'/hpc-home/Fully-Conv-Network/Resources/FCN_models/pretrained_weights/nyud-fcn32s-color-heavy.caffemodel'
+    weights = home_dir+'/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel'
 filename, path, desc =  imp.find_module('caffe', [caffe_root+'/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
 if 'g' in args.mode or 'G' in args.mode:
