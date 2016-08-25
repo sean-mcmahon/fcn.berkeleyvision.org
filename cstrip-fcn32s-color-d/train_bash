@@ -1,11 +1,11 @@
 #!/bin/bash -l
 #:
-#PBS -N FCN_cD_hLR2
+#PBS -N FCN_cD_dlbLR
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=8GB
 #PBS -l walltime=12:00:00
-#PBS -l gputype=K80
+#PBS -l gputype=K40
 
 module load python
 module load caffe
