@@ -484,10 +484,10 @@ layer {
   }
 }
 layer {
-  name: "score_fr_trip"
+  name: "score_fr_trip_d"
   type: "Convolution"
   bottom: "fc7"
-  top: "score_fr_trip"
+  top: "score_fr_trip_d"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -500,12 +500,15 @@ layer {
     num_output: 2
     pad: 0
     kernel_size: 1
+    weight_filler {
+      type: "xavier"
+    }
   }
 }
 layer {
   name: "upscore_trip"
   type: "Deconvolution"
-  bottom: "score_fr_trip"
+  bottom: "score_fr_trip_d"
   top: "upscore"
   param {
     lr_mult: 0
