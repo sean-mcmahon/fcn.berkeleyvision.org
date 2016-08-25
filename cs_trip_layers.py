@@ -52,7 +52,7 @@ class CStripSegDataLayer(caffe.Layer):
         self.tops = params['tops']
         self.random = params.get('randomize', True)
         self.seed = params.get('seed', None)
-        self.null_value = params.get('null_value',-1)
+        # self.null_value = params.get('null_value',-1)
         self.file_location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
         # store top data for reshape + forward
@@ -60,7 +60,7 @@ class CStripSegDataLayer(caffe.Layer):
 
         # Null value for when depth pixels are 0
         # - log(0) gives -inf which makes the CNN ouput NaNs
-        self.null_value = 0
+        self.null_value = -1
         print 'null_value set to {}'.format(self.null_value)
 
         # TODO: Find means of images in CS dataset
