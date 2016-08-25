@@ -45,6 +45,7 @@ else:
 import surgery, score
 
 # init
+print 'Using weights from {}'.format(weights)
 base_net_arch  = file_location[:file_location.rfind('/')]+'/cstrip-fcn32s-color/test.prototxt'
 base_net = caffe.Net(base_net_arch, weights,
         caffe.TEST)
@@ -63,7 +64,7 @@ solver.net.params['conv1_1_bgrd'][1].data[...] = base_net.params['conv1_1'][1].d
 del base_net
 
 # scoring
-# val = np.loadtxt(file_location[:file_location.rfind('/')]+'/data/cs-trip/val.txt', dtype=str)
+val = np.loadtxt(file_location[:file_location.rfind('/')]+'/data/cs-trip/val.txt', dtype=str)
 
 for _ in range(50):
     print '------------------------------'
