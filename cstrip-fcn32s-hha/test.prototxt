@@ -6,7 +6,7 @@ layer {
   python_param {
     module: "cs_trip_layers"
     layer: "CStripSegDataLayer"
-    param_str: "{\'tops\': [\'hha\', \'label\'], \'seed\': 1337, \'cstrip_dir\': \'/Construction_Site/Springfield/12Aug16/K2\', \'split\': \'train\'}"
+    param_str: "{\'tops\': [\'hha\', \'label\'], \'seed\': 1337, \'cstrip_dir\': \'/Construction_Site/Springfield/12Aug16/K2\', \'split\': \'val\'}"
   }
 }
 layer {
