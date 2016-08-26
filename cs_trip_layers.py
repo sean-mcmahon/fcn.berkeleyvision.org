@@ -190,7 +190,7 @@ class CStripSegDataLayer(caffe.Layer):
         Load HHA features from Gupta et al. ECCV14.
         See https://github.com/s-gupta/rcnn-depth/blob/master/rcnn/saveHHA.m
         """
-        im = Image.open('{}/data/hha/img_{}.png'.format(self.cstrip_dir, idx))
+        im = Image.open(glob.glob('{}/{}/HHA/HHAimg_{}_*'.format(self.cstrip_dir, sub_dir, idx))[0])
         hha = np.array(im, dtype=np.float32)
         hha -= self.mean_hha
         hha = hha.transpose((2,0,1))
