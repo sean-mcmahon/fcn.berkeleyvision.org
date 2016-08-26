@@ -65,6 +65,7 @@ else:
 import surgery, score
 
 # init
+logFilenames = glob.glob(file_location+'/logs/FCNcolorDepth_train*')
 if args.test_type=='val':
     solver = caffe.SGDSolver(file_location+'/solver.prototxt')
     test_set = np.loadtxt(file_location[:file_location.rfind('/')]+'/data/cs-trip/val.txt', dtype=str)
@@ -79,6 +80,16 @@ else:
     raise
 solver.net.copy_from(weights)
 print '-- test_type is', args.test_type, ' --'
+weight_name = os.path.basename(weights)
+print '-- network (colorDepth) weights used: {}'.format(weight_name)
+print 'For more details on taining view log file(s):'
+match_found = False
+for filename in logFilenames:
+    if weight_name in open(filename).read():
+        print os.path.basename(filename)
+        match_found = True
+if not match_found:
+    print 'Error, no logfile found for {}'.format(weight_name)
 
 print '\n>>>> Validation <<<<\n'
 score.seg_tests(solver, file_location+'/'+args.test_type+'_images', test_set, layer='score')
