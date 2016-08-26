@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #:
-#PBS -N FCN_cD_fct10LR
+#PBS -N FCN_cD_5xLR
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=8GB
@@ -65,5 +65,5 @@ fi
 current_date=`date +%Y-%m-%d_%H-%M-%S`
 log_filename=$working_dir'/logs/FCNcolorDepth_train'$current_date'.log'
 
-python $python_script --mode $set_mode 2>&1 $log_filename
+python $python_script --mode $set_mode 2>&1 | tee $log_filename
 echo $log_filename
