@@ -489,6 +489,9 @@ layer {
     num_output: 2
     pad: 0
     kernel_size: 1
+    weight_filler {
+      type: "xavier"
+    }
   }
 }
 layer {
