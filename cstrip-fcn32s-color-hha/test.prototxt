@@ -5,9 +5,9 @@ layer {
   top: "hha"
   top: "label"
   python_param {
-    module: "nyud_layers"
-    layer: "NYUDSegDataLayer"
-    param_str: "{\'tops\': [\'color\', \'hha\', \'label\'], \'seed\': 1337, \'nyud_dir\': \'../../data/nyud\', \'split\': \'test\'}"
+    module: "cs_trip_layers"
+    layer: "CStripSegDataLayer"
+    param_str: "{\'tops\': [\'color\', \'hha\', \'label\'], \'seed\': 1337, \'cstrip_dir\': \'/Construction_Site/Springfield/12Aug16/K2\', \'split\': \'val\'}"
   }
 }
 layer {
@@ -474,10 +474,10 @@ layer {
   }
 }
 layer {
-  name: "score_frcolor"
+  name: "score_fr_tripcolor"
   type: "Convolution"
   bottom: "fc7color"
-  top: "score_frcolor"
+  top: "score_fr_tripcolor"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -487,7 +487,7 @@ layer {
     decay_mult: 0
   }
   convolution_param {
-    num_output: 40
+    num_output: 2
     pad: 0
     kernel_size: 1
   }
@@ -956,10 +956,10 @@ layer {
   }
 }
 layer {
-  name: "score_frhha"
+  name: "score_fr_triphha"
   type: "Convolution"
   bottom: "fc7hha"
-  top: "score_frhha"
+  top: "score_fr_triphha"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -969,7 +969,7 @@ layer {
     decay_mult: 0
   }
   convolution_param {
-    num_output: 40
+    num_output: 2
     pad: 0
     kernel_size: 1
   }
@@ -977,8 +977,8 @@ layer {
 layer {
   name: "score_fused"
   type: "Eltwise"
-  bottom: "score_frcolor"
-  bottom: "score_frhha"
+  bottom: "score_fr_tripcolor"
+  bottom: "score_fr_triphha"
   top: "score_fused"
   eltwise_param {
     operation: SUM
@@ -995,7 +995,7 @@ layer {
     lr_mult: 0
   }
   convolution_param {
-    num_output: 40
+    num_output: 2
     bias_term: false
     kernel_size: 64
     stride: 32
