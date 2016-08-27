@@ -492,10 +492,10 @@ layer {
   }
 }
 layer {
-  name: "upscore"
+  name: "upscore_trip"
   type: "Deconvolution"
   bottom: "score_fr_trip"
-  top: "upscore"
+  top: "upscore_trip"
   param {
     lr_mult: 0
   }
@@ -509,7 +509,7 @@ layer {
 layer {
   name: "score"
   type: "Crop"
-  bottom: "upscore"
+  bottom: "upscore_trip"
   bottom: "data"
   top: "score"
   crop_param {
