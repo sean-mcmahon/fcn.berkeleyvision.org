@@ -987,10 +987,10 @@ layer {
   }
 }
 layer {
-  name: "upscore"
+  name: "upscore_trip"
   type: "Deconvolution"
   bottom: "score_fused"
-  top: "upscore"
+  top: "upscore_trip"
   param {
     lr_mult: 0
   }
@@ -1004,7 +1004,7 @@ layer {
 layer {
   name: "score"
   type: "Crop"
-  bottom: "upscore"
+  bottom: "upscore_trip"
   bottom: "color"
   top: "score"
   crop_param {
