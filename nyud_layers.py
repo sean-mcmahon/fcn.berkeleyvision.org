@@ -147,7 +147,7 @@ class NYUDSegDataLayer(caffe.Layer):
         """
         Load pre-processed depth for NYUDv2 segmentation set.
         """
-        im = Image.open('{}/data/images_depth/img_{}.png'.format(self.nyud_dir, idx))
+        im = Image.open('{}/images_depth/img_{}.png'.format(self.nyud_dir, idx))
         d = np.array(im, dtype=np.float32)
         d = np.log(d)
         d -= self.mean_logd
@@ -159,7 +159,8 @@ class NYUDSegDataLayer(caffe.Layer):
         Load HHA features from Gupta et al. ECCV14.
         See https://github.com/s-gupta/rcnn-depth/blob/master/rcnn/saveHHA.m
         """
-        im = Image.open('{}/data/hha/img_{}.png'.format(self.nyud_dir, idx))
+        # Giving dud hha path / path to colour images! (so the nyu hha net assembles)
+        im = Image.open('{}/images_rgb_fullsize/image-{}.png'.format(self.nyud_dir, idx))
         hha = np.array(im, dtype=np.float32)
         hha -= self.mean_hha
         hha = hha.transpose((2,0,1))
