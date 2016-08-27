@@ -46,9 +46,9 @@ import surgery, score
 # You may want to change these initialisation weights,
 # they differ slightly to the models being loaded
 color_weights = file_parent_dir+'/pretrained_weights/nyud-fcn32s-color-heavy.caffemodel'
-color_proto = file_parent_dir+'/cstrip-fcn32s-color/trainval.prototxt'
+color_proto = file_parent_dir+'/nyud-fcn32s-color/trainval.prototxt'
 hha_weights = file_parent_dir+'/pretrained_weights/nyud-fcn32s-hha-heavy.caffemodel'
-hha_proto = file_parent_dir+'/cstrip-fcn32s-color-d/trainval.prototxt'
+hha_proto = file_parent_dir+'/nyud-fcn32s-hha/trainval.prototxt'
 solver = caffe.SGDSolver(file_location+'/solver.prototxt')
 
 # surgeries
