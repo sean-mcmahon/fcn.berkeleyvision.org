@@ -65,7 +65,7 @@ print 'performing surgery on {}'.format(interp_layers)
 surgery.interp(solver.net, interp_layers)
 
 # scoring
-test = np.loadtxt('../data/nyud/test.txt', dtype=str)
+# test = np.loadtxt('../data/nyud/test.txt', dtype=str)
 
 for _ in range(50):
     print '------------------------------'
