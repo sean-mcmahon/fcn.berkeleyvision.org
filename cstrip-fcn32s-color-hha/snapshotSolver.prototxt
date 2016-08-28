@@ -1,0 +1,19 @@
+train_net: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha/trainval.prototxt"
+test_net: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha/test.prototxt"
+test_iter: 654
+# make test net, but don't invoke it from the solver itself
+test_interval: 999999999
+display: 20
+average_loss: 20
+lr_policy: "fixed"
+# This solver is not for training
+base_lr: 0.0
+# high momentum
+momentum: 0.99
+# no gradient accumulation
+iter_size: 1
+max_iter: 300000
+weight_decay: 0.0005
+snapshot: 1000
+snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha/nyudColourHHA"
+test_initialization: falses

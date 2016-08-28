@@ -49,7 +49,7 @@ color_weights = file_parent_dir+'/pretrained_weights/nyud-fcn32s-color-heavy.caf
 color_proto = file_parent_dir+'/nyud-fcn32s-color/trainval.prototxt'
 hha_weights = file_parent_dir+'/pretrained_weights/nyud-fcn32s-hha-heavy.caffemodel'
 hha_proto = file_parent_dir+'/nyud-fcn32s-hha/trainval.prototxt'
-solver = caffe.SGDSolver(file_location+'/solver.prototxt')
+solver = caffe.SGDSolver(file_location+'/snapshotSolver.prototxt')
 
 # surgeries
 color_net = caffe.Net(color_proto, color_weights, caffe.TEST)
@@ -63,3 +63,6 @@ del hha_net
 interp_layers = [k for k in solver.net.params.keys() if 'up' in k]
 print 'performing surgery on {}'.format(interp_layers)
 surgery.interp(solver.net, interp_layers)
+
+print 'Saving snapsoht of merged weights...'
+solver.snapshot()
