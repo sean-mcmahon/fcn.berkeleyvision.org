@@ -21,11 +21,16 @@ if [[ $(lsb_release -si) == *"SUSE LINUX"* ]]; then
     ind=0
     GPU_ID_One=-1
     GPU_ID_Two=-1
+    negative_one=-1
     for process in $PROCESSES; do
         echo $process
         if [[ "$process" == "NoneHereBro" ]]; then
-            GPU_ID_One=$ind
-            # break
+            if [ "$GPU_ID_One" -eq "$negative_one" ]; then
+              GPU_ID_One=$ind
+            elif [ "$GPU_ID_Two" -eq "$negative_one" ]; then
+              GPU_ID_Two=$ind
+              break
+            fi
         fi
         ind=$[ind + 1]
     done
@@ -35,7 +40,7 @@ else
 fi
 
 if [ $USEGPU == 'true' ]; then
-    echo "Using gpu: $GPU_ID_One"
+    echo "Using gpu: $GPU_ID_One and: $GPU_ID_Two"
     export CUDA_VISIBLE_DEVICES=$GPU_ID_One
     gpu=$GPU_ID_One
 else
