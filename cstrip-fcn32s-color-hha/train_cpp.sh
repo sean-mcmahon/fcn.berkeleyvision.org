@@ -1,11 +1,11 @@
 #!/bin/bash -l
 #:
-#PBS -N FCN_colorHHA
+#PBS -N FCN_colorHHA_2gpu
 #PBS -l ncpus=1
 #PBS -l ngpus=2
 #PBS -l mem=16GB
 #PBS -l walltime=28:00:00
-#PBS -l gputype=K40
+#PBS -l gputype=K80
 
 module load python
 module load caffe
@@ -43,7 +43,7 @@ fi
 
 if [ $USEGPU == 'true' ]; then
     echo "Using gpu: $GPU_ID_One and: $GPU_ID_Two"
-    # export CUDA_VISIBLE_DEVICES=$GPU_ID_One","$GPU_ID_Two
+    export CUDA_VISIBLE_DEVICES=$GPU_ID_One","$GPU_ID_Two
     gpu=$GPU_ID_One
 else
     echo "Using cpu"

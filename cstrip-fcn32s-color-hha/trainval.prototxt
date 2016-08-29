@@ -8,6 +8,7 @@ layer {
     module: "cs_trip_layers"
     layer: "CStripSegDataLayer"
     param_str: "{\'tops\': [\'color\', \'hha\', \'label\'], \'seed\': 1337, \'cstrip_dir\': \'/Construction_Site/Springfield/12Aug16/K2\', \'split\': \'train\'}"
+    share_in_parallel: true
   }
 }
 layer {
