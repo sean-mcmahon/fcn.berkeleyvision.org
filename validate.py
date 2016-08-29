@@ -93,4 +93,4 @@ if not match_found:
     print 'Error, no logfile found for {}'.format(weight_name)
 
 print '\n>>>> Validation <<<<\n'
-score.seg_tests(solver, file_location+'/'+args.test_type+'_images', test_set, layer='score')
+score.seg_tests(solver, file_location+'/'+ network_dir+args.test_type+'_images', test_set, layer='score')
