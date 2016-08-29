@@ -66,7 +66,6 @@ else:
 snapshot_dir = glob.glob(weight_dir + '*napshot*')
 weights = snapshot_dir[0] + '/' + snapshot_filter + \
     '_iter_' + str(iteration) + '.caffemodel'
-import surgery
 import score
 
 # init
