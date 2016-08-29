@@ -64,5 +64,7 @@ interp_layers = [k for k in solver.net.params.keys() if 'up' in k]
 print 'performing surgery on {}'.format(interp_layers)
 surgery.interp(solver.net, interp_layers)
 
-print 'Saving snapsoht of merged weights...'
+print '- '
+print '- Saving snaphot of merged weights...'
+print '- '
 solver.snapshot()
