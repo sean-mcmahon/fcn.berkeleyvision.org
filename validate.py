@@ -63,20 +63,23 @@ weights = snapshot_dir[0]+'/'+snapshot_filter+'_iter_'+ str(iteration) +'.caffem
 import surgery, score
 
 # init
-logFilenames = glob.glob(file_location + network_dir +'/logs/*_train*')
+logFilenames = glob.glob(file_location + '/' + network_dir +'logs/*_train*')
 if args.test_type=='val':
-    solver = caffe.SGDSolver(file_location + network_dir +'/solver.prototxt')
-    test_set = np.loadtxt(file_location + network_dir '/data/cs-trip/val.txt', dtype=str)
+    solver = caffe.SGDSolver(file_location + '/' + network_dir +'solver.prototxt')
+    test_set = np.loadtxt(file_location + '/data/cs-trip/val.txt', dtype=str)
 elif args.test_type=='test':
-    solver = caffe.SGDSolver(file_location + network_dir +'/solver_test.prototxt')
-    test_set = np.loadtxt(file_location + network_dir +'/data/cs-trip/test.txt', dtype=str)
+    solver = caffe.SGDSolver(file_location + '/' + network_dir +'solver_test.prototxt')
+    test_set = np.loadtxt(file_location + '/data/cs-trip/test.txt', dtype=str)
 elif args.test_type=='train':
-    solver = caffe.SGDSolver(file_location + network_dir +'/solver_test-trainingSet.prototxt')
-    test_set = np.loadtxt(file_location + network_dir +'/data/cs-trip/train.txt', dtype=str)
+    solver = caffe.SGDSolver(file_location + '/' + network_dir +'solver_test-trainingSet.prototxt')
+    test_set = np.loadtxt(file_location + '/data/cs-trip/train.txt', dtype=str)
 else:
     print 'Incorrect test_type given {}; expecting "train", "val" or "test"'.format(args.test_type)
     raise
 solver.net.copy_from(weights)
+print '----------------------------------------'
+print 'Testing Network {}'.format(network_dir)
+print '----------------------------------------'
 print '\n-- test_type is', args.test_type, ' --'
 weight_name = os.path.basename(weights)
 print '-- network (colorDepth) weights used: {}'.format(weight_name)
