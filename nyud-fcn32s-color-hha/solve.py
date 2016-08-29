@@ -1,5 +1,6 @@
 import caffe
-import surgery, score
+import surgery
+import score
 
 import numpy as np
 import os
