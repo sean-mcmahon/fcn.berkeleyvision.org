@@ -1,13 +1,15 @@
 #!/bin/bash -l
 #:
 #PBS -N FCN_colorHHA
-#PBS -l ncpus=2
-#PBS -l mem=64GB
-#PBS -l walltime=95:00:00
+#PBS -l ncpus=1
+#PBS -l ngpus=2
+#PBS -l mem=16GB
+#PBS -l walltime=24:00:00
+#PBS -l gputype=K40
 
-# module load python
-# module load caffe
-# module load cuda
+module load python
+module load caffe
+module load cuda
 
 USEGPU='true'
 if [[ $(lsb_release -si) == *"SUSE LINUX"* ]]; then
@@ -52,8 +54,10 @@ hpc_dir='/home/n8307628'
 local_dir='/home/sean'
 if [[ -d $local_dir ]]; then
   working_dir=$local_dir'/hpc-home/Fully-Conv-Network/Resources/FCN_models'
+  caffe_bin=$local_dir'/src/caffe/build/tools/caffe'
 elif [[ -d $hpc_dir ]]; then
   working_dir=$hpc_dir'/Fully-Conv-Network/Resources/FCN_models'
+  caffe_bin=$hpc_dir'/Fully-Conv-Network/Resources/caffe/build/tools/caffe'
   # Because using MKL Blas on HPC
   export MKL_CBWR=AUTO
 else
@@ -61,9 +65,10 @@ else
 fi
 solver_script=$working_dir'/cstrip-fcn32s-color-hha/solver.prototxt'
 pretrained_weights=$working_dir'/pretrained_weights/nyud-fcn32s-ColorHHA_iter_0.caffemodel'
+export PYTHONPATH=$PYTHONPATH:$working_dir
 
 current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/logs/FCNcolorHHA_train'$current_date'.log'
+log_filename=$working_dir'/cstrip-fcn32s-color-hha/logs/FCNcolorHHA_train'$current_date'.log'
 
-# ./../../../../../pkg/suse11/caffe/20150420/bin/caffe.bin train -solver $solver_script -weights $pretrained_weights -gpu $GPU_ID_One 2>&1 | tee $log_filename
+/./$caffe_bin train -solver $solver_script -weights $pretrained_weights --gpu=$GPU_ID_One","$GPU_ID_Two 2>&1 | tee $log_filename
 echo $log_filename
