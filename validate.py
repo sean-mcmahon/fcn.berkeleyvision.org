@@ -1,6 +1,6 @@
 #! /usr/bin/python
 """
-cstrip validate Color-DEPTH only
+cstrip validate general
 
 """
 # import caffe
@@ -34,7 +34,7 @@ iteration = args.iteration
 network_dir = args.network_dir
 network_dir = add_slash(network_dir) # ensure slash present
 snapshot_filter = args.snapshot_filter
-print 'This is the colour-Depth validation!'
+print 'This is the general validation script!'
 
 # import support functions
 if 'n8307628' in home_dir:
