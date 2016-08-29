@@ -19,7 +19,7 @@ def add_slash(mystring):
 
 # add '../' directory to path for importing score.py, surgery.py and pycaffe layer
 file_location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-sys.path.append(file_location[:file_location.rfind('/')])
+sys.path.append(file_location)
 home_dir = expanduser("~")
 
 # User Input
@@ -40,13 +40,9 @@ print 'This is the colour-Depth validation!'
 if 'n8307628' in home_dir:
     caffe_root = home_dir+'/Fully-Conv-Network/Resources/caffe'
     weight_dir = home_dir+ '/Fully-Conv-Network/Resources/FCN_models/' + network_dir
-    snapshot_dir = glob.glob(weight_dir+'*napshot*')
-    weights = snapshot_dir[0]+'/'+snapshot_filter+'_iter_'+ str(iteration) +'.caffemodel'
 elif 'sean' in home_dir:
     caffe_root = home_dir+'/src/caffe'
     weight_dir = home_dir+'/hpc-home/Fully-Conv-Network/Resources/FCN_models/'+ network_dir
-    snapshot_dir = glob.glob(weight_dir+'*napshot*')
-    weights = snapshot_dir[0]+'/_iter_'+ str(iteration) +'.caffemodel'
 filename, path, desc =  imp.find_module('caffe', [caffe_root+'/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
 if 'g' in args.mode or 'G' in args.mode:
@@ -62,19 +58,21 @@ else:
     print '-- GPU Mode Chosen --'
     print '==============='
 # caffe.set_device(1)
+snapshot_dir = glob.glob(weight_dir+'*napshot*')
+weights = snapshot_dir[0]+'/'+snapshot_filter+'_iter_'+ str(iteration) +'.caffemodel'
 import surgery, score
 
 # init
-logFilenames = glob.glob(file_location+'/logs/*_train*')
+logFilenames = glob.glob(file_location + network_dir +'/logs/*_train*')
 if args.test_type=='val':
-    solver = caffe.SGDSolver(file_location+'/solver.prototxt')
-    test_set = np.loadtxt(file_location[:file_location.rfind('/')]+'/data/cs-trip/val.txt', dtype=str)
+    solver = caffe.SGDSolver(file_location + network_dir +'/solver.prototxt')
+    test_set = np.loadtxt(file_location + network_dir '/data/cs-trip/val.txt', dtype=str)
 elif args.test_type=='test':
-    solver = caffe.SGDSolver(file_location+'/solver_test.prototxt')
-    test_set = np.loadtxt(file_location[:file_location.rfind('/')]+'/data/cs-trip/test.txt', dtype=str)
+    solver = caffe.SGDSolver(file_location + network_dir +'/solver_test.prototxt')
+    test_set = np.loadtxt(file_location + network_dir +'/data/cs-trip/test.txt', dtype=str)
 elif args.test_type=='train':
-    solver = caffe.SGDSolver(file_location+'/solver_test-trainingSet.prototxt')
-    test_set = np.loadtxt(file_location[:file_location.rfind('/')]+'/data/cs-trip/train.txt', dtype=str)
+    solver = caffe.SGDSolver(file_location + network_dir +'/solver_test-trainingSet.prototxt')
+    test_set = np.loadtxt(file_location + network_dir +'/data/cs-trip/train.txt', dtype=str)
 else:
     print 'Incorrect test_type given {}; expecting "train", "val" or "test"'.format(args.test_type)
     raise
