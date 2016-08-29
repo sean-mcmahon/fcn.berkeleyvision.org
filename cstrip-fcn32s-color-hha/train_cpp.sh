@@ -4,7 +4,7 @@
 #PBS -l ncpus=1
 #PBS -l ngpus=2
 #PBS -l mem=16GB
-#PBS -l walltime=24:00:00
+#PBS -l walltime=28:00:00
 #PBS -l gputype=K40
 
 module load python
@@ -43,7 +43,7 @@ fi
 
 if [ $USEGPU == 'true' ]; then
     echo "Using gpu: $GPU_ID_One and: $GPU_ID_Two"
-    export CUDA_VISIBLE_DEVICES=$GPU_ID_One
+    # export CUDA_VISIBLE_DEVICES=$GPU_ID_One","$GPU_ID_Two
     gpu=$GPU_ID_One
 else
     echo "Using cpu"
@@ -63,12 +63,12 @@ elif [[ -d $hpc_dir ]]; then
 else
   echo "No directory found..."
 fi
-solver_script=$working_dir'/cstrip-fcn32s-color-hha/solver.prototxt'
+solver_script=$working_dir'/cstrip-fcn32s-color-hha/solver_gpu.prototxt'
 pretrained_weights=$working_dir'/pretrained_weights/nyud-fcn32s-ColorHHA_iter_0.caffemodel'
 export PYTHONPATH=$PYTHONPATH:$working_dir
 
 current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/cstrip-fcn32s-color-hha/logs/FCNcolorHHA_train'$current_date'.log'
+log_filename=$working_dir'/cstrip-fcn32s-color-hha/logs/test_FCNcolorHHA_train'$current_date'.log'
 
 /./$caffe_bin train -solver $solver_script -weights $pretrained_weights --gpu=$GPU_ID_One","$GPU_ID_Two 2>&1 | tee $log_filename
 echo $log_filename
