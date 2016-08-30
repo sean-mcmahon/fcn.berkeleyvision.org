@@ -1,10 +1,10 @@
 #!/bin/bash -l
 #:
-#PBS -N FCN_hha
+#PBS -N FCN_hha2
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=8GB
-#PBS -l walltime=12:00:00
+#PBS -l walltime=24:00:00
 #PBS -l gputype=K40
 
 module load python
