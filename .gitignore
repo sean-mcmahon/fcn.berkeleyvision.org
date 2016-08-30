@@ -2,12 +2,8 @@
 *.caffemodel
 *.solverstate
 *.png
-snapshot/
 *.txt
 core
-logs/
-colorDepthSnapshot/
-colorSnapshot/
 *.log
 *.swp
 *.o*
