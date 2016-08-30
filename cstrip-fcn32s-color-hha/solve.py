@@ -5,13 +5,17 @@ cstrip Color and HHA
 """
 # import caffe
 import numpy as np
-import os, sys
+import os
+import sys
 from os.path import expanduser
 import imp
 import argparse
+import surgery
 
-# add '../' directory to path for importing score.py, surgery.py and pycaffe layer
-file_location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+# add '../' directory to path for importing score.py, surgery.py and
+# pycaffe layer
+file_location = os.path.realpath(os.path.join(
+    os.getcwd(), os.path.dirname(__file__)))
 sys.path.append(file_location[:file_location.rfind('/')])
 file_parent_dir = file_location[:file_location.rfind('/')]
 home_dir = expanduser("~")
@@ -24,10 +28,10 @@ print 'This is the colour-HHA solver!'
 
 # import support functions
 if 'n8307628' in home_dir:
-    caffe_root = home_dir+'/Fully-Conv-Network/Resources/caffe'
+    caffe_root = home_dir + '/Fully-Conv-Network/Resources/caffe'
 elif 'sean' in home_dir:
-    caffe_root = home_dir+'/src/caffe'
-filename, path, desc =  imp.find_module('caffe', [caffe_root+'/python/'])
+    caffe_root = home_dir + '/src/caffe'
+filename, path, desc = imp.find_module('caffe', [caffe_root + '/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
 if 'g' in args.mode or 'G' in args.mode:
     caffe.set_mode_gpu()
@@ -41,15 +45,17 @@ else:
     print 'No Mode (CPU or GPU) Given'
     print '-- GPU Mode Chosen -- {}'.format(args.mode)
     print '==============='
-import surgery, score
+
 
 # You may want to change these initialisation weights,
 # they differ slightly to the models being loaded
-color_weights = file_parent_dir+'/pretrained_weights/nyud-fcn32s-color-heavy.caffemodel'
-color_proto = file_parent_dir+'/nyud-fcn32s-color/trainval.prototxt'
-hha_weights = file_parent_dir+'/pretrained_weights/nyud-fcn32s-hha-heavy.caffemodel'
-hha_proto = file_parent_dir+'/nyud-fcn32s-hha/trainval.prototxt'
-solver = caffe.SGDSolver(file_location+'/solver.prototxt')
+color_weights = file_parent_dir + \
+    '/pretrained_weights/nyud-fcn32s-color-heavy.caffemodel'
+color_proto = file_parent_dir + '/nyud-fcn32s-color/trainval.prototxt'
+hha_weights = file_parent_dir + \
+    '/pretrained_weights/nyud-fcn32s-hha-heavy.caffemodel'
+hha_proto = file_parent_dir + '/nyud-fcn32s-hha/trainval.prototxt'
+solver = caffe.SGDSolver(file_location + '/solver.prototxt')
 
 # surgeries
 color_net = caffe.Net(color_proto, color_weights, caffe.TEST)

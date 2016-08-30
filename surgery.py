@@ -5,11 +5,12 @@ from os.path import expanduser
 
 home_dir = expanduser("~")
 if 'n8307628' in home_dir:
-    caffe_root = home_dir+'/Fully-Conv-Network/Resources/caffe'
+    caffe_root = home_dir + '/Fully-Conv-Network/Resources/caffe'
 elif 'sean' in home_dir:
-    caffe_root = home_dir+'/src/caffe'
-filename, path, desc =  imp.find_module('caffe', [caffe_root+'/python/'])
+    caffe_root = home_dir + '/src/caffe'
+filename, path, desc = imp.find_module('caffe', [caffe_root + '/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
+
 
 def transplant(new_net, net, suffix=''):
     for p in net.params:
@@ -27,10 +28,13 @@ def transplant(new_net, net, suffix=''):
                 print 'copying', p, ' -> ', p_new, i
             new_net.params[p_new][i].data.flat = net.params[p][i].data.flat
 
+
 def expand_score(new_net, new_layer, net, layer):
     old_cl = net.params[layer][0].num
     new_net.params[new_layer][0].data[:old_cl][...] = net.params[layer][0].data
-    new_net.params[new_layer][1].data[0,0,0,:old_cl][...] = net.params[layer][1].data
+    new_net.params[new_layer][1].data[
+        0, 0, 0, :old_cl][...] = net.params[layer][1].data
+
 
 def upsample_filt(size):
     factor = (size + 1) // 2
@@ -41,6 +45,7 @@ def upsample_filt(size):
     og = np.ogrid[:size, :size]
     return (1 - abs(og[0] - center) / factor) * \
            (1 - abs(og[1] - center) / factor)
+
 
 def interp(net, layers):
     for l in layers:
