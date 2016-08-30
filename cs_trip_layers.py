@@ -5,6 +5,7 @@ import glob
 import os
 from os.path import expanduser
 import imp
+import random
 
 home_dir = expanduser("~")
 if 'n8307628' in home_dir:
@@ -13,7 +14,6 @@ elif 'sean' in home_dir:
     caffe_root = home_dir + '/src/caffe'
 filename, path, desc = imp.find_module('caffe', [caffe_root + '/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
-import random
 
 
 class CStripSegDataLayer(caffe.Layer):
