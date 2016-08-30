@@ -30,11 +30,11 @@ home_dir = expanduser("~")
 
 # User Input
 parser = argparse.ArgumentParser()
-parser.add_argument('--mode', default='cpu')
+parser.add_argument('--mode', default='gpu')
 parser.add_argument('--iteration', default=8000)
-parser.add_argument('--test_type', default='val')
-parser.add_argument('--network_dir', default='cstrip-fcn32s-hha')
-parser.add_argument('--snapshot_filter', default='train')
+parser.add_argument('--test_type', default='deploy')
+parser.add_argument('--network_dir', default='cstrip-fcn32s-color')
+parser.add_argument('--snapshot_filter', default='')
 args = parser.parse_args()
 iteration = args.iteration
 network_dir = args.network_dir
@@ -74,15 +74,22 @@ snapshot_dir = glob.glob(working_dir + '*napshot*')
 deploy_prototxt = glob.glob(working_dir + '*' + test_type + '*.prototxt')
 weights = snapshot_dir[0] + '/' + snapshot_filter + \
     '_iter_' + str(iteration) + '.caffemodel'
-test_set = np.loadtxt(file_location +
-                      '/data/cs-trip/train.txt', dtype=str)
-save_dir = working_dir + test_type + '_deploy'
+if test_type == 'deploy':
+    test_set = np.loadtxt(file_location +
+                          '/data/cs-trip/all_testset.txt',
+                          dtype=str)
+    save_dir = working_dir + test_type + '_images'
+else:
+    test_set = np.loadtxt(file_location +
+                          '/data/cs-trip/{}.txt'.format(test_type),
+                          dtype=str)
+    save_dir = working_dir + test_type + '_deployImgs'
 
 fcn = caffe.Net(deploy_prototxt[0], weights, caffe.TEST)
 if not os.path.isdir(save_dir):
     os.mkdir(save_dir)
 layer = 'score'
-for idx in test_set:
+for counter, idx in enumerate(test_set):
     fcn.forward()
     im = Image.fromarray(fcn.blobs[layer].data[0].argmax(
         0).astype(np.uint8) * 255, mode='P')
@@ -92,3 +99,6 @@ for idx in test_set:
     overlay = Image.blend(colorIm.convert(
         "RGBA"), im.convert("RGBA"), 0.7)
     overlay.save(os.path.join(save_dir, ''.join(idx) + '.png'))
+    np.savez_compressed(os.path.join(save_dir, ''.join(idx) + '_layerData'),
+                        fcn.blobs[layer].data[0])
+    print 'Image data {}/{} saved.'.format(counter, len(test_set))
