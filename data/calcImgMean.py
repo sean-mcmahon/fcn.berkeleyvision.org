@@ -47,6 +47,8 @@ for idx in dataset_indecies:
     depthimg = Image.open(glob.glob(
         '{}/{}/depth/depthimg_{}_*'.format(data_dir, idx[0], idx[1]))[0])
     npDepthImg = np.array(depthimg, dtype=np.float32)
+    npDepthImg = np.log(npDepthImg)
+    npDepthImg[np.isneginf(npDepthImg)] = 0
     depth_pixel_sum += np.sum(np.sum(npDepthImg, axis=0), axis=0)
     num_depth_pixels += npDepthImg.sum()
 
@@ -60,5 +62,5 @@ colour_mean = colour_pixel_sum / num_colour_pixels
 depth_mean = depth_pixel_sum / num_depth_pixels
 hha_mean = hha_pixel_sum / num_hha_pixels
 print 'colour mean: ', colour_mean
-print 'depth mean: ', depth_mean
+print 'log(depth) mean: ', depth_mean
 print 'hha mean: ', hha_mean
