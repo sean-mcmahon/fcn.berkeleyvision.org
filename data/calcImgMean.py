@@ -40,6 +40,7 @@ for idx in dataset_indecies:
     colourimg = Image.open(glob.glob(
         '{}/{}/colour/colourimg_{}_*'.format(data_dir, idx[0], idx[1]))[0])
     npColourImg = np.array(colourimg, dtype=np.float32)
+    npColourImg = npColourImg[:, :, ::-1]  # network takes bgr values
     colour_pixel_sum += np.sum(np.sum(npColourImg, axis=0), axis=0)
     num_colour_pixels += npColourImg.sum()
 
