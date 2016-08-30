@@ -62,5 +62,5 @@ colour_mean = colour_pixel_sum / num_colour_pixels
 depth_mean = depth_pixel_sum / num_depth_pixels
 hha_mean = hha_pixel_sum / num_hha_pixels
 print 'colour mean: ', colour_mean
-print 'log(depth) mean: ', depth_mean
+print 'log(depth) mean: ', depth_mean, ' null = 0'
 print 'hha mean: ', hha_mean
