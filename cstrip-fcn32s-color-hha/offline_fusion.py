@@ -18,7 +18,6 @@ import surgery
 import score
 
 
-
 def fusion_solver(train_net_path, test_net_path, file_location):
     s = caffe_pb2.SolverParameter()
     s.train_net = train_net_path
@@ -82,7 +81,8 @@ else:
     print 'No Mode (CPU or GPU) Given'
     print '-- GPU Mode Chosen -- {}'.format(args.mode)
     print '==============='
-
+layer = 'score'
+gt = 'label'
 
 # You may want to change these initialisation weights,
 # they differ slightly to the models being loaded
@@ -90,21 +90,33 @@ color_weights = file_parent_dir + \
     '/cstrip-fcn32s-color/colorSnapshot/_iter_8000.caffemodel'
 color_proto = file_parent_dir + '/cstrip-fcn32s-color/val.prototxt'
 color_net = caffe.Net(color_proto, color_weights, caffe.TEST)
+color_net.forward()
+score_colour = color_net.blobs[layer].data[0]
+print '--------------------------------------------------------'
+print 'Shape and size of score_colour is {} & {} \nscore_colour unique values {}'.format(np.shape(score_colour), sys.getsizeof(score_colour), np.unique(score_colour))
+del color_net
+print 'After Delete: Shape and size of score_colour is {} & {} \nscore_colour unique values {}'.format(np.shape(score_colour), sys.getsizeof(score_colour), np.unique(score_colour))
+print '--------------------------------------------------------'
 
 hha_weights = file_parent_dir + \
     '/cstrip-fcn32s-hha/HHAsnapshot/train_iter_8000.caffemodel'
 hha_proto = file_parent_dir + '/cstrip-fcn32s-hha/val.prototxt'
 hha_net = caffe.Net(hha_proto, hha_weights, caffe.TEST)
-
 hha_net.forward()
-color_net.forward()
+score_hha = hha_net.blobs[layer].data[0]
+gt_hha = hha_net.blobs[gt].data[0, 0].astype(np.uint8)
+print '--------------------------------------------------------'
+print 'Shape and size of score_hha is {} & {} \nscore_hha unique values {}'.format(np.shape(score_hha), sys.getsizeof(score_hha), np.unique(score_hha))
+del hha_net
+print 'After Delete: Shape and size of score_hha is {} & {} \nscore_hha unique values {}'.format(np.shape(score_hha), sys.getsizeof(score_hha), np.unique(score_hha))
+print '--------------------------------------------------------'
+
 val_hdf5_location = os.path.join(file_location, 'hdfFive.h5')
-layer = 'score'
-gt = 'label'
+
 with h5py.File(val_hdf5_location, 'w') as f:
-    f['color_features'] = color_net.blobs[layer].data[0]
-    f['hha_features'] = hha_net.blobs[layer].data[0]
-    f['label'] = hha_net.blobs[gt].data[0, 0].astype(np.uint8)
+    f['color_features'] = score_colour
+    f['hha_features'] = score_hha
+    f['label'] = gt_hha
 
 # Create fusion_test prototxt files
 test_net_path = file_location + '/fusion_test.prototxt'
