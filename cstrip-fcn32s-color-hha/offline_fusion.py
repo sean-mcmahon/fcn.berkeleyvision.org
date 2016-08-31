@@ -63,6 +63,7 @@ elif 'sean' in home_dir:
 filename, path, desc = imp.find_module('caffe', [caffe_root + '/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
 from caffe.proto import caffe_pb2
+from caffe import layers, params
 
 # User Input
 parser = argparse.ArgumentParser()
@@ -92,11 +93,8 @@ color_proto = file_parent_dir + '/cstrip-fcn32s-color/val.prototxt'
 color_net = caffe.Net(color_proto, color_weights, caffe.TEST)
 color_net.forward()
 score_colour = color_net.blobs[layer].data[0]
-print '--------------------------------------------------------'
-print 'Shape and size of score_colour is {} & {} \nscore_colour unique values {}'.format(np.shape(score_colour), sys.getsizeof(score_colour), np.unique(score_colour))
 del color_net
-print 'After Delete: Shape and size of score_colour is {} & {} \nscore_colour unique values {}'.format(np.shape(score_colour), sys.getsizeof(score_colour), np.unique(score_colour))
-print '--------------------------------------------------------'
+
 
 hha_weights = file_parent_dir + \
     '/cstrip-fcn32s-hha/HHAsnapshot/train_iter_8000.caffemodel'
@@ -105,11 +103,7 @@ hha_net = caffe.Net(hha_proto, hha_weights, caffe.TEST)
 hha_net.forward()
 score_hha = hha_net.blobs[layer].data[0]
 gt_hha = hha_net.blobs[gt].data[0, 0].astype(np.uint8)
-print '--------------------------------------------------------'
-print 'Shape and size of score_hha is {} & {} \nscore_hha unique values {}'.format(np.shape(score_hha), sys.getsizeof(score_hha), np.unique(score_hha))
 del hha_net
-print 'After Delete: Shape and size of score_hha is {} & {} \nscore_hha unique values {}'.format(np.shape(score_hha), sys.getsizeof(score_hha), np.unique(score_hha))
-print '--------------------------------------------------------'
 
 val_hdf5_location = os.path.join(file_location, 'hdfFive.h5')
 
