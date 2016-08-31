@@ -10,9 +10,13 @@ import sys
 from os.path import expanduser
 import imp
 import argparse
+import h5py
+file_location = os.path.realpath(os.path.join(
+    os.getcwd(), os.path.dirname(__file__)))
+sys.path.append(file_location[:file_location.rfind('/')])
 import surgery
 import score
-import h5py
+
 
 
 def fusion_solver(train_net_path, test_net_path, file_location):
@@ -49,9 +53,7 @@ def fusionNet(hf5_path):
 
 # add '../' directory to path for importing score.py, surgery.py and
 # pycaffe layer
-file_location = os.path.realpath(os.path.join(
-    os.getcwd(), os.path.dirname(__file__)))
-sys.path.append(file_location[:file_location.rfind('/')])
+
 file_parent_dir = file_location[:file_location.rfind('/')]
 home_dir = expanduser("~")
 # import support functions
@@ -85,13 +87,13 @@ else:
 # You may want to change these initialisation weights,
 # they differ slightly to the models being loaded
 color_weights = file_parent_dir + \
-    '/pretrained_weights/nyud-fcn32s-color-heavy.caffemodel'
-color_proto = file_parent_dir + '/nyud-fcn32s-color/trainval.prototxt'
+    '/cstrip-fcn32s-color/colorSnapshot/_iter_8000.caffemodel'
+color_proto = file_parent_dir + '/cstrip-fcn32s-color/val.prototxt'
 color_net = caffe.Net(color_proto, color_weights, caffe.TEST)
 
 hha_weights = file_parent_dir + \
-    'cstrip-fcn32s-hha/HHAsnapshot/train_iter_8000.caffemodel'
-hha_proto = file_parent_dir + '/cstrip-fcn32s-hha/trainval.prototxt'
+    '/cstrip-fcn32s-hha/HHAsnapshot/train_iter_8000.caffemodel'
+hha_proto = file_parent_dir + '/cstrip-fcn32s-hha/val.prototxt'
 hha_net = caffe.Net(hha_proto, hha_weights, caffe.TEST)
 
 hha_net.forward()
@@ -120,4 +122,4 @@ fusion_fcn = caffe.Net(test_net_path, caffe.TEST)
 # Net surgery, filling the decolvution layer
 interp_layers = [k for k in solver.net.params.keys() if 'up' in k]
 print 'performing surgery on {}'.format(interp_layers)
-surgery.interp(solver.net, interp_layers)
+surgery.interp(fusion_fcn, interp_layers)
