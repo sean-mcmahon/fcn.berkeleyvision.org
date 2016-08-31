@@ -39,15 +39,17 @@ def fusion_solver(train_net_path, test_net_path, file_location):
 
 def fusionNet(hf5_path):
     n = caffe.NetSpec()
-    n.color_features, n.hha_features, n.label = layers.HDF5Data(
-        batch_size=1, source=hf5_path, ntop=2)
-    n.features_fused = L.Eltwise(n.color_features, n.hha_features,
-                                 operation=params.Eltwise.SUM, coeff=[0.5, 0.5])
-    n.upcore = layers.Deconvolution(n.score_fused,
-                                    convolution_param=dict(num_output=2, kernel_size=64, stride=32,
-                                                           bias_term=False),
-                                    param=[dict(lr_mult=0)])
-    n.score = crop(n.upscore, n.color)
+    n.color_features, n.hha_features, n.label, n.in_data = layers.HDF5Data(
+        batch_size=1, source=hf5_path, ntop=4)
+    n.features_fused = layers.Eltwise(n.color_features, n.hha_features,
+                                      operation=params.Eltwise.SUM, coeff=[0.5, 0.5])
+    n.upscore = layers.Deconvolution(n.features_fused,
+                                     convolution_param=dict(num_output=2, kernel_size=64, stride=32,
+                                                            bias_term=False),
+                                     param=[dict(lr_mult=0)])
+    # print 'upscore shape {}, in_data shape {}'.format(np.shape(n.upscore), np.shape(n.in_data))
+    # print '------------------------------------'
+    n.score = crop(n.upscore, n.in_data)
     return n.to_proto()
 
 # add '../' directory to path for importing score.py, surgery.py and
@@ -64,6 +66,7 @@ filename, path, desc = imp.find_module('caffe', [caffe_root + '/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
 from caffe.proto import caffe_pb2
 from caffe import layers, params
+from caffe.coord_map import crop
 
 # User Input
 parser = argparse.ArgumentParser()
@@ -82,35 +85,41 @@ else:
     print 'No Mode (CPU or GPU) Given'
     print '-- GPU Mode Chosen -- {}'.format(args.mode)
     print '==============='
-layer = 'score'
-gt = 'label'
 
-# You may want to change these initialisation weights,
-# they differ slightly to the models being loaded
+# Load up nets and copy information
+layer = 'score_fr'
+gt = 'label'
 color_weights = file_parent_dir + \
     '/cstrip-fcn32s-color/colorSnapshot/_iter_8000.caffemodel'
 color_proto = file_parent_dir + '/cstrip-fcn32s-color/val.prototxt'
 color_net = caffe.Net(color_proto, color_weights, caffe.TEST)
 color_net.forward()
-score_colour = color_net.blobs[layer].data[0]
+score_colour = color_net.blobs[layer].data[:]
 del color_net
-
 
 hha_weights = file_parent_dir + \
     '/cstrip-fcn32s-hha/HHAsnapshot/train_iter_8000.caffemodel'
 hha_proto = file_parent_dir + '/cstrip-fcn32s-hha/val.prototxt'
 hha_net = caffe.Net(hha_proto, hha_weights, caffe.TEST)
 hha_net.forward()
-score_hha = hha_net.blobs[layer].data[0]
-gt_hha = hha_net.blobs[gt].data[0, 0].astype(np.uint8)
+score_hha = hha_net.blobs[layer+'_trip'].data[:]
+gt_hha = hha_net.blobs[gt].data[:]
+input_data = hha_net.blobs['data'].data[:]
 del hha_net
 
+# Write net information to hdf5 file
+print '-------------------------'
+print 'score_colour shape {}'.format(np.shape(score_colour))
+print 'score_hha shape {}'.format(np.shape(score_hha))
+print 'gt_hha shape {}'.format(np.shape(gt_hha))
+print 'input_data shape {}'.format(np.shape(input_data))
+print '-------------------------'
 val_hdf5_location = os.path.join(file_location, 'hdfFive.h5')
-
 with h5py.File(val_hdf5_location, 'w') as f:
     f['color_features'] = score_colour
     f['hha_features'] = score_hha
     f['label'] = gt_hha
+    f['in_data'] = input_data
 
 # Create fusion_test prototxt files
 test_net_path = file_location + '/fusion_test.prototxt'
@@ -125,7 +134,7 @@ with open(test_net_path, 'w') as f:
 
 fusion_fcn = caffe.Net(test_net_path, caffe.TEST)
 
-# Net surgery, filling the decolvution layer
-interp_layers = [k for k in solver.net.params.keys() if 'up' in k]
+# Net surgery, filling the deconvolution layer
+interp_layers = [k for k in fusion_fcn.params.keys() if 'up' in k]
 print 'performing surgery on {}'.format(interp_layers)
 surgery.interp(fusion_fcn, interp_layers)
