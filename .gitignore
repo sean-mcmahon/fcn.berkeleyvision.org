@@ -10,3 +10,4 @@ core
 *.e*
 *.zip
 *.npz
+*.h5
