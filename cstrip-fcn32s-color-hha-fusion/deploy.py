@@ -37,21 +37,6 @@ def fusion_solver(train_net_path, test_net_path, file_location):
     return s
 
 
-def fusionNet(hf5_txtfile_path, batchSize):
-    n = caffe.NetSpec()
-    n.color_features, n.hha_features, n.label, n.in_data = layers.HDF5Data(
-        batch_size=batchSize, source=hf5_txtfile_path, ntop=4)
-    n.features_fused = layers.Eltwise(n.color_features, n.hha_features,
-                                      operation=params.Eltwise.SUM, coeff=[0.5, 0.5])
-    n.upscore = layers.Deconvolution(n.features_fused,
-                                     convolution_param=dict(num_output=2, kernel_size=64, stride=32,
-                                                            bias_term=False),
-                                     param=[dict(lr_mult=0)])
-    # print 'upscore shape {}, in_data shape {}'.format(np.shape(n.upscore), np.shape(n.in_data))
-    # print '------------------------------------'
-    n.score = crop(n.upscore, n.in_data)
-    return n.to_proto()
-
 # add '../' directory to path for importing score.py, surgery.py and
 # pycaffe layer
 
@@ -130,4 +115,5 @@ surgery.interp(fusion_fcn, interp_layers)
 #     overlay_gt.save(os.path.join(file_location, idx[1] + 'gt_overlay.png'))
 #     print 'forward pass {}/{}'.format(counter+1, len(val_imgs))
 
-score.do_seg_tests(fusion_fcn, 0, os.path.join(file_location, data_split + '_images'), val_imgs, layer='score',gt='label')
+score.do_seg_tests(fusion_fcn, 0, os.path.join(
+    file_location, data_split + '_images'), val_imgs, layer='score', gt='label')
