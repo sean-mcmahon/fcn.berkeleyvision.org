@@ -66,14 +66,20 @@ input_data_list = []
 for counter, idx in enumerate(val_imgs):
     color_net.forward()
     print 'Should be loading  {} with index {}'.format(idx[0], idx[1])
+    colourArr = color_net.blobs['data'].data
+    colourArr = colourArr.astype(np.uint8)
+    colourArr = colourArr.transpose((1, 2, 0))  # change to h,w,d
+    colourArr = colourArr[..., ::-1]  # bgr -> rgb
+    colourImg = Image.fromarray(colourArr)
+    colourImg.save(os.path.join(file_location, ''.join(idx) + '.png'))
     score_colour_list.append(color_net.blobs[layer].data)
     input_data_list.append(color_net.blobs['data'].data)
-    if counter > 3:
-        if np.array_equal(score_colour_list[-1], score_colour_list[0]):
-            print 'list values are the same'
-        if np.array_equal(previous_score, color_net.blobs[layer].data[0]):
-            print 'two blob values are the same'
-    previous_score = color_net.blobs[layer].data[0]
+    # if counter > 3:
+    #     if np.array_equal(score_colour_list[-1], score_colour_list[0]):
+    #         print 'list values are the same'
+    #     if np.array_equal(previous_score, color_net.blobs[layer].data[0]):
+    #         print 'two blob values are the same'
+    # previous_score = color_net.blobs[layer].data[0]
 
     print '-- Appending colour features {}/{} --'.format(counter+1, len(val_imgs))
 del color_net
@@ -107,12 +113,6 @@ for counter, idx in enumerate(val_imgs):
         # f['hha_features'] = score_hha_list[counter]
         # f['label'] = gt_hha_list[counter]
         f['in_data'] = input_data_list[counter]
-    colourArr = input_data_list[counter][0]
-    colourArr = colourArr.astype(np.uint8)
-    colourArr = colourArr.transpose((1, 2, 0))  # change to h,w,d
-    colourArr = colourArr[..., ::-1]  # bgr -> rgb
-    colourImg = Image.fromarray(colourArr)
-    colourImg.save(os.path.join(file_location, ''.join(idx) + '.png'))
     with open(os.path.join(file_location, data_split + '_hdf5.txt'), 'a') as f:
         f.write(val_hdf5_name + '\n')
     print 'Saved features {}/{}'.format(counter+1, len(val_imgs))
