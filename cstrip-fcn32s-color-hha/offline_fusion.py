@@ -50,7 +50,7 @@ def fusionNet(hf5_txtfile_path):
                                      param=[dict(lr_mult=0)])
     # print 'upscore shape {}, in_data shape {}'.format(np.shape(n.upscore), np.shape(n.in_data))
     # print '------------------------------------'
-    # n.score = crop(n.upscore, n.in_data)
+    n.score = crop(n.upscore, n.in_data)
     return n.to_proto()
 
 # add '../' directory to path for importing score.py, surgery.py and
