@@ -110,27 +110,24 @@ interp_layers = [k for k in fusion_fcn.params.keys() if 'up' in k]
 print 'performing surgery on {}'.format(interp_layers)
 surgery.interp(fusion_fcn, interp_layers)
 
-print val_imgs
-fusion_fcn.forward()
-for counter, idx in enumerate(val_imgs):
-    fusion_im = Image.fromarray(fusion_fcn.blobs['score'].data[
-                                counter].argmax(0).astype(np.uint8) * 255, mode='P')
-    img_gt = Image.fromarray(fusion_fcn.blobs['label'].data[
-                             counter, 0].astype(np.uint8) * 255, mode='P')
-    # colour_score.save(os.path.join(file_location, 'colourNetOutput.png'))
-    colourArr = fusion_fcn.blobs['in_data'].data[counter].astype(np.uint8)
-    colourArr = colourArr.transpose((1, 2, 0))  # change to h,w,d
-    colourArr = colourArr[..., ::-1]  # bgr -> rgb
-    colourImg = Image.fromarray(colourArr)
+# fusion_fcn.forward()
+# for counter, idx in enumerate(val_imgs):
+#     fusion_im = Image.fromarray(fusion_fcn.blobs['score'].data[
+#                                 counter].argmax(0).astype(np.uint8) * 255, mode='P')
+#     img_gt = Image.fromarray(fusion_fcn.blobs['label'].data[
+#                              counter, 0].astype(np.uint8) * 255, mode='P')
+#     # colour_score.save(os.path.join(file_location, 'colourNetOutput.png'))
+#     colourArr = fusion_fcn.blobs['in_data'].data[counter].astype(np.uint8)
+#     colourArr = colourArr.transpose((1, 2, 0))  # change to h,w,d
+#     colourArr = colourArr[..., ::-1]  # bgr -> rgb
+#     colourImg = Image.fromarray(colourArr)
+#
+#     overlay = Image.blend(colourImg.convert(
+#         "RGBA"), fusion_im.convert("RGBA"), 0.7)
+#     overlay.save(os.path.join(file_location, idx[1] + 'fusion_overlay.png'))
+#     overlay_gt = Image.blend(colourImg.convert(
+#         "RGBA"), img_gt.convert("RGBA"), 0.7)
+#     overlay_gt.save(os.path.join(file_location, idx[1] + 'gt_overlay.png'))
+#     print 'forward pass {}/{}'.format(counter+1, len(val_imgs))
 
-    overlay = Image.blend(colourImg.convert(
-        "RGBA"), fusion_im.convert("RGBA"), 0.7)
-    overlay.save(os.path.join(file_location, idx[1] + 'fusion_overlay.png'))
-    overlay_gt = Image.blend(colourImg.convert(
-        "RGBA"), img_gt.convert("RGBA"), 0.7)
-    overlay_gt.save(os.path.join(file_location, idx[1] + 'gt_overlay.png'))
-    print 'forward pass {}/{}'.format(counter+1, len(val_imgs))
-
-# score.do_seg_tests(fusion_fcn, 0, os.path.join(
-# file_location, data_split + '_images'), val_imgs, layer='score',
-# gt='label')
+score.do_seg_tests(fusion_fcn, 0, os.path.join(file_location, data_split + '_images'), val_imgs, layer='score',gt='label')
