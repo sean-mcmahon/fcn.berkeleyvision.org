@@ -45,7 +45,7 @@ data_split = 'val'
 if data_split == 'train':
     data_split = 'trainval'
 val_imgs = np.loadtxt(
-    file_location + '/data/cs-trip/{}.txt'.format(data_split), dtype=str)
+    file_parent_dir + '/data/cs-trip/{}.txt'.format(data_split), dtype=str)
 save_dir = os.path.join(file_location, data_split + '/')
 layer = 'score_fr'
 gt = 'label'
