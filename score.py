@@ -66,7 +66,11 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label'):
                 "RGBA"), im_gt.convert("RGBA"), 0.7)
             gt_overlay.save(os.path.join(save_dir, ''.join(idx) + '_GT.png'))
         # compute the loss as well
-        loss += net.blobs['loss'].data.flat[0]
+        try:
+            loss += net.blobs['loss'].data.flat[0]
+        except:
+            print 'compute_hist: error calculating loss, probably no loss layer'
+            loss += 0
         # score_values = net.blobs[layer].data[0].argmax(0)
         # gt_values = net.blobs[gt].data[0, 0]
         # print '> score_values has shape ', np.shape(score_values)

@@ -37,10 +37,10 @@ def fusion_solver(train_net_path, test_net_path, file_location):
     return s
 
 
-def fusionNet(hf5_txtfile_path):
+def fusionNet(hf5_txtfile_path, batchSize):
     n = caffe.NetSpec()
     n.color_features, n.hha_features, n.label, n.in_data = layers.HDF5Data(
-        batch_size=1, source=hf5_txtfile_path, ntop=4)
+        batch_size=batchSize, source=hf5_txtfile_path, ntop=4)
     n.features_fused = layers.Eltwise(n.color_features, n.hha_features,
                                       operation=params.Eltwise.SUM, coeff=[0.5, 0.5])
     n.upscore = layers.Deconvolution(n.features_fused,
@@ -86,11 +86,16 @@ else:
     print '-- GPU Mode Chosen -- {}'.format(args.mode)
     print '==============='
 
-
+data_split = 'val'
 # Create fusion_test prototxt files
-test_net_path = file_location + '/fusion_test.prototxt'
+test_net_path = file_location + '/fusion_deploy.prototxt'
+hdf5_filename = os.path.join(file_location, data_split + '_hdf5.txt')
+val_hdf5s = np.loadtxt(hdf5_filename, dtype=str)
+batchSize = len(val_hdf5s)
+val_imgs = np.loadtxt(
+    file_parent_dir + '/data/cs-trip/{}.txt'.format(data_split), dtype=str)
 # with open(test_net_path, 'w') as f:
-#     f.write(str(fusionNet(os.path.join(file_location, 'testhdf5.txt'))))
+#     f.write(str(fusionNet(os.path.join(file_location, 'testhdf5.txt'), batchSize)))
 
 # Create and load solver
 # solver_path = file_location + '/fusion_solver.prototxt'
@@ -105,21 +110,27 @@ interp_layers = [k for k in fusion_fcn.params.keys() if 'up' in k]
 print 'performing surgery on {}'.format(interp_layers)
 surgery.interp(fusion_fcn, interp_layers)
 
+print val_imgs
 fusion_fcn.forward()
+for counter, idx in enumerate(val_imgs):
+    fusion_im = Image.fromarray(fusion_fcn.blobs['score'].data[
+                                counter].argmax(0).astype(np.uint8) * 255, mode='P')
+    img_gt = Image.fromarray(fusion_fcn.blobs['label'].data[
+                             counter, 0].astype(np.uint8) * 255, mode='P')
+    # colour_score.save(os.path.join(file_location, 'colourNetOutput.png'))
+    colourArr = fusion_fcn.blobs['in_data'].data[counter].astype(np.uint8)
+    colourArr = colourArr.transpose((1, 2, 0))  # change to h,w,d
+    colourArr = colourArr[..., ::-1]  # bgr -> rgb
+    colourImg = Image.fromarray(colourArr)
 
-fusion_im = Image.fromarray(fusion_fcn.blobs['score'].data[
-                            0].argmax(0).astype(np.uint8) * 255, mode='P')
-img_gt = Image.fromarray(fusion_fcn.blobs['label'].data[
-                         0, 0].astype(np.uint8) * 255, mode='P')
-# colour_score.save(os.path.join(file_location, 'colourNetOutput.png'))
-colourArr = fusion_fcn.blobs['in_data'].data[0].astype(np.uint8)
-colourArr = colourArr.transpose((1, 2, 0))  # change to h,w,d
-colourArr = colourArr[..., ::-1]  # bgr -> rgb
-colourImg = Image.fromarray(colourArr)
+    overlay = Image.blend(colourImg.convert(
+        "RGBA"), fusion_im.convert("RGBA"), 0.7)
+    overlay.save(os.path.join(file_location, idx[1] + 'fusion_overlay.png'))
+    overlay_gt = Image.blend(colourImg.convert(
+        "RGBA"), img_gt.convert("RGBA"), 0.7)
+    overlay_gt.save(os.path.join(file_location, idx[1] + 'gt_overlay.png'))
+    print 'forward pass {}/{}'.format(counter+1, len(val_imgs))
 
-overlay = Image.blend(colourImg.convert(
-    "RGBA"), fusion_im.convert("RGBA"), 0.7)
-overlay.save(os.path.join(file_location, 'fusion_overlay.png'))
-overlay_gt = Image.blend(colourImg.convert(
-    "RGBA"), img_gt.convert("RGBA"), 0.7)
-overlay_gt.save(os.path.join(file_location, 'gt_overlay.png'))
+# score.do_seg_tests(fusion_fcn, 0, os.path.join(
+# file_location, data_split + '_images'), val_imgs, layer='score',
+# gt='label')

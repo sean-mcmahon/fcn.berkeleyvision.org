@@ -6,8 +6,8 @@ layer {
   top: "label"
   top: "in_data"
   hdf5_data_param {
-    source: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha/testhdf5.txt"
-    batch_size: 1
+    source: "/home/sean/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha-fusion/val_hdf5.txt"
+    batch_size: 14
   }
 }
 layer {
