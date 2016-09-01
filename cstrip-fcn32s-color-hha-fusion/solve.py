@@ -3,20 +3,29 @@
 by Sean McMahon
 
 """
-# import caffe
 import numpy as np
+import imp
 import os
 import sys
 from os.path import expanduser
-import imp
 import argparse
 file_location = os.path.realpath(os.path.join(
     os.getcwd(), os.path.dirname(__file__)))
 sys.path.append(file_location[:file_location.rfind('/')])
+sys.path.append(file_location)
 import surgery
 import score
-from PIL import Image
-from nets import convFusionNet
+import nets
+file_parent_dir = file_location[:file_location.rfind('/')]
+home_dir = expanduser("~")
+# import support functions
+if 'n8307628' in home_dir:
+    caffe_root = home_dir + '/Fully-Conv-Network/Resources/caffe'
+elif 'sean' in home_dir:
+    caffe_root = home_dir + '/src/caffe'
+filename, path, desc = imp.find_module('caffe', [caffe_root + '/python/'])
+caffe = imp.load_module('caffe', filename, path, desc)
+from caffe.proto import caffe_pb2
 
 
 def fusion_solver(train_net_path, test_net_path, file_location):
@@ -34,26 +43,18 @@ def fusion_solver(train_net_path, test_net_path, file_location):
     s.weight_decay = 0.0005
     s.display(20)
     s.snapshot = 1000
-    s.snapshot_prefix = file_location + '/colourHHAsnapshot/fusion_train'
+
+    snapshot_dir = os.path.join(file_location + '/fusionSnapshot/train')
+    if not os.path.isdir(snapshot_dir):
+        os.mkdir(snapshot_dir)
+    s.snapshot_prefix = snapshot_dir
     return s
 
-
-file_parent_dir = file_location[:file_location.rfind('/')]
-home_dir = expanduser("~")
-# import support functions
-if 'n8307628' in home_dir:
-    caffe_root = home_dir + '/Fully-Conv-Network/Resources/caffe'
-elif 'sean' in home_dir:
-    caffe_root = home_dir + '/src/caffe'
-filename, path, desc = imp.find_module('caffe', [caffe_root + '/python/'])
-caffe = imp.load_module('caffe', filename, path, desc)
-from caffe.proto import caffe_pb2
 
 # User Input
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', default='CPU')
 args = parser.parse_args()
-
 if 'g' in args.mode or 'G' in args.mode:
     caffe.set_mode_gpu()
     print '-- GPU Mode -- {}'.format(args.mode)
@@ -74,9 +75,9 @@ train_net_path = file_location + '/fusion_train.prototxt'
 val_batchSize = 1
 train_batchSize = 1
 with open(train_net_path, 'w') as f:
-    f.write(str(convFusionNet(os.path.join(file_location, 'train_hdf5.txt'), train_batchSize)))
+    f.write(str(nets.convFusionNet(os.path.join(file_location, 'train_hdf5.txt'), train_batchSize)))
 with open(val_net_path, 'w') as f:
-    f.write(str(convFusionNet(os.path.join(file_location, 'val_hdf5.txt'), val_batchSize)))
+    f.write(str(nets.convFusionNet(os.path.join(file_location, 'val_hdf5.txt'), val_batchSize)))
 
 # Create and load solver
 solver_path = os.path.join(file_location, 'fusion_solver.prototxt')
