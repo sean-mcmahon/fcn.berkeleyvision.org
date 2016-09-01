@@ -50,8 +50,6 @@ elif 'sean' in home_dir:
 filename, path, desc = imp.find_module('caffe', [caffe_root + '/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
 from caffe.proto import caffe_pb2
-from caffe import layers, params
-from caffe.coord_map import crop
 
 # User Input
 parser = argparse.ArgumentParser()
