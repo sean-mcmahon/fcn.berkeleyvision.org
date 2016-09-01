@@ -28,7 +28,9 @@ caffe = imp.load_module('caffe', filename, path, desc)
 # User Input
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', default='CPU')
+parser.add_argument('--data_split', default='val')
 args = parser.parse_args()
+data_split = args.data_split
 if 'g' in args.mode or 'G' in args.mode:
     caffe.set_mode_gpu()
     print '-- GPU Mode -- {}'.format(args.mode)
@@ -42,11 +44,10 @@ else:
     print '-- GPU Mode Chosen -- {}'.format(args.mode)
     print '==============='
 
-data_split = 'val'
-if data_split == 'train':
-    data_split = 'trainval'
 val_imgs = np.loadtxt(
     file_parent_dir + '/data/cs-trip/{}.txt'.format(data_split), dtype=str)
+if data_split == 'train':
+    data_split = 'trainval'
 save_dir = os.path.join(file_location, data_split + '_hdf5/')
 layer = 'score_fr'
 gt = 'label'
