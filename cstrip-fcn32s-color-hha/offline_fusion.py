@@ -151,13 +151,15 @@ fusion_im = Image.fromarray(fusion_fcn.blobs['score'].data[
                             0].argmax(0).astype(np.uint8) * 255, mode='P')
 img_gt = Image.fromarray(fusion_fcn.blobs['label'].data[
                          0, 0].astype(np.uint8) * 255, mode='P')
-
-fusion_im.save(os.path.join(file_location, 'fusionImg.png'))
-img_gt.save(os.path.join(file_location, 'gtImg.png'))
 # colour_score.save(os.path.join(file_location, 'colourNetOutput.png'))
 colourArr = fusion_fcn.blobs['in_data'].data[0].astype(np.uint8)
 colourArr = colourArr.transpose((1, 2, 0))  # change to h,w,d
 colourArr = colourArr[..., ::-1]  # bgr -> rgb
-# reshapedImg = np.reshape(fusion_fcn.blobs['in_data'].data[0], (540,960,3))
 colourImg = Image.fromarray(colourArr)
-colourImg.save(os.path.join(file_location, 'colourImg.png'))
+
+overlay = Image.blend(colourImg.convert(
+    "RGBA"), fusion_im.convert("RGBA"), 0.7)
+overlay.save(os.path.join(file_location, 'fusion_overlay.png'))
+overlay_gt = Image.blend(colourImg.convert(
+    "RGBA"), img_gt.convert("RGBA"), 0.7)
+overlay_gt.save(os.path.join(file_location, 'gt_overlay.png'))
