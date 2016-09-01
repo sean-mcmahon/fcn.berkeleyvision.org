@@ -88,44 +88,44 @@ else:
     print '==============='
 
 # Load up nets and copy information
-# layer = 'score_fr'
-# gt = 'label'
-# color_weights = file_parent_dir + \
-#     '/cstrip-fcn32s-color/colorSnapshot/_iter_8000.caffemodel'
-# color_proto = file_parent_dir + '/cstrip-fcn32s-color/val.prototxt'
-# color_net = caffe.Net(color_proto, color_weights, caffe.TEST)
-# color_net.forward()
-# score_colour = color_net.blobs[layer].data[:]
-# input_data = color_net.blobs['data'].data[:]
-# colour_score = Image.fromarray(color_net.blobs['score'].data[
-#                                0].argmax(0).astype(np.uint8) * 255, mode='P')
-# del color_net
-#
-# hha_weights = file_parent_dir + \
-#     '/cstrip-fcn32s-hha/HHAsnapshot/train_iter_8000.caffemodel'
-# hha_proto = file_parent_dir + '/cstrip-fcn32s-hha/val.prototxt'
-# hha_net = caffe.Net(hha_proto, hha_weights, caffe.TEST)
-# hha_net.forward()
-# score_hha = hha_net.blobs[layer + '_trip'].data[:]
-# gt_hha = hha_net.blobs[gt].data[:]
-#
-# del hha_net
-#
-# # Write net information to hdf5 file
-# print '-------------------------'
-# print 'score_colour shape {}'.format(np.shape(score_colour))
-# print 'score_hha shape {}'.format(np.shape(score_hha))
-# print 'gt_hha shape {}'.format(np.shape(gt_hha))
-# print 'input_data shape {}'.format(np.shape(input_data))
-# print '-------------------------'
-# val_hdf5_location = os.path.join(file_location, 'hdfFive.h5')
-# with h5py.File(val_hdf5_location, 'w') as f:
-#     f['color_features'] = score_colour
-#     f['hha_features'] = score_hha
-#     f['label'] = gt_hha
-#     f['in_data'] = input_data
-# with open(os.path.join(file_location, 'testhdf5.txt'), 'w') as f:
-#     f.write(val_hdf5_location + '\n')
+layer = 'score_fr'
+gt = 'label'
+color_weights = file_parent_dir + \
+    '/cstrip-fcn32s-color/colorSnapshot/_iter_8000.caffemodel'
+color_proto = file_parent_dir + '/cstrip-fcn32s-color/val.prototxt'
+color_net = caffe.Net(color_proto, color_weights, caffe.TEST)
+color_net.forward()
+score_colour = color_net.blobs[layer].data[:]
+input_data = color_net.blobs['data'].data[:]
+colour_score = Image.fromarray(color_net.blobs['score'].data[
+                               0].argmax(0).astype(np.uint8) * 255, mode='P')
+del color_net
+
+hha_weights = file_parent_dir + \
+    '/cstrip-fcn32s-hha/HHAsnapshot/train_iter_8000.caffemodel'
+hha_proto = file_parent_dir + '/cstrip-fcn32s-hha/val.prototxt'
+hha_net = caffe.Net(hha_proto, hha_weights, caffe.TEST)
+hha_net.forward()
+score_hha = hha_net.blobs[layer + '_trip'].data[:]
+gt_hha = hha_net.blobs[gt].data[:]
+
+del hha_net
+
+# Write net information to hdf5 file
+print '-------------------------'
+print 'score_colour shape {}'.format(np.shape(score_colour))
+print 'score_hha shape {}'.format(np.shape(score_hha))
+print 'gt_hha shape {}'.format(np.shape(gt_hha))
+print 'input_data shape {}'.format(np.shape(input_data))
+print '-------------------------'
+val_hdf5_location = os.path.join(file_location, 'hdfFive.h5')
+with h5py.File(val_hdf5_location, 'w') as f:
+    f['color_features'] = score_colour
+    f['hha_features'] = score_hha
+    f['label'] = gt_hha
+    f['in_data'] = input_data
+with open(os.path.join(file_location, 'testhdf5.txt'), 'w') as f:
+    f.write(val_hdf5_location + '\n')
 
 # Create fusion_test prototxt files
 test_net_path = file_location + '/fusion_test.prototxt'
