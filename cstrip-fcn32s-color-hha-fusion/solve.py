@@ -48,8 +48,6 @@ elif 'sean' in home_dir:
 filename, path, desc = imp.find_module('caffe', [caffe_root + '/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
 from caffe.proto import caffe_pb2
-from caffe import layers, params
-from caffe.coord_map import crop
 
 # User Input
 parser = argparse.ArgumentParser()
@@ -73,27 +71,29 @@ data_split = 'val'
 # Create fusion_test prototxt files
 val_net_path = file_location + '/fusion_val.prototxt'
 train_net_path = file_location + '/fusion_train.prototxt'
-hdf5_filename = os.path.join(file_location, data_split + '_hdf5.txt')
-val_hdf5s = np.loadtxt(hdf5_filename, dtype=str)
-batchSize = len(val_hdf5s)
-val_imgs = np.loadtxt(
-    file_parent_dir + '/data/cs-trip/{}.txt'.format(data_split), dtype=str)
+val_batchSize = 1
+train_batchSize = 1
+with open(train_net_path, 'w') as f:
+    f.write(str(convFusionNet(os.path.join(file_location, 'train_hdf5.txt'), train_batchSize)))
 with open(val_net_path, 'w') as f:
-    f.write(str(convFusionNet(os.path.join(file_location, 'testhdf5.txt'), batchSize)))
+    f.write(str(convFusionNet(os.path.join(file_location, 'val_hdf5.txt'), val_batchSize)))
 
 # Create and load solver
-solver_path = file_location + '/fusion_solver.prototxt'
+solver_path = os.path.join(file_location, 'fusion_solver.prototxt')
 with open(solver_path, 'w') as f:
     f.write(str(fusion_solver(train_net_path, val_net_path)))
-solver = caffe.SGDSolver(file_location + '/fusion_solver.prototxt')
-
-
+solver = caffe.SGDSolver(solver_path)
 
 # Net surgery, filling the deconvolution layer
-interp_layers = [k for k in fusion_fcn.params.keys() if 'up' in k]
+interp_layers = [k for k in solver.params.keys() if 'up' in k]
 print 'performing surgery on {}'.format(interp_layers)
-surgery.interp(fusion_fcn, interp_layers)
+surgery.interp(solver, interp_layers)
 
-
-score.do_seg_tests(fusion_fcn, 0, os.path.join(
-    file_location, data_split + '_images'), val_imgs, layer='score', gt='label')
+val_imgs = np.loadtxt(
+    file_parent_dir + '/data/cs-trip/val.txt', dtype=str)
+for _ in range(50):
+    print '------------------------------'
+    print 'Running solver.step iter {}'.format(_)
+    print '------------------------------'
+    solver.step(1000)
+    score.do_seg_tests(solver, 0, False, val_imgs, layer='score', gt='label')
