@@ -57,11 +57,12 @@ color_proto = file_parent_dir + \
 color_net = caffe.Net(color_proto, color_weights, caffe.TEST)
 score_colour_list = []
 input_data_list = []
-for counter in range(len(val_imgs)):
+for counter, idx in enumerate(val_imgs):
     color_net.forward()
+    print 'Should be loading {} with index {}'.format(idx[0], idx[1])
     score_colour_list.append(color_net.blobs[layer].data[:])
     input_data_list.append(color_net.blobs['data'].data[:])
-    print 'Appending colour features {}/{}'.format(counter, len(val_imgs))
+    print '-- Appending colour features {}/{} --'.format(counter, len(val_imgs))
 del color_net
 
 hha_weights = file_parent_dir + \
@@ -71,11 +72,12 @@ hha_proto = file_parent_dir + \
 hha_net = caffe.Net(hha_proto, hha_weights, caffe.TEST)
 score_hha_list = []
 gt_hha_list = []
-for counter in range(len(val_imgs)):
+for counter, idx in enumerate(val_imgs):
     hha_net.forward()
+    print 'Should be loading {} with index {}'.format(idx[0], idx[1])
     score_hha_list.append(hha_net.blobs[layer + '_trip'].data[:])
     gt_hha_list.append(hha_net.blobs[gt].data[:])
-    print 'Appending hha features {}/{}'.format(counter, len(val_imgs))
+    print '-- Appending hha features {}/{} --'.format(counter, len(val_imgs))
 del hha_net
 
 if not os.path.isdir(save_dir):
@@ -90,3 +92,4 @@ for counter, idx in enumerate(val_imgs):
         f['in_data'] = input_data_list[counter]
     with open(os.path.join(file_location, 'testhdf5.txt'), 'w') as f:
         f.write(val_hdf5_name + '\n')
+    print 'Saved features {}/{}'.format(counter, len(val_imgs))
