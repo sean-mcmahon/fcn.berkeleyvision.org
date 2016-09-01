@@ -112,12 +112,6 @@ gt_hha = hha_net.blobs[gt].data[:]
 del hha_net
 
 # Write net information to hdf5 file
-print '-------------------------'
-print 'score_colour shape {}'.format(np.shape(score_colour))
-print 'score_hha shape {}'.format(np.shape(score_hha))
-print 'gt_hha shape {}'.format(np.shape(gt_hha))
-print 'input_data shape {}'.format(np.shape(input_data))
-print '-------------------------'
 val_hdf5_location = os.path.join(file_location, 'hdfFive.h5')
 with h5py.File(val_hdf5_location, 'w') as f:
     f['color_features'] = score_colour
