@@ -211,4 +211,6 @@ class CStripSegDataLayer(caffe.Layer):
         hha = np.array(im, dtype=np.float32)
         hha -= self.mean_hha
         hha = hha.transpose((2, 0, 1))
+        if self.split is not 'train':
+            print 'loading image from {} with index {}'.format(sub_dir, idx)
         return hha
