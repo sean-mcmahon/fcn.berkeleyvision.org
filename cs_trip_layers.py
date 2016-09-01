@@ -161,8 +161,8 @@ class CStripSegDataLayer(caffe.Layer):
         in_ = in_.transpose((2, 0, 1))
         # print 'cs_trip_layers: colour image loaded
         # shape={}'.format(np.shape(in_))
-        if self.split is not 'train':
-            print 'loading image from {} with index {}'.format(sub_dir, idx)
+        # if self.split is not 'train':
+        print 'loading image from {} with index {}'.format(sub_dir, idx)
         return in_
 
     def load_label(self, idx, sub_dir):
