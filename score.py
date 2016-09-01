@@ -57,8 +57,15 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label'):
             im_gt = Image.fromarray(
                 net.blobs[gt].data[0, 0].astype(np.uint8) * 255, mode='P')
             # im_gt.save(os.path.join(save_dir, ''.join(idx) + '_GT.png'))
-            colorIm = Image.open(
-                glob.glob('{}/{}/colour/colourimg_{}_*'.format(cstrip_dir, idx[0], idx[1]))[0])
+            try:
+                colorArray = net.blobs['data'][0].astype(np.uint8)
+                colorArray = colorArray.transpose((1, 2, 0))
+                colorArray = colorArray[..., ::-1]
+                colorIm = Image.fromarray(colorArray)
+            except:
+                print 'reading colour image from network failed, reading from file'
+                colorIm = Image.open(
+                    glob.glob('{}/{}/colour/colourimg_{}_*'.format(cstrip_dir, idx[0], idx[1]))[0])
             overlay = Image.blend(colorIm.convert(
                 "RGBA"), im.convert("RGBA"), 0.7)
             overlay.save(os.path.join(save_dir, ''.join(idx) + '.png'))
