@@ -41,33 +41,52 @@ else:
     print '-- GPU Mode Chosen -- {}'.format(args.mode)
     print '==============='
 
-# Load up nets and copy information
+data_split = 'val'
+if data_split == 'train':
+    data_split = 'trainval'
+val_imgs = np.loadtxt(
+    file_location + '/data/cs-trip/{}.txt'.format(data_split), dtype=str)
+save_dir = os.path.join(file_location, data_split + '/')
 layer = 'score_fr'
 gt = 'label'
+
 color_weights = file_parent_dir + \
     '/cstrip-fcn32s-color/colorSnapshot/_iter_8000.caffemodel'
-color_proto = file_parent_dir + '/cstrip-fcn32s-color/val.prototxt'
+color_proto = file_parent_dir + \
+    '/cstrip-fcn32s-color/{}.prototxt'.format(data_split)
 color_net = caffe.Net(color_proto, color_weights, caffe.TEST)
-color_net.forward()
-score_colour = color_net.blobs[layer].data[:]
-input_data = color_net.blobs['data'].data[:]
+score_colour_list = []
+input_data_list = []
+for counter in range(len(val_imgs)):
+    color_net.forward()
+    score_colour_list.append(color_net.blobs[layer].data[:])
+    input_data_list.append(color_net.blobs['data'].data[:])
+    print 'Appending colour features {}/{}'.format(counter, len(val_imgs))
 del color_net
 
 hha_weights = file_parent_dir + \
     '/cstrip-fcn32s-hha/HHAsnapshot/train_iter_8000.caffemodel'
-hha_proto = file_parent_dir + '/cstrip-fcn32s-hha/val.prototxt'
+hha_proto = file_parent_dir + \
+    '/cstrip-fcn32s-hha/{}.prototxt'.format(data_split)
 hha_net = caffe.Net(hha_proto, hha_weights, caffe.TEST)
-hha_net.forward()
-score_hha = hha_net.blobs[layer + '_trip'].data[:]
-gt_hha = hha_net.blobs[gt].data[:]
+score_hha_list = []
+gt_hha_list = []
+for counter in range(len(val_imgs)):
+    hha_net.forward()
+    score_hha_list.append(hha_net.blobs[layer + '_trip'].data[:])
+    gt_hha_list.append(hha_net.blobs[gt].data[:])
+    print 'Appending hha features {}/{}'.format(counter, len(val_imgs))
 del hha_net
 
-# Write net information to hdf5 file
-val_hdf5_location = os.path.join(file_location, 'hdfFive.h5')
-with h5py.File(val_hdf5_location, 'w') as f:
-    f['color_features'] = score_colour
-    f['hha_features'] = score_hha
-    f['label'] = gt_hha
-    f['in_data'] = input_data
-with open(os.path.join(file_location, 'testhdf5.txt'), 'w') as f:
-    f.write(val_hdf5_location + '\n')
+if not os.path.isdir(save_dir):
+    os.mkdir(save_dir)
+for counter, idx in enumerate(val_imgs):
+    # Write net information to hdf5 file
+    val_hdf5_name = os.path.join(save_dir, ''.join(idx) + '.h5')
+    with h5py.File(val_hdf5_name, 'w') as f:
+        f['color_features'] = score_colour_list[counter]
+        f['hha_features'] = score_hha_list[counter]
+        f['label'] = gt_hha_list[counter]
+        f['in_data'] = input_data_list[counter]
+    with open(os.path.join(file_location, 'testhdf5.txt'), 'w') as f:
+        f.write(val_hdf5_name + '\n')
