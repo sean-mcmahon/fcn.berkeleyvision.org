@@ -34,12 +34,14 @@ def fixedFusionNet(hf5_txtfile_path, batchSize):
     n.score = crop(n.upscore, n.in_data)
     return n.to_proto()
 
+
 def convFusionNet(hf5_txtfile_path, batchSize):
     n = caffe.NetSpec()
     n.color_features, n.hha_features, n.label, n.in_data = layers.HDF5Data(
         batch_size=batchSize, source=hf5_txtfile_path, ntop=4)
     n.data = layers.Concat(n.color_features, n.hha_features)
     n.score_fr = layers.Convolution(n.data, num_output=2, kernel_size=1, pad=0,
+                                    weight_filler=dict(type='xavier'),
                                     param=[dict(lr_mult=1, decay_mult=1), dict(lr_mult=2, decay_mult=0)])
     n.upscore = layers.Deconvolution(n.features_fused,
                                      convolution_param=dict(num_output=2, kernel_size=64, stride=32,
@@ -47,5 +49,5 @@ def convFusionNet(hf5_txtfile_path, batchSize):
                                      param=[dict(lr_mult=0)])
     n.score = crop(n.upscore, n.in_data)
     n.loss = layers.SoftmaxWithLoss(n.score, n.label,
-            loss_param=dict(normalize=False))
+                                    loss_param=dict(normalize=False))
     return n.to_proto()
