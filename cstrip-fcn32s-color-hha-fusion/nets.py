@@ -21,6 +21,10 @@ from caffe import layers, params
 from caffe.coord_map import crop
 
 
+def appendCrop(prototxt_file, bottoms):
+    # append text for crop layer either at the end or before the softmax layer
+    pass
+
 def fixedFusionNet(hf5_txtfile_path, batchSize):
     n = caffe.NetSpec()
     n.color_features, n.hha_features, n.label, n.in_data = layers.HDF5Data(
@@ -31,8 +35,6 @@ def fixedFusionNet(hf5_txtfile_path, batchSize):
                                      convolution_param=dict(num_output=2, kernel_size=64, stride=32,
                                                             bias_term=False),
                                      param=[dict(lr_mult=0)])
-    # print 'upscore shape {}, in_data shape {}'.format(np.shape(n.upscore), np.shape(n.in_data))
-    # print '------------------------------------'
     n.score = crop(n.upscore, n.in_data)
     return n.to_proto()
 
@@ -45,11 +47,17 @@ def convFusionNet(hf5_txtfile_path, batchSize):
     n.score_fr = layers.Convolution(n.data, num_output=2, kernel_size=1, pad=0,
                                     weight_filler=dict(type='xavier'),
                                     param=[dict(lr_mult=1, decay_mult=1), dict(lr_mult=2, decay_mult=0)])
-    n.upscore = layers.Deconvolution(n.features_fused,
+    n.upscore = layers.Deconvolution(n.score_fr,
                                      convolution_param=dict(num_output=2, kernel_size=64, stride=32,
                                                             bias_term=False),
                                      param=[dict(lr_mult=0)])
-    n.score = crop(n.upscore, n.in_data)
-    n.loss = layers.SoftmaxWithLoss(n.score, n.label,
-                                    loss_param=dict(normalize=False))
+    try:
+        n.score = crop(n.upscore, n.in_data)
+        n.loss = layers.SoftmaxWithLoss(n.score, n.label,
+                                        loss_param=dict(normalize=False))
+    except:
+        print 'could not initialise crop layer'
+        n.loss = layers.SoftmaxWithLoss(
+            n.upscore, n.label, loss_param=dict(normalize=False))
+
     return n.to_proto()
