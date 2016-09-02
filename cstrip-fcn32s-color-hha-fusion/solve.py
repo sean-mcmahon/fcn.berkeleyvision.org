@@ -50,7 +50,7 @@ def fusion_solver(train_net_path, test_net_path, file_location):
     s.test_interval = 999999999  # do not invoke tests here
     s.test_iter.append(654)
     s.max_iter = 300000
-    s.base_lr = 1e-12
+    s.base_lr = 5e-13
     s.lr_policy = 'fixed'
     s.gamma = 0.1
     s.average_loss = 20
@@ -60,7 +60,7 @@ def fusion_solver(train_net_path, test_net_path, file_location):
     s.display = 20
     s.snapshot = 1000
 
-    snapshot_dir = os.path.join(file_location + '/fusionSnapshot/train')
+    snapshot_dir = os.path.join(file_location + '/fusionSnapshot/secondTrain')
     if not os.path.isdir(snapshot_dir):
         os.mkdir(snapshot_dir)
     s.snapshot_prefix = snapshot_dir
@@ -116,4 +116,4 @@ for _ in range(50):
     print 'Running solver.step iter {}'.format(_)
     print '------------------------------'
     solver.step(1000)
-    score.do_seg_tests(solver, 0, False, val_imgs, layer='score', gt='label')
+    score.seg_tests(solver, False, val_imgs, layer='score')
