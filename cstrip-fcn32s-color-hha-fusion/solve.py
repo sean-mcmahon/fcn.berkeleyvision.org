@@ -9,6 +9,7 @@ import os
 import sys
 from os.path import expanduser
 import argparse
+import glob
 file_location = os.path.realpath(os.path.join(
     os.getcwd(), os.path.dirname(__file__)))
 sys.path.append(file_location[:file_location.rfind('/')])
@@ -26,6 +27,20 @@ elif 'sean' in home_dir:
 filename, path, desc = imp.find_module('caffe', [caffe_root + '/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
 from caffe.proto import caffe_pb2
+
+
+def writehdf5txt(FCN_Models_dir, outdir, data_splits):
+    hdf5txt_locations = []
+    for split in data_splits:
+        hdf5filenames = glob.glob(os.path.join(
+            FCN_Models_dir, 'data/cs-trip/' + split + '_hdf5/*.h5'))
+        hdf5txt_locations.append(os.path.join(outdir, split + '_hdf5.txt'))
+        txtfile = open(hdf5txt_locations[-1], 'w')
+        for filename in hdf5filenames:
+            txtfile.write(filename + '\n')
+        txtfile.close()
+    print 'solve: hdf5 file locations written.'
+    return hdf5txt_locations
 
 
 def fusion_solver(train_net_path, test_net_path, file_location):
@@ -70,27 +85,29 @@ else:
 
 data_split = 'val'
 # Create fusion_test prototxt files
+[train_hdf5, val_hdf5] = writehdf5txt(
+    file_parent_dir, file_location, ['train', 'val'])
 val_net_path = file_location + '/fusion_val.prototxt'
 train_net_path = file_location + '/fusion_train.prototxt'
 val_batchSize = 1
 train_batchSize = 1
 with open(train_net_path, 'w') as f:
-    f.write(str(nets.convFusionNet(os.path.join(file_location, 'train_hdf5.txt'), train_batchSize)))
+    f.write(str(nets.convFusionNet(train_hdf5, train_batchSize)))
 with open(val_net_path, 'w') as f:
-    f.write(str(nets.convFusionNet(os.path.join(file_location, 'val_hdf5.txt'), val_batchSize)))
+    f.write(str(nets.convFusionNet(val_hdf5, val_batchSize)))
 
-fusion_fcn = caffe.Net(val_net_path, caffe.TEST)
+# fusion_fcn = caffe.Net(val_net_path, caffe.TEST)
 # Create and load solver
-# solver_path = os.path.join(file_location, 'fusion_solver.prototxt')
-# with open(solver_path, 'w') as f:
-#     f.write(str(fusion_solver(train_net_path, val_net_path, file_location)))
-# solver = caffe.SGDSolver(solver_path)
-#
-# # Net surgery, filling the deconvolution layer
+solver_path = os.path.join(file_location, 'fusion_solver.prototxt')
+with open(solver_path, 'w') as f:
+    f.write(str(fusion_solver(train_net_path, val_net_path, file_location)))
+solver = caffe.SGDSolver(solver_path)
+
+# Net surgery, filling the deconvolution layer
 # interp_layers = [k for k in solver.params.keys() if 'up' in k]
 # print 'performing surgery on {}'.format(interp_layers)
 # surgery.interp(solver, interp_layers)
-
+#
 # val_imgs = np.loadtxt(
 #     file_parent_dir + '/data/cs-trip/val.txt', dtype=str)
 # for _ in range(50):
