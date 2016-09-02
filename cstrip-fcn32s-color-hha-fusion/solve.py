@@ -115,5 +115,5 @@ for _ in range(50):
     print '------------------------------'
     print 'Running solver.step iter {}'.format(_)
     print '------------------------------'
-    solver.step(1000)
+    solver.step(2000)
     score.seg_tests(solver, False, val_imgs, layer='score')
