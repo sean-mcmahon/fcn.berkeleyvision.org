@@ -79,22 +79,23 @@ with open(train_net_path, 'w') as f:
 with open(val_net_path, 'w') as f:
     f.write(str(nets.convFusionNet(os.path.join(file_location, 'val_hdf5.txt'), val_batchSize)))
 
+fusion_fcn = caffe.Net(val_net_path, caffe.TEST)
 # Create and load solver
-solver_path = os.path.join(file_location, 'fusion_solver.prototxt')
-with open(solver_path, 'w') as f:
-    f.write(str(fusion_solver(train_net_path, val_net_path, file_location)))
-solver = caffe.SGDSolver(solver_path)
+# solver_path = os.path.join(file_location, 'fusion_solver.prototxt')
+# with open(solver_path, 'w') as f:
+#     f.write(str(fusion_solver(train_net_path, val_net_path, file_location)))
+# solver = caffe.SGDSolver(solver_path)
+#
+# # Net surgery, filling the deconvolution layer
+# interp_layers = [k for k in solver.params.keys() if 'up' in k]
+# print 'performing surgery on {}'.format(interp_layers)
+# surgery.interp(solver, interp_layers)
 
-# Net surgery, filling the deconvolution layer
-interp_layers = [k for k in solver.params.keys() if 'up' in k]
-print 'performing surgery on {}'.format(interp_layers)
-surgery.interp(solver, interp_layers)
-
-val_imgs = np.loadtxt(
-    file_parent_dir + '/data/cs-trip/val.txt', dtype=str)
-for _ in range(50):
-    print '------------------------------'
-    print 'Running solver.step iter {}'.format(_)
-    print '------------------------------'
-    solver.step(1000)
-    score.do_seg_tests(solver, 0, False, val_imgs, layer='score', gt='label')
+# val_imgs = np.loadtxt(
+#     file_parent_dir + '/data/cs-trip/val.txt', dtype=str)
+# for _ in range(50):
+#     print '------------------------------'
+#     print 'Running solver.step iter {}'.format(_)
+#     print '------------------------------'
+#     solver.step(1000)
+#     score.do_seg_tests(solver, 0, False, val_imgs, layer='score', gt='label')
