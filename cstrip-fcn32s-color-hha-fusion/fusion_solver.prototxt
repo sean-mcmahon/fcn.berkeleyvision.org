@@ -2,7 +2,7 @@ train_net: "/home/sean/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-f
 test_net: "/home/sean/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha-fusion/fusion_val.prototxt"
 test_iter: 654
 test_interval: 999999999
-base_lr: 1e-12
+base_lr: 1e-14
 display: 20
 max_iter: 300000
 lr_policy: "fixed"
