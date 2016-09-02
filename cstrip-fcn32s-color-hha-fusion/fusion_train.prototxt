@@ -6,7 +6,7 @@ layer {
   top: "label"
   top: "in_data"
   hdf5_data_param {
-    source: "/home/sean/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha-fusion/train_hdf5.txt"
+    source: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha-fusion/train_hdf5.txt"
     batch_size: 1
   }
 }
@@ -55,9 +55,20 @@ layer {
   }
 }
 layer {
+  name: "score"
+  type: "Crop"
+  bottom: "upscore"
+  bottom: "in_data"
+  top: "score"
+  crop_param {
+    axis: 2
+    offset: 19
+  }
+}
+layer {
   name: "loss"
   type: "SoftmaxWithLoss"
-  bottom: "upscore"
+  bottom: "score"
   bottom: "label"
   top: "loss"
   loss_param {
