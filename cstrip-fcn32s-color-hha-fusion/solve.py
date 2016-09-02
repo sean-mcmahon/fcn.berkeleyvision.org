@@ -49,12 +49,13 @@ def fusion_solver(train_net_path, test_net_path, file_location):
     s.test_net.append(test_net_path)
     s.test_interval = 999999999  # do not invoke tests here
     s.test_iter.append(654)
-    s.max_iter = 3000
+    s.max_iter = 300000
     s.base_lr = 1e-12
     s.lr_policy = 'fixed'
     s.gamma = 0.1
-    s.stepsize = 5000
-    s.momentum = 9
+    s.average_loss = 20
+    s.momentum = 0.99
+    s.iter_size = 1
     s.weight_decay = 0.0005
     s.display = 20
     s.snapshot = 1000
@@ -63,6 +64,7 @@ def fusion_solver(train_net_path, test_net_path, file_location):
     if not os.path.isdir(snapshot_dir):
         os.mkdir(snapshot_dir)
     s.snapshot_prefix = snapshot_dir
+    s.test_initialization = False
     return s
 
 
@@ -83,20 +85,19 @@ else:
     print '-- GPU Mode Chosen -- {}'.format(args.mode)
     print '==============='
 
-data_split = 'val'
+data_splits = ['train', 'val']
 # Create fusion_test prototxt files
 [train_hdf5, val_hdf5] = writehdf5txt(
-    file_parent_dir, file_location, ['train', 'val'])
+    file_parent_dir, file_location, data_splits)
 val_net_path = file_location + '/fusion_val.prototxt'
 train_net_path = file_location + '/fusion_train.prototxt'
 val_batchSize = 1
 train_batchSize = 1
+# Create network architectuers
 with open(train_net_path, 'w') as f:
     f.write(str(nets.convFusionNet(train_hdf5, train_batchSize)))
 with open(val_net_path, 'w') as f:
     f.write(str(nets.convFusionNet(val_hdf5, val_batchSize)))
-
-# fusion_fcn = caffe.Net(val_net_path, caffe.TEST)
 # Create and load solver
 solver_path = os.path.join(file_location, 'fusion_solver.prototxt')
 with open(solver_path, 'w') as f:
@@ -104,15 +105,15 @@ with open(solver_path, 'w') as f:
 solver = caffe.SGDSolver(solver_path)
 
 # Net surgery, filling the deconvolution layer
-# interp_layers = [k for k in solver.params.keys() if 'up' in k]
-# print 'performing surgery on {}'.format(interp_layers)
-# surgery.interp(solver, interp_layers)
-#
-# val_imgs = np.loadtxt(
-#     file_parent_dir + '/data/cs-trip/val.txt', dtype=str)
-# for _ in range(50):
-#     print '------------------------------'
-#     print 'Running solver.step iter {}'.format(_)
-#     print '------------------------------'
-#     solver.step(1000)
-#     score.do_seg_tests(solver, 0, False, val_imgs, layer='score', gt='label')
+interp_layers = [k for k in solver.net.params.keys() if 'up' in k]
+print 'performing surgery on {}'.format(interp_layers)
+surgery.interp(solver.net, interp_layers)
+
+val_imgs = np.loadtxt(
+    file_parent_dir + '/data/cs-trip/val.txt', dtype=str)
+for _ in range(50):
+    print '------------------------------'
+    print 'Running solver.step iter {}'.format(_)
+    print '------------------------------'
+    solver.step(1000)
+    score.do_seg_tests(solver, 0, False, val_imgs, layer='score', gt='label')
