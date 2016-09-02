@@ -1,0 +1,14 @@
+train_net: "/home/sean/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha-fusion/fusion_train.prototxt"
+test_net: "/home/sean/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha-fusion/fusion_val.prototxt"
+test_iter: 654
+test_interval: 999999999
+base_lr: 1e-12
+display: 20
+max_iter: 3000
+lr_policy: "fixed"
+gamma: 0.1
+momentum: 9
+weight_decay: 0.0005
+stepsize: 5000
+snapshot: 1000
+snapshot_prefix: "/home/sean/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha-fusion/fusionSnapshot/train"
