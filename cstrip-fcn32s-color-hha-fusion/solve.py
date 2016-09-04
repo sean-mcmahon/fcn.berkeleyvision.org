@@ -29,20 +29,6 @@ caffe = imp.load_module('caffe', filename, path, desc)
 from caffe.proto import caffe_pb2
 
 
-def writehdf5txt(FCN_Models_dir, outdir, data_splits):
-    hdf5txt_locations = []
-    for split in data_splits:
-        hdf5filenames = glob.glob(os.path.join(
-            FCN_Models_dir, 'data/cs-trip/' + split + '_hdf5/*.h5'))
-        hdf5txt_locations.append(os.path.join(outdir, split + '_hdf5.txt'))
-        txtfile = open(hdf5txt_locations[-1], 'w')
-        for filename in hdf5filenames:
-            txtfile.write(filename + '\n')
-        txtfile.close()
-    print 'solve: hdf5 file locations written.'
-    return hdf5txt_locations
-
-
 def fusion_solver(train_net_path, test_net_path, file_location):
     s = caffe_pb2.SolverParameter()
     s.train_net = train_net_path
@@ -87,7 +73,7 @@ else:
 
 data_splits = ['train', 'val']
 # Create fusion_test prototxt files
-[train_hdf5, val_hdf5] = writehdf5txt(
+[train_hdf5, val_hdf5] = nets.writehdf5txt(
     file_parent_dir, file_location, data_splits)
 val_net_path = file_location + '/fusion_val.prototxt'
 train_net_path = file_location + '/fusion_train.prototxt'
