@@ -3,6 +3,8 @@ import os
 import sys
 import imp
 from os.path import expanduser
+import argparse
+import glob
 file_location = os.path.realpath(os.path.join(
     os.getcwd(), os.path.dirname(__file__)))
 sys.path.append(file_location[:file_location.rfind('/')])
@@ -21,10 +23,18 @@ from caffe import layers, params
 from caffe.coord_map import crop
 
 
-def appendCrop(prototxt_file, bottoms):
-    # append text for crop layer either at the end or before the softmax layer
-
-    pass
+def writehdf5txt(FCN_Models_dir, outdir, data_splits):
+    hdf5txt_locations = []
+    for split in data_splits:
+        hdf5filenames = glob.glob(os.path.join(
+            FCN_Models_dir, 'data/cs-trip/' + split + '_hdf5/*.h5'))
+        hdf5txt_locations.append(os.path.join(outdir, split + '_hdf5.txt'))
+        txtfile = open(hdf5txt_locations[-1], 'w')
+        for filename in hdf5filenames:
+            txtfile.write(filename + '\n')
+        txtfile.close()
+    print 'solve: hdf5 file locations written.'
+    return hdf5txt_locations
 
 
 def fixedFusionNet(hf5_txtfile_path, batchSize):
@@ -80,3 +90,15 @@ def convFusionNet(hf5_txtfile_path, batchSize):
             n.score, n.label, loss_param=dict(normalize=False))
 
     return n.to_proto()
+
+
+if __name__ == '__main__':
+    # User Input
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--net', default='convFusionNet')
+    args = parser.parse_args()
+    hdf5file = file_location
+    batch_size = 1
+    test_net_path = os.path.join(file_location, 'fusion_test.prototxt')
+    with open(test_net_path, 'w') as f:
+        f.write(str(convFusionNet(hdf5file, batch_size)))
