@@ -94,11 +94,17 @@ def convFusionNet(hf5_txtfile_path, batchSize):
 
 if __name__ == '__main__':
     # User Input
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--net', default='convFusionNet')
-    args = parser.parse_args()
-    hdf5file = file_location
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument('--net', default='convFusionNet')
+    # args = parser.parse_args()
+
+    hdf5files = writehdf5txt(file_parent_dir, file_location, 'test')
     batch_size = 1
     test_net_path = os.path.join(file_location, 'fusion_test.prototxt')
     with open(test_net_path, 'w') as f:
-        f.write(str(convFusionNet(hdf5file, batch_size)))
+        f.write(str(convFusionNet(hdf5files, batch_size)))
+
+    batch_size = 1
+    test_net_path = os.path.join(file_location, 'fusion_deploy.prototxt')
+    with open(test_net_path, 'w') as f:
+        f.write(str(fixedFusionNet(hdf5files, batch_size)))
