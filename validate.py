@@ -11,6 +11,7 @@ from os.path import expanduser
 import imp
 import argparse
 import glob
+import score
 
 
 def add_slash(mystring):
@@ -66,7 +67,7 @@ else:
 snapshot_dir = glob.glob(weight_dir + '*napshot*')
 weights = snapshot_dir[0] + '/' + snapshot_filter + \
     '_iter_' + str(iteration) + '.caffemodel'
-import score
+
 
 # init
 logFilenames = glob.glob(file_location + '/' + network_dir + 'logs/*_train*')
