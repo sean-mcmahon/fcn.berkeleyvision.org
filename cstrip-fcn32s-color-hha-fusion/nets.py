@@ -18,13 +18,16 @@ elif 'sean' in home_dir:
     caffe_root = home_dir + '/src/caffe'
 filename, path, desc = imp.find_module('caffe', [caffe_root + '/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
-from caffe.proto import caffe_pb2
 from caffe import layers, params
 from caffe.coord_map import crop
+from caffe.proto import caffe_pb2
 
 
 def writehdf5txt(FCN_Models_dir, outdir, data_splits):
     hdf5txt_locations = []
+    if isinstance(data_splits, basestring):  # if data_splits is string
+        print 'writehdf5txt: Data splits must be a list or tuple'
+        raise()
     for split in data_splits:
         hdf5filenames = glob.glob(os.path.join(
             FCN_Models_dir, 'data/cs-trip/' + split + '_hdf5/*.h5'))
@@ -33,7 +36,7 @@ def writehdf5txt(FCN_Models_dir, outdir, data_splits):
         for filename in hdf5filenames:
             txtfile.write(filename + '\n')
         txtfile.close()
-    print 'solve: hdf5 file locations written.'
+    print 'writehdf5txt: hdf5 file locations written to {}'.format(outdir)
     return hdf5txt_locations
 
 
@@ -92,19 +95,26 @@ def convFusionNet(hf5_txtfile_path, batchSize):
     return n.to_proto()
 
 
+def createNets(split='test'):
+    [hdf5files] = writehdf5txt(file_parent_dir, file_location, [split])
+    batch_size = 1
+    conv_test_net_path = file_location + '/fusionConv_' + split + '.prototxt'
+    with open(conv_test_net_path, 'w') as f:
+        f.write(str(convFusionNet(hdf5files, batch_size)))
+
+    batch_size = 1
+    fixed_test_net_path = os.path.join(
+        file_location, 'fusionFixed_' + split + '.prototxt')
+    with open(fixed_test_net_path, 'w') as f:
+        f.write(str(fixedFusionNet(hdf5files, batch_size)))
+
+    return [fixed_test_net_path, conv_test_net_path]
+
 if __name__ == '__main__':
     # User Input
     # parser = argparse.ArgumentParser()
     # parser.add_argument('--net', default='convFusionNet')
     # args = parser.parse_args()
-
-    hdf5files = writehdf5txt(file_parent_dir, file_location, 'test')
-    batch_size = 1
-    test_net_path = os.path.join(file_location, 'fusion_test.prototxt')
-    with open(test_net_path, 'w') as f:
-        f.write(str(convFusionNet(hdf5files, batch_size)))
-
-    batch_size = 1
-    test_net_path = os.path.join(file_location, 'fusion_deploy.prototxt')
-    with open(test_net_path, 'w') as f:
-        f.write(str(fixedFusionNet(hdf5files, batch_size)))
+    [fixed_net_path, conv_net_path] = createNets()
+    print 'prototxt files saved as \n- {}\n- {}'.format(fixed_net_path,
+                                                        conv_net_path)
