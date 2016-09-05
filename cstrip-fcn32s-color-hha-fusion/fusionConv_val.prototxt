@@ -1,0 +1,77 @@
+layer {
+  name: "color_features"
+  type: "HDF5Data"
+  top: "color_features"
+  top: "hha_features"
+  top: "label"
+  top: "in_data"
+  hdf5_data_param {
+    source: "/home/sean/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha-fusion/val_hdf5.txt"
+    batch_size: 1
+  }
+}
+layer {
+  name: "data"
+  type: "Concat"
+  bottom: "color_features"
+  bottom: "hha_features"
+  top: "data"
+}
+layer {
+  name: "score_fr"
+  type: "Convolution"
+  bottom: "data"
+  top: "score_fr"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    pad: 0
+    kernel_size: 1
+    weight_filler {
+      type: "xavier"
+    }
+  }
+}
+layer {
+  name: "upscore"
+  type: "Deconvolution"
+  bottom: "score_fr"
+  top: "upscore"
+  param {
+    lr_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    bias_term: false
+    kernel_size: 64
+    stride: 32
+  }
+}
+layer {
+  name: "score"
+  type: "Crop"
+  bottom: "upscore"
+  bottom: "in_data"
+  top: "score"
+  crop_param {
+    axis: 2
+    offset: 19
+  }
+}
+layer {
+  name: "loss"
+  type: "SoftmaxWithLoss"
+  bottom: "score"
+  bottom: "label"
+  top: "loss"
+  loss_param {
+    normalize: false
+  }
+}

@@ -1,0 +1,50 @@
+layer {
+  name: "color_features"
+  type: "HDF5Data"
+  top: "color_features"
+  top: "hha_features"
+  top: "label"
+  top: "in_data"
+  hdf5_data_param {
+    source: "/home/sean/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha-fusion/test_hdf5.txt"
+    batch_size: 1
+  }
+}
+layer {
+  name: "features_fused"
+  type: "Eltwise"
+  bottom: "color_features"
+  bottom: "hha_features"
+  top: "features_fused"
+  eltwise_param {
+    operation: SUM
+    coeff: 0.5
+    coeff: 0.5
+  }
+}
+layer {
+  name: "upscore"
+  type: "Deconvolution"
+  bottom: "features_fused"
+  top: "upscore"
+  param {
+    lr_mult: 0
+  }
+  convolution_param {
+    num_output: 2
+    bias_term: false
+    kernel_size: 64
+    stride: 32
+  }
+}
+layer {
+  name: "score"
+  type: "Crop"
+  bottom: "upscore"
+  bottom: "in_data"
+  top: "score"
+  crop_param {
+    axis: 2
+    offset: 19
+  }
+}
