@@ -32,7 +32,7 @@ def fast_hist(a, b, n):
     return np.bincount(n * a[k].astype(int) + b[k], minlength=n**2).reshape(n, n)
 
 
-def compute_hist(net, save_dir, dataset, layer='score', gt='label', data_top='data'):
+def compute_hist(net, save_dir, dataset, layer='score', gt='label', dataL='data'):
     n_cl = net.blobs[layer].channels  # channels is shape(1) of blob dim
     # n_cl number of classification channels? (2 for tripnet)
     if save_dir and not os.path.isdir(save_dir):
@@ -58,7 +58,7 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label', data_top='da
                 net.blobs[gt].data[0, 0].astype(np.uint8) * 255, mode='P')
             # im_gt.save(os.path.join(save_dir, ''.join(idx) + '_GT.png'))
             try:
-                colorArray = net.blobs[data_top][0].astype(np.uint8)
+                colorArray = net.blobs[dataL].data[0].astype(np.uint8)
                 colorArray = colorArray.transpose((1, 2, 0))
                 colorArray = colorArray[..., ::-1]
                 colorIm = Image.fromarray(colorArray)
@@ -77,7 +77,7 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label', data_top='da
         try:
             loss += net.blobs['loss'].data.flat[0]
         except:
-            print 'compute_hist: error calculating loss, probably no loss layer'
+            print '> compute_hist: error calculating loss, probably no loss layer'
             loss += 0
         # score_values = net.blobs[layer].data[0].argmax(0)
         # gt_values = net.blobs[gt].data[0, 0]
@@ -95,14 +95,14 @@ def seg_tests(solver, save_format, dataset, layer='score', gt='label'):
                  save_format, dataset, layer, gt)
 
 
-def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label'):
+def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label', dataL='data'):
     n_cl = net.blobs[layer].channels
     if save_format:
         save_format = save_format.format(iter)
     # TODO get better perfomance metrics
     # as I only care about trip detection performance
     print '> Computing Histagram'
-    hist, loss = compute_hist(net, save_format, dataset, layer, gt)
+    hist, loss = compute_hist(net, save_format, dataset, layer, gt, dataL)
     print '>>> Hist = {}'.format(hist)
     # mean loss
     print '>>>', datetime.now(), 'Iteration', iter, 'loss', loss
