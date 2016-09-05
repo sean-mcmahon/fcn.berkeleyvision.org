@@ -95,14 +95,12 @@ def convFusionNet(hf5_txtfile_path, batchSize):
     return n.to_proto()
 
 
-def createNets(split='test'):
+def createNets(split='test', batch_size=1):
     [hdf5files] = writehdf5txt(file_parent_dir, file_location, [split])
-    batch_size = 1
     conv_test_net_path = file_location + '/fusionConv_' + split + '.prototxt'
     with open(conv_test_net_path, 'w') as f:
         f.write(str(convFusionNet(hdf5files, batch_size)))
 
-    batch_size = 1
     fixed_test_net_path = os.path.join(
         file_location, 'fusionFixed_' + split + '.prototxt')
     with open(fixed_test_net_path, 'w') as f:
