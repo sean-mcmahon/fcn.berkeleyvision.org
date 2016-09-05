@@ -50,15 +50,17 @@ def append_hist(prev_hist, gt_blob_data, score_blob_data, num_classes):
             hist_list[count] += item
     return hist_list, thresholds
 
+
 def compute_PR(hist_list, thresholds):
     # hist = [No. true Neg , No. false Pos;
     #         No. false Neg, No. true Pos]
     for element in hist_list:
-        Tp = element[1,1]
-        Fp = element[0,1]
-        Fn = element[1,0]
-        prec = Tp / (Tp+Fp)
+        Tp = element[1, 1]
+        Fp = element[0, 1]
+        Fn = element[1, 0]
+        prec = Tp / (Tp + Fp)
         rec = Tp / (Tp + Fn)
+
 
 def compute_hist(net, save_dir, dataset, layer='score', gt='label', dataL='data'):
     n_cl = net.blobs[layer].channels  # channels is shape(1) of blob dim
