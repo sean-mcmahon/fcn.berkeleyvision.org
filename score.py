@@ -29,7 +29,16 @@ def fast_hist(a, b, n):
     # print 'a has {} values\nb has {} values\nand n is {}'.format(np.unique(a), np.unique(b),n)
     # print 'n * a[k].astype(int) + b[k] has values {}. a[k] has {}, b[k] has {}'.format(np.unique(n * a[k].astype(int) + b[k]),
     #                             np.unique(a[k]),np.unique(b[k]))
+    # hist = [No. true Neg , No. false Pos;
+    #         No. false Neg, No. true Pos]
     return np.bincount(n * a[k].astype(int) + b[k], minlength=n**2).reshape(n, n)
+
+
+def compute_PR(gt_blob_data, score_blob_data):
+    threshlold_interval = 1
+    thresholds = []
+    for count in range(threshlold_interval, 100, threshlold_interval):
+        thresholds.append(np.copy(count/100))
 
 
 def compute_hist(net, save_dir, dataset, layer='score', gt='label', dataL='data'):
