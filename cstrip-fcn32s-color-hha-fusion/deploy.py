@@ -15,26 +15,9 @@ file_location = os.path.realpath(os.path.join(
 sys.path.append(file_location[:file_location.rfind('/')])
 import surgery
 import score
+import nets
+import glob
 from PIL import Image
-
-
-def fusion_solver(train_net_path, test_net_path, file_location):
-    s = caffe_pb2.SolverParameter()
-    s.train_net = train_net_path
-    s.test_net.append(test_net_path)
-    s.test_interval = 999999999  # do not invoke tests here
-    s.test_iter.append(654)
-    s.max_iter(3000)
-    s.base_lr = 1e-12
-    s.lr_policy = 'fixed'
-    s.gamma = 0.1
-    s.stepsize = 5000
-    s.momentum = 9
-    s.weight_decay = 0.0005
-    s.display(20)
-    s.snapshot = 1000
-    s.snapshot_prefix = file_location + '/colourHHAsnapshot/fusion_train'
-    return s
 
 
 # add '../' directory to path for importing score.py, surgery.py and
@@ -54,7 +37,13 @@ from caffe.proto import caffe_pb2
 # User Input
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', default='CPU')
+parser.add_argument('--iteration', default=8000)
+parser.add_argument('--data_split', default='test')
+parser.add_argument('--snapshot_filter', default='train')
 args = parser.parse_args()
+iteration = args.iteration
+snapshot_filter = args.snapshot_filter
+data_split = args.data_split
 
 if 'g' in args.mode or 'G' in args.mode:
     caffe.set_mode_gpu()
@@ -69,49 +58,32 @@ else:
     print '-- GPU Mode Chosen -- {}'.format(args.mode)
     print '==============='
 
-data_split = 'val'
 # Create fusion_test prototxt files
-test_net_path = file_location + '/fusion_deploy.prototxt'
-hdf5_filename = os.path.join(file_location, data_split + '_hdf5.txt')
-val_hdf5s = np.loadtxt(hdf5_filename, dtype=str)
-batchSize = len(val_hdf5s)
-val_imgs = np.loadtxt(
+[fixed_net_path, conv_net_path] = nets.createNets(data_split)
+dataset_split = np.loadtxt(
     file_parent_dir + '/data/cs-trip/{}.txt'.format(data_split), dtype=str)
-# with open(test_net_path, 'w') as f:
-#     f.write(str(fusionNet(os.path.join(file_location, 'testhdf5.txt'), batchSize)))
 
-# Create and load solver
-# solver_path = file_location + '/fusion_solver.prototxt'
-# with open(solver_path, 'w') as f:
-#     f.write(str(fusion_solver(train_net_path, test_net_path)))
-# solver = caffe.SGDSolver(file_location + '/fusion_solver.prototxt')
-
-fusion_fcn = caffe.Net(test_net_path, caffe.TEST)
-
-# Net surgery, filling the deconvolution layer
-interp_layers = [k for k in fusion_fcn.params.keys() if 'up' in k]
+fixed_fusion_net = caffe.Net(fixed_net_path, caffe.TEST)
+interp_layers = [k for k in fixed_fusion_net.params.keys() if 'up' in k]
 print 'performing surgery on {}'.format(interp_layers)
-surgery.interp(fusion_fcn, interp_layers)
+surgery.interp(fixed_fusion_net, interp_layers)
 
-# fusion_fcn.forward()
-# for counter, idx in enumerate(val_imgs):
-#     fusion_im = Image.fromarray(fusion_fcn.blobs['score'].data[
-#                                 counter].argmax(0).astype(np.uint8) * 255, mode='P')
-#     img_gt = Image.fromarray(fusion_fcn.blobs['label'].data[
-#                              counter, 0].astype(np.uint8) * 255, mode='P')
-#     # colour_score.save(os.path.join(file_location, 'colourNetOutput.png'))
-#     colourArr = fusion_fcn.blobs['in_data'].data[counter].astype(np.uint8)
-#     colourArr = colourArr.transpose((1, 2, 0))  # change to h,w,d
-#     colourArr = colourArr[..., ::-1]  # bgr -> rgb
-#     colourImg = Image.fromarray(colourArr)
-#
-#     overlay = Image.blend(colourImg.convert(
-#         "RGBA"), fusion_im.convert("RGBA"), 0.7)
-#     overlay.save(os.path.join(file_location, idx[1] + 'fusion_overlay.png'))
-#     overlay_gt = Image.blend(colourImg.convert(
-#         "RGBA"), img_gt.convert("RGBA"), 0.7)
-#     overlay_gt.save(os.path.join(file_location, idx[1] + 'gt_overlay.png'))
-#     print 'forward pass {}/{}'.format(counter+1, len(val_imgs))
+weight_dir = file_location
+snapshot_dir = glob.glob(weight_dir + '/*napshot*')
+weights = snapshot_dir[0] + '/' + snapshot_filter + \
+    '_iter_' + str(iteration) + '.caffemodel'
+convFusionNet = caffe.Net(conv_net_path, weights,  caffe.TEST)
 
-score.do_seg_tests(fusion_fcn, 0, os.path.join(
-    file_location, data_split + '_images'), val_imgs, layer='score', gt='label')
+print '\n------------------------------'
+print 'Testing fixed_fusion_net'
+print '------------------------------'
+score.do_seg_tests(fixed_fusion_net, 0, os.path.join(
+    file_location, data_split + '_fixedNet_images'), dataset_split,
+    layer='score', gt='label', dataL='in_data')
+
+print '\n------------------------------'
+print 'Testing convFusionNet'
+print '------------------------------'
+score.do_seg_tests(convFusionNet, iteration, os.path.join(
+    file_location, data_split + '_convNet_images'), dataset_split,
+    layer='score', gt='label', dataL='in_data')
