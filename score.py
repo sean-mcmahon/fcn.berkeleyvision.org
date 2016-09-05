@@ -7,6 +7,8 @@ from datetime import datetime
 from PIL import Image
 from os.path import expanduser
 import glob
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 home_dir = expanduser("~")
@@ -36,11 +38,11 @@ def fast_hist(a, b, n):
 
 
 def append_hist(prev_hist, gt_blob_data, score_blob_data, num_classes):
-    threshlold_interval = 1.0
+    threshlold_interval = 1
     thresholds = []
     hist_list = []
-    for count in range(threshlold_interval, 100.0, threshlold_interval):
-        threshold = count / 100
+    for count in range(threshlold_interval, 100, threshlold_interval):
+        threshold = count / 100.0
         thresholds.append(np.copy(threshold))  # as percentage
         thres_scores = score_blob_data <= threshold
         thres_scores = thres_scores.astype(int)
@@ -55,30 +57,35 @@ def append_hist(prev_hist, gt_blob_data, score_blob_data, num_classes):
 def compute_PR(hist_list, thresholds, save_dir):
     # hist = [No. true Neg , No. false Pos;
     #         No. false Neg, No. true Pos]
-    precision = []
-    recall = []
+    precisionList = []
+    recallList = []
     for el in hist_list:
         Tp = el[1, 1]
         Fp = el[0, 1]
         Fn = el[1, 0]
         prec = Tp / (Tp + Fp)
         rec = Tp / (Tp + Fn)
-        precision.append(np.copy(prec))
-        recall.append(np.copy(rec))
-    if len(precision) != len(thresholds):
+        precisionList.append(np.copy(prec))
+        recallList.append(np.copy(rec))
+    print 'prec {}\n\nrec {}'.format(precisionList, recallList)
+    if len(precisionList) != len(thresholds):
         print 'Error should be the same number of precision and threshold elements'
+    if len(precisionList) != len(recallList):
+        print '\nError! should be the same number of precision and recall elements\n'
     if save_dir:
         plt.ioff()
-        fig = plt.figure
-        plt.plot(recall, precision)
+        # fig = plt.figure
+        plt.plot(recallList, precisionList)
         plt.savefig(os.path.join(save_dir, 'PR_curve.png'))
-        plt.close(fig)
-        np.savez(os.path.join(save_dir, 'PR_arrays.npz'), precision, recall)
+        # plt.close(fig)
+        np.savez(os.path.join(save_dir, 'PR_arrays.npz'),
+                 precisionList, recallList)
     else:
         file_location = os.path.realpath(os.path.join(
             os.getcwd(), os.path.dirname(__file__)))
-        np.savez(os.path.join(file_location, 'PR_arrays.npz'), precision, recall)
-    return precision, recall
+        np.savez(os.path.join(file_location, 'PR_arrays.npz'),
+                 precisionList, recallList)
+    return precisionList, recallList
 
 
 def compute_hist(net, save_dir, dataset, layer='score', gt='label', dataL='data'):
