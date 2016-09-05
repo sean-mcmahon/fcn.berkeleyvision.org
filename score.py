@@ -7,6 +7,7 @@ from datetime import datetime
 from PIL import Image
 from os.path import expanduser
 import glob
+import matplotlib.pyplot as plt
 
 home_dir = expanduser("~")
 if 'n8307628' in home_dir:
@@ -51,15 +52,33 @@ def append_hist(prev_hist, gt_blob_data, score_blob_data, num_classes):
     return hist_list, thresholds
 
 
-def compute_PR(hist_list, thresholds):
+def compute_PR(hist_list, thresholds, save_dir):
     # hist = [No. true Neg , No. false Pos;
     #         No. false Neg, No. true Pos]
-    for element in hist_list:
-        Tp = element[1, 1]
-        Fp = element[0, 1]
-        Fn = element[1, 0]
+    precision = []
+    recall = []
+    for el in hist_list:
+        Tp = el[1, 1]
+        Fp = el[0, 1]
+        Fn = el[1, 0]
         prec = Tp / (Tp + Fp)
         rec = Tp / (Tp + Fn)
+        precision.append(np.copy(prec))
+        recall.append(np.copy(rec))
+    if len(precision) != len(thresholds):
+        print 'Error should be the same number of precision and threshold elements'
+    if save_dir:
+        plt.ioff()
+        fig = plt.figure
+        plt.plot(recall, precision)
+        plt.savefig(os.path.join(save_dir, 'PR_curve.png'))
+        plt.close(fig)
+        np.savez(os.path.join(save_dir, 'PR_arrays.npz'), precision, recall)
+    else:
+        file_location = os.path.realpath(os.path.join(
+            os.getcwd(), os.path.dirname(__file__)))
+        np.savez(os.path.join(file_location, 'PR_arrays.npz'), precision, recall)
+    return precision, recall
 
 
 def compute_hist(net, save_dir, dataset, layer='score', gt='label', dataL='data'):
