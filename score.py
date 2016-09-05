@@ -32,7 +32,7 @@ def fast_hist(a, b, n):
     return np.bincount(n * a[k].astype(int) + b[k], minlength=n**2).reshape(n, n)
 
 
-def compute_hist(net, save_dir, dataset, layer='score', gt='label'):
+def compute_hist(net, save_dir, dataset, layer='score', gt='label', data_top='data'):
     n_cl = net.blobs[layer].channels  # channels is shape(1) of blob dim
     # n_cl number of classification channels? (2 for tripnet)
     if save_dir and not os.path.isdir(save_dir):
@@ -58,14 +58,15 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label'):
                 net.blobs[gt].data[0, 0].astype(np.uint8) * 255, mode='P')
             # im_gt.save(os.path.join(save_dir, ''.join(idx) + '_GT.png'))
             try:
-                colorArray = net.blobs['data'][0].astype(np.uint8)
+                colorArray = net.blobs[data_top][0].astype(np.uint8)
                 colorArray = colorArray.transpose((1, 2, 0))
                 colorArray = colorArray[..., ::-1]
                 colorIm = Image.fromarray(colorArray)
             except:
-                print 'reading colour image from network failed, reading from file'
+                print '> Reading colour image from network failed, reading from file'
                 colorIm = Image.open(
-                    glob.glob('{}/{}/colour/colourimg_{}_*'.format(cstrip_dir, idx[0], idx[1]))[0])
+                    glob.glob('{}/{}/colour/colourimg_{}_*'.format(
+                        cstrip_dir, idx[0], idx[1]))[0])
             overlay = Image.blend(colorIm.convert(
                 "RGBA"), im.convert("RGBA"), 0.7)
             overlay.save(os.path.join(save_dir, ''.join(idx) + '.png'))
