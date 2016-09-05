@@ -34,12 +34,31 @@ def fast_hist(a, b, n):
     return np.bincount(n * a[k].astype(int) + b[k], minlength=n**2).reshape(n, n)
 
 
-def compute_PR(gt_blob_data, score_blob_data):
-    threshlold_interval = 1
+def append_hist(prev_hist, gt_blob_data, score_blob_data, num_classes):
+    threshlold_interval = 1.0
     thresholds = []
-    for count in range(threshlold_interval, 100, threshlold_interval):
-        thresholds.append(np.copy(count/100))
+    hist_list = []
+    for count in range(threshlold_interval, 100.0, threshlold_interval):
+        threshold = count / 100
+        thresholds.append(np.copy(threshold))  # as percentage
+        thres_scores = score_blob_data <= threshold
+        thres_scores = thres_scores.astype(int)
+        hist_list.append(
+            np.copy(fast_hist(gt_blob_data, thres_scores, num_classes)))
+    if prev_hist:
+        for count, item in enumerate(prev_hist):
+            hist_list[count] += item
+    return hist_list, thresholds
 
+def compute_PR(hist_list, thresholds):
+    # hist = [No. true Neg , No. false Pos;
+    #         No. false Neg, No. true Pos]
+    for element in hist_list:
+        Tp = element[1,1]
+        Fp = element[0,1]
+        Fn = element[1,0]
+        prec = Tp / (Tp+Fp)
+        rec = Tp / (Tp + Fn)
 
 def compute_hist(net, save_dir, dataset, layer='score', gt='label', dataL='data'):
     n_cl = net.blobs[layer].channels  # channels is shape(1) of blob dim
@@ -48,6 +67,7 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label', dataL='data'
         os.mkdir(save_dir)
     hist = np.zeros((n_cl, n_cl))
     loss = 0
+    threshold_hists = []
     for idx in dataset:
         net.forward()
         print '>> Foward pass for {} complete'.format(idx)
@@ -56,6 +76,12 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label', dataL='data'
         hist += fast_hist(net.blobs[gt].data[0, 0].flatten(),
                           net.blobs[layer].data[0].argmax(0).flatten(),
                           n_cl)
+        threshold_hists, thresholds = append_hist(threshold_hists,
+                                                  net.blobs[gt].data[
+                                                      0, 0].flatten(),
+                                                  net.blobs[layer].data[
+                                                      0].flatten(),
+                                                  n_cl)
         # print 'Hist format should be \n(num 0"s, num 1"s\nnum 2"s, num
         # 3"s)\nHist value is actually: \n{}\n'.format(hist)
 
@@ -88,12 +114,8 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label', dataL='data'
         except:
             print '> compute_hist: error calculating loss, probably no loss layer'
             loss += 0
-        # score_values = net.blobs[layer].data[0].argmax(0)
-        # gt_values = net.blobs[gt].data[0, 0]
-        # print '> score_values has shape ', np.shape(score_values)
-        # print '> Unqiue score_values values: ', np.unique(score_values)
-        # print '> gt_values has shape ', np.shape(gt_values)
-        # print '> Unqiue gt_values values: ', np.unique(gt_values)
+
+    precision, recall = compute_PR(threshold_hists, thresholds, save_dir)
     return hist, loss / len(dataset)
 
 
