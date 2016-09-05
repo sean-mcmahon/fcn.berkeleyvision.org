@@ -46,7 +46,7 @@ def fusion_solver(train_net_path, test_net_path, file_location):
     s.display = 20
     s.snapshot = 1000
 
-    snapshot_dir = os.path.join(file_location + '/fusionSnapshot/secondTrain')
+    snapshot_dir = file_location + '/fusionSnapshot/secondTrain'
     if not os.path.isdir(snapshot_dir):
         os.mkdir(snapshot_dir)
     s.snapshot_prefix = snapshot_dir
