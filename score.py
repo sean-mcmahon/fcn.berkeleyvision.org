@@ -44,7 +44,7 @@ def append_hist(prev_hist, gt_blob_data, score_blob_data, num_classes):
     for count in range(threshlold_interval, 100, threshlold_interval):
         threshold = count / 100.0
         thresholds.append(np.copy(threshold))  # as percentage
-        thres_scores = score_blob_data <= threshold
+        thres_scores = score_blob_data >= threshold
         thres_scores = thres_scores.astype(int)
         hist_list.append(
             np.copy(fast_hist(gt_blob_data, thres_scores, num_classes)))
@@ -88,7 +88,8 @@ def compute_PR(hist_list, thresholds, save_dir):
     return precisionList, recallList
 
 
-def compute_hist(net, save_dir, dataset, layer='score', gt='label', dataL='data'):
+def compute_hist(net, save_dir, dataset, layer='score', gt='label',
+                 dataL='data'):
     n_cl = net.blobs[layer].channels  # channels is shape(1) of blob dim
     # n_cl number of classification channels? (2 for tripnet)
     if save_dir and not os.path.isdir(save_dir):
@@ -154,7 +155,8 @@ def seg_tests(solver, save_format, dataset, layer='score', gt='label'):
                  save_format, dataset, layer, gt)
 
 
-def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label', dataL='data'):
+def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label',
+                 dataL='data'):
     n_cl = net.blobs[layer].channels
     if save_format:
         save_format = save_format.format(iter)
@@ -181,6 +183,7 @@ def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label', dat
     # trip hazard IU (label 1)
     iu = np.diag(hist) / (hist.sum(1) + hist.sum(0) - np.diag(hist))
     print '>>>', datetime.now(), 'Iteration', iter, 'trip IU', iu[1], 'non-trip IU', iu[0]
-    print '>>>', datetime.now(), 'Iteration', iter, 'trip accuracy', acc[1], 'non-trip accuracy', acc[0]
+    print '>>>', datetime.now(), 'Iteration', iter, 'trip accuracy', acc[1], \
+        'non-trip accuracy', acc[0]
 
     return hist
