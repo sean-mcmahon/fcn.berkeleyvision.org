@@ -129,7 +129,7 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label',
                 net.blobs[gt].data[0, 0].astype(np.uint8) * 255, mode='P')
             # im_gt.save(os.path.join(save_dir, ''.join(idx) + '_GT.png'))
             try:
-                colorArray = net.blobs['dataL'].data[0].astype(np.uint8)
+                colorArray = net.blobs[dataL].data[0].astype(np.uint8)
                 colorArray = colorArray.transpose((1, 2, 0))
                 colorArray = colorArray[..., ::-1]
                 colorIm = Image.fromarray(colorArray)
