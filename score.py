@@ -29,8 +29,11 @@ def fast_hist(a, b, n):
     # This (below) removes dud labels? Yep, remove all labels less than 0 or
     # geater than number of classifications
     k = (a >= 0) & (a < n)
-    # print 'a has {} values\nb has {} values\nand n is {}'.format(np.unique(a), np.unique(b),n)
-    # print 'n * a[k].astype(int) + b[k] has values {}. a[k] has {}, b[k] has {}'.format(np.unique(n * a[k].astype(int) + b[k]),
+    # print 'a has {} values\nb has {} values\nand n is
+    # {}'.format(np.unique(a), np.unique(b),n)
+    # print 'n * a[k].astype(int) + b[k] has values {}. \
+    #         a[k] has {}, b[k] has {}'.format(np.unique(
+    #         n * a[k].astype(int) + b[k]),
     #                             np.unique(a[k]),np.unique(b[k]))
     # hist = [No. true Neg , No. false Pos;
     #         No. false Neg, No. true Pos]
@@ -45,9 +48,9 @@ def append_hist(prev_hist, gt_blob_data, score_blob_data, num_classes):
         threshold = count / 100.0
         thresholds.append(np.copy(threshold))  # as percentage
         thres_scores = score_blob_data >= threshold
-        thres_scores = thres_scores.astype(int)
-        hist_list.append(
-            np.copy(fast_hist(gt_blob_data, thres_scores, num_classes)))
+        thres_scores = thres_scores.astype(int).flatten()
+        histagram = fast_hist(gt_blob_data, thres_scores, num_classes)
+        hist_list.append(np.copy(histagram))
     if prev_hist:
         for count, item in enumerate(prev_hist):
             hist_list[count] += item
@@ -67,17 +70,21 @@ def compute_PR(hist_list, thresholds, save_dir):
         rec = Tp / (Tp + Fn)
         precisionList.append(np.copy(prec))
         recallList.append(np.copy(rec))
-    print 'prec {}\n\nrec {}'.format(precisionList, recallList)
+    print 'prec {}\n\nrec {}\n hist el {}'.format(np.shape(precisionList),
+                                                  np.shape(recallList),
+                                                  np.shape(hist_list[0]))
+    print 'rec values {}'.format(recallList)
+
     if len(precisionList) != len(thresholds):
         print 'Error should be the same number of precision and threshold elements'
     if len(precisionList) != len(recallList):
         print '\nError! should be the same number of precision and recall elements\n'
     if save_dir:
         plt.ioff()
-        # fig = plt.figure
+        fig = plt.figure()
         plt.plot(recallList, precisionList)
         plt.savefig(os.path.join(save_dir, 'PR_curve.png'))
-        # plt.close(fig)
+        plt.close(fig)
         np.savez(os.path.join(save_dir, 'PR_arrays.npz'),
                  precisionList, recallList)
     else:
@@ -109,7 +116,7 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label',
                                                   net.blobs[gt].data[
                                                       0, 0].flatten(),
                                                   net.blobs[layer].data[
-                                                      0].flatten(),
+                                                      0][1].flatten(),
                                                   n_cl)
         # print 'Hist format should be \n(num 0"s, num 1"s\nnum 2"s, num
         # 3"s)\nHist value is actually: \n{}\n'.format(hist)
@@ -122,7 +129,7 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label',
                 net.blobs[gt].data[0, 0].astype(np.uint8) * 255, mode='P')
             # im_gt.save(os.path.join(save_dir, ''.join(idx) + '_GT.png'))
             try:
-                colorArray = net.blobs[dataL].data[0].astype(np.uint8)
+                colorArray = net.blobs['dataL'].data[0].astype(np.uint8)
                 colorArray = colorArray.transpose((1, 2, 0))
                 colorArray = colorArray[..., ::-1]
                 colorIm = Image.fromarray(colorArray)
