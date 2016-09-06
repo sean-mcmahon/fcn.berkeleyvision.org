@@ -11,3 +11,4 @@ core
 *.zip
 *.npz
 *.h5
+*.mat
