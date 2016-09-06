@@ -36,7 +36,7 @@ from caffe.proto import caffe_pb2
 
 # User Input
 parser = argparse.ArgumentParser()
-parser.add_argument('--mode', default='CPU')
+parser.add_argument('--mode', default='GPU')
 parser.add_argument('--iteration', default=8000)
 parser.add_argument('--data_split', default='val')
 parser.add_argument('--snapshot_filter', default='train')
