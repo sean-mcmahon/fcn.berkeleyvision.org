@@ -10,6 +10,7 @@ import glob
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from scipy.io import savemat
 
 home_dir = expanduser("~")
 if 'n8307628' in home_dir:
@@ -80,11 +81,14 @@ def compute_PR(hist_list, thresholds, save_dir):
     if len(precisionList) != len(recallList):
         print '\nError! should be the same number of precision and recall elements\n'
     if save_dir:
-        plt.ioff()
-        fig = plt.figure()
-        plt.plot(recallList, precisionList)
-        plt.savefig(os.path.join(save_dir, 'PR_curve.png'))
-        plt.close(fig)
+        try:
+            plt.ioff()
+            fig = plt.figure()
+            plt.plot(recallList, precisionList)
+            plt.savefig(os.path.join(save_dir, 'PR_curve.png'))
+            plt.close(fig)
+        except:
+            print '>> error saving PR curve'
         np.savez(os.path.join(save_dir, 'PR_arrays.npz'),
                  precisionList, recallList)
     else:
@@ -101,6 +105,7 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label',
     # n_cl number of classification channels? (2 for tripnet)
     if save_dir and not os.path.isdir(save_dir):
         os.mkdir(save_dir)
+    save_mat = True
     hist = np.zeros((n_cl, n_cl))
     loss = 0
     threshold_hists = []
@@ -144,6 +149,14 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label',
             gt_overlay = Image.blend(colorIm.convert(
                 "RGBA"), im_gt.convert("RGBA"), 0.7)
             gt_overlay.save(os.path.join(save_dir, ''.join(idx) + '_GT.png'))
+            if save_mat:
+                score_blob = net.blobs[layer].data[0]
+                label_blob = net.blobs[gt].data[0]
+                matfilename = os.path.join(save_dir, ''.join(idx) + '.mat')
+                print '>>>>> np.unqiue(score_blob)={}'.format(np.unique(score_blob))
+                save_dict = {'score_blob': score_blob,
+                             'label_blob': label_blob}
+                savemat(matfilename, save_dict)
         # compute the loss as well
         try:
             loss += net.blobs['loss'].data.flat[0]
