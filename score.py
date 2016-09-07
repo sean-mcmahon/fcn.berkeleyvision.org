@@ -153,7 +153,7 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label',
                 score_blob = net.blobs[layer].data[0]
                 label_blob = net.blobs[gt].data[0]
                 matfilename = os.path.join(save_dir, ''.join(idx) + '.mat')
-                print '>>>>> np.unqiue(score_blob)={}'.format(np.unique(score_blob))
+                # print '>>>>> np.unqiue(score_blob)={}'.format(np.unique(score_blob))
                 save_dict = {'score_blob': score_blob,
                              'label_blob': label_blob}
                 savemat(matfilename, save_dict)
