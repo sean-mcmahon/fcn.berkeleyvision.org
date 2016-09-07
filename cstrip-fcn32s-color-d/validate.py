@@ -102,4 +102,4 @@ if not match_found:
 
 print '\n>>>> Validation <<<<\n'
 score.seg_tests(solver, file_location + '/' + args.test_type +
-                '_images', test_set, layer='score')
+                '_images', test_set, layer='score', dataL='color')
