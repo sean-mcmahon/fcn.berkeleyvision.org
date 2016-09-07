@@ -117,12 +117,12 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label',
         hist += fast_hist(net.blobs[gt].data[0, 0].flatten(),
                           net.blobs[layer].data[0].argmax(0).flatten(),
                           n_cl)
-        threshold_hists, thresholds = append_hist(threshold_hists,
-                                                  net.blobs[gt].data[
-                                                      0, 0].flatten(),
-                                                  net.blobs[layer].data[
-                                                      0][1].flatten(),
-                                                  n_cl)
+        # threshold_hists, thresholds = append_hist(threshold_hists,
+        #                                           net.blobs[gt].data[
+        #                                               0, 0].flatten(),
+        #                                           net.blobs[layer].data[
+        #                                               0][1].flatten(),
+        #                                           n_cl)
         # print 'Hist format should be \n(num 0"s, num 1"s\nnum 2"s, num
         # 3"s)\nHist value is actually: \n{}\n'.format(hist)
 
@@ -153,7 +153,8 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label',
                 score_blob = net.blobs[layer].data[0]
                 label_blob = net.blobs[gt].data[0]
                 matfilename = os.path.join(save_dir, ''.join(idx) + '.mat')
-                # print '>>>>> np.unqiue(score_blob)={}'.format(np.unique(score_blob))
+                # print '>>>>>
+                # np.unqiue(score_blob)={}'.format(np.unique(score_blob))
                 save_dict = {'score_blob': score_blob,
                              'label_blob': label_blob}
                 savemat(matfilename, save_dict)
@@ -164,15 +165,16 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label',
             print '> compute_hist: error calculating loss, probably no loss layer'
             loss += 0
 
-    precision, recall = compute_PR(threshold_hists, thresholds, save_dir)
+    # precision, recall = compute_PR(threshold_hists, thresholds, save_dir)
     return hist, loss / len(dataset)
 
 
-def seg_tests(solver, save_format, dataset, layer='score', gt='label'):
+def seg_tests(solver, save_format, dataset, layer='score', gt='label',
+              dataL='data'):
     print '>>>', datetime.now(), 'Begin seg tests'
     solver.test_nets[0].share_with(solver.net)
     do_seg_tests(solver.test_nets[0], solver.iter,
-                 save_format, dataset, layer, gt)
+                 save_format, dataset, layer, gt, dataL)
 
 
 def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label',
