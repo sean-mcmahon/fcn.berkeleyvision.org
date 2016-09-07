@@ -1,4 +1,5 @@
 from __future__ import division
+import numpy as np
 import os
 import sys
 import imp
@@ -95,13 +96,52 @@ def convFusionNet(hf5_txtfile_path, batchSize):
     return n.to_proto()
 
 
+def scoreFromHDF5_Net(hf5_txtfile_path):
+    n = caffe.NetSpec()
+    n.color_features, n.hha_features, n.label, n.in_data = layers.HDF5Data(
+        batch_size=batchSize, source=hf5_txtfile_path, ntop=4)
+    n.upscoreHHA = layers.Deconvolution(n.hha_features,
+                                        convolution_param=dict(
+                                        num_output=2, kernel_size=64,
+                                        stride=32, bias_term=False),
+                                        param=[dict(lr_mult=0)]))
+    n.upscoreColor=layers.Deconvolution(n.color_features,
+                                        convolution_param = dict(
+                                        num_output=2, kernel_size=64,
+                                        stride=32, bias_term=False),
+                                        param = [dict(lr_mult=0)]))
+    try:
+        n.scoreHHA=crop(n.upscoreHHA, n.in_data)
+    except:
+        n.scoreHHA=layers.Crop(n.upscoreHHA, n.in_data,
+                               crop_param=dict(axis = 2, offset = 19))
+    try:
+        n.scoreColor=crop(n.scoreColor, n.in_data)
+    except:
+        n.scoreColor=layers.Crop(
+            n.upscoreColor, n.in_data, crop_param=dict(axis = 2, offset = 19))
+    return n.to_proto()
+
+
+
+def ignoreZeroDepthSUM(colour_score_bin, depth_score_bin, depth_img):
+    # bin_max_hha(zero_depth_idx) = 0;
+    # bin_sum_ignore = bin_max_colour + bin_max_hha;
+    # bin_sum_ignore = bin_sum_ignore >= 1;
+    # bin_sum_ignoreCell{ii} = bin_sum_ignore;
+    zero_depth_idx=np.where(depth_img == 0)[0]
+    depth_score_bin[zero_depth_idx]=0  # ignore predictions where depth=0
+    bin_sum=colour_score_bin + depth_score_bin
+    return bin_sum
+
+
 def createNets(split='test', batch_size=1):
-    [hdf5files] = writehdf5txt(file_parent_dir, file_location, [split])
-    conv_test_net_path = file_location + '/fusionConv_' + split + '.prototxt'
+    [hdf5files]=writehdf5txt(file_parent_dir, file_location, [split])
+    conv_test_net_path=file_location + '/fusionConv_' + split + '.prototxt'
     with open(conv_test_net_path, 'w') as f:
         f.write(str(convFusionNet(hdf5files, batch_size)))
 
-    fixed_test_net_path = os.path.join(
+    fixed_test_net_path=os.path.join(
         file_location, 'fusionFixed_' + split + '.prototxt')
     with open(fixed_test_net_path, 'w') as f:
         f.write(str(fixedFusionNet(hdf5files, batch_size)))
@@ -113,6 +153,6 @@ if __name__ == '__main__':
     # parser = argparse.ArgumentParser()
     # parser.add_argument('--net', default='convFusionNet')
     # args = parser.parse_args()
-    [fixed_net_path, conv_net_path] = createNets()
+    [fixed_net_path, conv_net_path]=createNets()
     print 'prototxt files saved as \n- {}\n- {}'.format(fixed_net_path,
                                                         conv_net_path)
