@@ -70,7 +70,7 @@ if [[ -z "$snapshot_iter" ]]; then
 fi
 snapshot_filter_="$4"
 if [[ -z "$snapshot_filter_" ]]; then
-  snapshot_filter_='train'
+  snapshot_filter_='secondTrain_lowerLR'
 fi
 network_dir="$5"
 if [[ -z "$network_dir" ]]; then
