@@ -23,25 +23,8 @@ filename, path, desc = imp.find_module('caffe', [caffe_root + '/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
 
 
-def fast_hist(a, b, n):
-    # a is GT pixel values
-    # b is binary class image of max predictions
-    # n is number of classifications (=2)
-    # This (below) removes dud labels? Yep, remove all labels less than 0 or
-    # geater than number of classifications
-    k = (a >= 0) & (a < n)
-    # print 'a has {} values\nb has {} values\nand n is
-    # {}'.format(np.unique(a), np.unique(b),n)
-    # print 'n * a[k].astype(int) + b[k] has values {}. \
-    #         a[k] has {}, b[k] has {}'.format(np.unique(
-    #         n * a[k].astype(int) + b[k]),
-    #                             np.unique(a[k]),np.unique(b[k]))
-    # hist = [No. true Neg , No. false Pos;
-    #         No. false Neg, No. true Pos]
-    return np.bincount(n * a[k].astype(int) + b[k], minlength=n**2).reshape(n, n)
-
-
 def append_hist(prev_hist, gt_blob_data, score_blob_data, num_classes):
+    # Might not be working!
     threshlold_interval = 1
     thresholds = []
     hist_list = []
@@ -59,6 +42,7 @@ def append_hist(prev_hist, gt_blob_data, score_blob_data, num_classes):
 
 
 def compute_PR(hist_list, thresholds, save_dir):
+    # not working!
     # hist = [No. true Neg , No. false Pos;
     #         No. false Neg, No. true Pos]
     precisionList = []
@@ -97,6 +81,24 @@ def compute_PR(hist_list, thresholds, save_dir):
         np.savez(os.path.join(file_location, 'PR_arrays.npz'),
                  precisionList, recallList)
     return precisionList, recallList
+
+
+def fast_hist(a, b, n):
+    # a is GT pixel values
+    # b is binary class image of max predictions
+    # n is number of classifications (=2)
+    # This (below) removes dud labels? Yep, remove all labels less than 0 or
+    # geater than number of classifications
+    k = (a >= 0) & (a < n)
+    # print 'a has {} values\nb has {} values\nand n is
+    # {}'.format(np.unique(a), np.unique(b),n)
+    # print 'n * a[k].astype(int) + b[k] has values {}. \
+    #         a[k] has {}, b[k] has {}'.format(np.unique(
+    #         n * a[k].astype(int) + b[k]),
+    #                             np.unique(a[k]),np.unique(b[k]))
+    # hist = [No. true Neg , No. false Pos;
+    #         No. false Neg, No. true Pos]
+    return np.bincount(n * a[k].astype(int) + b[k], minlength=n**2).reshape(n, n)
 
 
 def compute_hist(net, save_dir, dataset, layer='score', gt='label',
