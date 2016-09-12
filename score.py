@@ -10,7 +10,8 @@ import glob
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from scipy.io import savemat
+from scipy.io import savemat, loadmat
+import cv2
 
 home_dir = expanduser("~")
 if 'n8307628' in home_dir:
@@ -41,46 +42,21 @@ def append_hist(prev_hist, gt_blob_data, score_blob_data, num_classes):
     return hist_list, thresholds
 
 
-def compute_PR(hist_list, thresholds, save_dir):
-    # not working!
-    # hist = [No. true Neg , No. false Pos;
-    #         No. false Neg, No. true Pos]
-    precisionList = []
-    recallList = []
-    for el in hist_list:
-        Tp = el[1, 1]
-        Fp = el[0, 1]
-        Fn = el[1, 0]
-        prec = Tp / (Tp + Fp)
-        rec = Tp / (Tp + Fn)
-        precisionList.append(np.copy(prec))
-        recallList.append(np.copy(rec))
-    print 'prec {}\n\nrec {}\n hist el {}'.format(np.shape(precisionList),
-                                                  np.shape(recallList),
-                                                  np.shape(hist_list[0]))
-    print 'rec values {}'.format(recallList)
-
-    if len(precisionList) != len(thresholds):
-        print 'Error should be the same number of precision and threshold elements'
-    if len(precisionList) != len(recallList):
-        print '\nError! should be the same number of precision and recall elements\n'
-    if save_dir:
-        try:
-            plt.ioff()
-            fig = plt.figure()
-            plt.plot(recallList, precisionList)
-            plt.savefig(os.path.join(save_dir, 'PR_curve.png'))
-            plt.close(fig)
-        except:
-            print '>> error saving PR curve'
-        np.savez(os.path.join(save_dir, 'PR_arrays.npz'),
-                 precisionList, recallList)
-    else:
-        file_location = os.path.realpath(os.path.join(
-            os.getcwd(), os.path.dirname(__file__)))
-        np.savez(os.path.join(file_location, 'PR_arrays.npz'),
-                 precisionList, recallList)
-    return precisionList, recallList
+def compute_flagMetric(score, folder, index, gt=False):
+    matfilename = glob.glob('{}/{}/labels/colourimg_{}_*'.format(
+        cstrip_dir, folder, index))[0]
+    matfile = loadmat(matfilename)
+    rawmasks = matfile['objects'][0][0][2][0]
+    detector = cv2.SimpleBlobDetector()
+    score_blobs = cv2.blobdetection()
+    for mask in rawmasks:
+        gt_blobs = detector.detect(mask)
+        for scoreblob in score_blobs:
+            if scoreblob in gt_blobs:
+                flagTp += 1
+            elif scoreblob not in gt_blobs:
+                flagFp += 1
+            elif scoreblob:
 
 
 def fast_hist(a, b, n):
@@ -107,10 +83,10 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label',
     # n_cl number of classification channels? (2 for tripnet)
     if save_dir and not os.path.isdir(save_dir):
         os.mkdir(save_dir)
-    save_mat = True
+    save_mat = False
     hist = np.zeros((n_cl, n_cl))
     loss = 0
-    threshold_hists = []
+    # threshold_hists = []
     for idx in dataset:
         net.forward()
         print '>> Foward pass for {} complete'.format(idx)
