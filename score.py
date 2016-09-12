@@ -49,6 +49,8 @@ def compute_flagMetric(score, folder, index, gt=False):
     rawmasks = matfile['objects'][0][0][2][0]
     score = score.flatten()
     scoretrips = np.where(score > 0)[0]
+    flagTp = 0
+    flagFn = 0
     for mask in rawmasks:
         mask = mask.flatten()
         masktrips = np.where(mask > 0)[0]
@@ -57,7 +59,13 @@ def compute_flagMetric(score, folder, index, gt=False):
             flagTp += 1
         else:
             flagFn += 1
-    return flagTp, flagFn
+    if gt is not False:
+        bin_mask = matfile['binary_labels']
+        if np.array_equal(gt, bin_mask):
+            print 'arrays are identical'
+        else:
+            print 'arrays are not equal'
+    return np.array((flagTp, flagFn))
 
 
 def fast_hist(a, b, n):
