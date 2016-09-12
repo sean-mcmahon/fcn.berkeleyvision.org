@@ -47,16 +47,17 @@ def compute_flagMetric(score, folder, index, gt=False):
         cstrip_dir, folder, index))[0]
     matfile = loadmat(matfilename)
     rawmasks = matfile['objects'][0][0][2][0]
-    detector = cv2.SimpleBlobDetector()
-    score_blobs = cv2.blobdetection()
+    score = score.flatten()
+    scoretrips = np.where(score > 0)[0]
     for mask in rawmasks:
-        gt_blobs = detector.detect(mask)
-        for scoreblob in score_blobs:
-            if scoreblob in gt_blobs:
-                flagTp += 1
-            elif scoreblob not in gt_blobs:
-                flagFp += 1
-            elif scoreblob:
+        mask = mask.flatten()
+        masktrips = np.where(mask > 0)[0]
+        intersect = np.intersect1d(scoretrips, masktrips)
+        if intersect.size != 0:
+            flagTp += 1
+        else:
+            flagFn += 1
+    return flagTp, flagFn
 
 
 def fast_hist(a, b, n):
