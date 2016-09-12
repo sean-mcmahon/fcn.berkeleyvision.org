@@ -94,6 +94,7 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label',
         os.mkdir(save_dir)
     save_mat = False
     hist = np.zeros((n_cl, n_cl))
+    Fmetrics = np.array((0, 0))
     loss = 0
     # threshold_hists = []
     for idx in dataset:
@@ -104,6 +105,8 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label',
         hist += fast_hist(net.blobs[gt].data[0, 0].flatten(),
                           net.blobs[layer].data[0].argmax(0).flatten(),
                           n_cl)
+        Fmetrics += compute_flagMetric(net.blobs[layer].data[0].argmax(0), idx[0],
+                                       idx[1], gt=net.blobs[gt].data[0, 0])
         # threshold_hists, thresholds = append_hist(threshold_hists,
         #                                           net.blobs[gt].data[
         #                                               0, 0].flatten(),
@@ -153,7 +156,7 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label',
             loss += 0
 
     # precision, recall = compute_PR(threshold_hists, thresholds, save_dir)
-    return hist, loss / len(dataset)
+    return hist, loss / len(dataset), Fmetrics
 
 
 def seg_tests(solver, save_format, dataset, layer='score', gt='label',
@@ -172,7 +175,7 @@ def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label',
     # TODO get better perfomance metrics
     # as I only care about trip detection performance
     print '> Computing Histagram'
-    hist, loss = compute_hist(net, save_format, dataset, layer, gt, dataL)
+    hist, loss, Flags = compute_hist(net, save_format, dataset, layer, gt, dataL)
     print '>>> Hist = {}'.format(hist)
     # mean loss
     print '>>>', datetime.now(), 'Iteration', iter, 'loss', loss
@@ -194,5 +197,9 @@ def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label',
     print '>>>', datetime.now(), 'Iteration', iter, 'trip IU', iu[1], 'non-trip IU', iu[0]
     print '>>>', datetime.now(), 'Iteration', iter, 'trip accuracy', acc[1], \
         'non-trip accuracy', acc[0]
+
+    Fmetric_acc = Flags[0].astype(np.float) / Flags.sum().astype(np.float)
+    print '>>>', datetime.now(), 'Iteration', iter, 'Flag Metric Acc', Fmetric_acc, \
+        '\nFlags= ', Flags
 
     return hist
