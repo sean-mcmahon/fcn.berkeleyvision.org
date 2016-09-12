@@ -67,11 +67,11 @@ if [[ -z "$split" ]]; then
 fi
 snapshot_iter="$3"
 if [[ -z "$snapshot_iter" ]]; then
-  snapshot_iter='8000'
+  snapshot_iter='24000'
 fi
 snapshot_filter_="$4"
 if [[ -z "$snapshot_filter_" ]]; then
-  snapshot_filter_='train'
+  snapshot_filter_='colorInit'
 fi
 
 # current_date=`date +%Y-%m-%d_%H-%M-%S`
