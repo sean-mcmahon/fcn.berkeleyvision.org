@@ -35,12 +35,14 @@ parser.add_argument('--iteration', default=8000)
 parser.add_argument('--test_type', default='deploy')
 parser.add_argument('--network_dir', default='cstrip-fcn32s-color')
 parser.add_argument('--snapshot_filter', default='')
+parser.add_argument('--save_dir', default=None)
 args = parser.parse_args()
 iteration = args.iteration
 network_dir = args.network_dir
 network_dir = add_slash(network_dir)  # ensure slash present
 snapshot_filter = args.snapshot_filter
 test_type = args.test_type
+save_dir = args.save_dir
 print 'This is the general deploy_prototxt script!'
 
 # import support functions
@@ -76,13 +78,13 @@ weights = snapshot_dir[0] + '/' + snapshot_filter + \
     '_iter_' + str(iteration) + '.caffemodel'
 if test_type == 'deploy':
     test_set = np.loadtxt(file_location +
-                          '/data/cs-trip/all_testset.txt',
+                          '/data/cs-trip/20psdColourImages.txt',
                           dtype=str)
-    save_dir = working_dir + test_type + '_images'
 else:
     test_set = np.loadtxt(file_location +
                           '/data/cs-trip/{}.txt'.format(test_type),
                           dtype=str)
+if not save_dir:
     save_dir = working_dir + test_type + '_deployImgs'
 
 fcn = caffe.Net(deploy_prototxt[0], weights, caffe.TEST)
@@ -97,7 +99,7 @@ for counter, idx in enumerate(test_set):
         glob.glob('{}/{}/colour/colourimg_{}_*'.format(cstrip_dir, idx[0],
                                                        idx[1]))[0])
     overlay = Image.blend(colorIm.convert(
-        "RGBA"), im.convert("RGBA"), 0.7)
+        "RGBA"), im.convert("RGBA"), 0.5)
     overlay.save(os.path.join(save_dir, ''.join(idx) + '.png'))
     np.savez_compressed(os.path.join(save_dir, ''.join(idx) + '_layerData'),
                         fcn.blobs[layer].data[0])
