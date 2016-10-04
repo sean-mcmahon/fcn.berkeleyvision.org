@@ -80,7 +80,7 @@ weights = snapshot_dir[0] + '/' + snapshot_filter + \
     '_iter_' + str(iteration) + '.caffemodel'
 if test_type == 'deploy':
     test_set = np.loadtxt(file_location +
-                          '/data/cs-trip/20psdColourImages.txt',
+                          '/data/cs-trip/20psdColourImages_two.txt',
                           dtype=str)
 else:
     test_set = np.loadtxt(file_location +
@@ -114,12 +114,12 @@ for counter, idx in enumerate(test_set):
     idx_basename = os.path.basename(idx[0])
     # print '----\n', os.path.join(save_dir, idx_basename+idx[1] + '.png'), '----\n'
     # print '----\n', os.path.join(save_dir, idx_basename+idx[1] + '_layerData'), '----\n'
-    overlay.save(os.path.join(save_dir, idx_basename+idx[1] + '.png'))
+    overlay.save(os.path.join(save_dir, 'video_frame_'+str(counter).zfill(4) + '.png'))
     # np.savez_compressed(os.path.join(save_dir, idx_basename+idx[1] + '_layerData'),
     #                     fcn.blobs[layer].data[0])
     if save_mat:
         score_blob = fcn.blobs[layer].data[0]
-        matfilename = os.path.join(save_dir, idx_basename+idx[1]+ '.mat')
+        matfilename = os.path.join(save_dir, 'mat_files' ,'video_frame_'+str(counter).zfill(4)+ '.mat')
         # print '>>>>>
         # np.unqiue(score_blob)={}'.format(np.unique(score_blob))
         save_dict = {'score_blob': score_blob}
