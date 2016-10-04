@@ -13,6 +13,7 @@ import argparse
 import glob
 import score
 from PIL import Image
+from scipy.io import savemat, loadmat
 
 
 def add_slash(mystring):
@@ -72,6 +73,7 @@ else:
     print '-- GPU Mode Chosen --'
     print '==============='
 
+save_mat = True
 snapshot_dir = glob.glob(working_dir + '*napshot*')
 deploy_prototxt = glob.glob(working_dir + '*' + test_type + '*.prototxt')
 weights = snapshot_dir[0] + '/' + snapshot_filter + \
@@ -91,16 +93,35 @@ fcn = caffe.Net(deploy_prototxt[0], weights, caffe.TEST)
 if not os.path.isdir(save_dir):
     os.mkdir(save_dir)
 layer = 'score'
+dataL = 'data'
 for counter, idx in enumerate(test_set):
     fcn.forward()
     im = Image.fromarray(fcn.blobs[layer].data[0].argmax(
         0).astype(np.uint8) * 255, mode='P')
-    colorIm = Image.open(
-        glob.glob('{}/{}/colour/colourimg_{}_*'.format(cstrip_dir, idx[0],
+    try:
+        colorArray = fcn.blobs[dataL].data[0].astype(np.uint8)
+        colorArray = colorArray.transpose((1, 2, 0))
+        colorArray = colorArray[..., ::-1]
+        colorIm = Image.fromarray(colorArray)
+    except:
+        colorIm = Image.open(
+            glob.glob('{}/{}/colour/colourimg_{}_*'.format(cstrip_dir, idx[0],
                                                        idx[1]))[0])
     overlay = Image.blend(colorIm.convert(
         "RGBA"), im.convert("RGBA"), 0.5)
-    overlay.save(os.path.join(save_dir, ''.join(idx) + '.png'))
-    np.savez_compressed(os.path.join(save_dir, ''.join(idx) + '_layerData'),
-                        fcn.blobs[layer].data[0])
+    # print save_dir
+    # print ''.join(idx) + '.png', '\n', idx
+    idx_basename = os.path.basename(idx[0])
+    # print '----\n', os.path.join(save_dir, idx_basename+idx[1] + '.png'), '----\n'
+    # print '----\n', os.path.join(save_dir, idx_basename+idx[1] + '_layerData'), '----\n'
+    overlay.save(os.path.join(save_dir, idx_basename+idx[1] + '.png'))
+    # np.savez_compressed(os.path.join(save_dir, idx_basename+idx[1] + '_layerData'),
+    #                     fcn.blobs[layer].data[0])
+    if save_mat:
+        score_blob = fcn.blobs[layer].data[0]
+        matfilename = os.path.join(save_dir, idx_basename+idx[1]+ '.mat')
+        # print '>>>>>
+        # np.unqiue(score_blob)={}'.format(np.unique(score_blob))
+        save_dict = {'score_blob': score_blob}
+        savemat(matfilename, save_dict)
     print 'Image data {}/{} saved.'.format(counter, len(test_set))

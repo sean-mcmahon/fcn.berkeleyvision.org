@@ -71,9 +71,9 @@ if [[ -z "$snapshot_iter" ]]; then
 fi
 save_directory="$4"
 if [[ -z "$save_directory" ]]; then
-  save_directory='/home/n8307628/Construction_Site/Springfield/12Aug16/K2/2016-08-12-10-09-26_groundfloorCarPark/video_frames/colour_predictions'
+  save_directory='/home/n8307628/Construction_Site/Springfield/12Aug16/K2/2016-08-12-10-09-26_groundfloorCarPark/video_frames/colour_predictions_two'
 fi
 # current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/logs/'$split'_dataset_snapshot_'$snapshot_iter'_results.log'
+log_filename=$working_dir'/logs/'$split'_dataset_snapshot_'$snapshot_iter'_deploy.log'
 
 python $python_script --mode $set_mode --test_type $split --iteration $snapshot_iter --network_dir $network --save_dir $save_directory 2>&1 | tee $log_filename
