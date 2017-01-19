@@ -6,9 +6,16 @@
 #PBS -l mem=4GB
 #PBS -l walltime=4:00:00
 
-module load python
+# module load python
 module load caffe
-module load cuda
+# module load cuda
+
+# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/pkg/suse11/intel/2013/composer_xe_2013/mkl/lib/intel64
+# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/pkg/suse11/caffe/protobuf/2.5.0/lib
+# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/pkg/suse11/boost/1.49.0_py-2.7.5/lib
+# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/pkg/suse11/hdf5/1.8.11/lib
+# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/pkg/suse11/caffe/opencv/2.4.8/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/pkg/suse11/matlab/R2014a/bin/glnxa64
 
 USEGPU='true'
 if [[ $(lsb_release -si) == *"SUSE LINUX"* ]]; then
@@ -69,7 +76,7 @@ snapshot_iter="$3"
 if [[ -z "$snapshot_iter" ]]; then
   snapshot_iter='8000'
 fi
-# current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/logs/'$split'_dataset_snapshot_'$snapshot_iter'_results.log'
+current_date=`date +%Y-%m-%d_%H-%M-%S`
+log_filename=$working_dir'/logs/'$split'_dataset_snapshot_'$snapshot_iter'_results_'$current_date'_.log'
 
 python $python_script --mode $set_mode --test_type $split --iteration $snapshot_iter 2>&1 | tee $log_filename
