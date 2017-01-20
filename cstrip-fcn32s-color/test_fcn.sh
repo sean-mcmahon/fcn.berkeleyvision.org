@@ -6,16 +6,18 @@
 #PBS -l mem=4GB
 #PBS -l walltime=4:00:00
 
-# module load python
+module load python/2.7.11-foss-2016a
 module load caffe
-# module load cuda
+module unload caffe
+module load cuda/7.5.18-foss-2016a
 
 # export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/pkg/suse11/intel/2013/composer_xe_2013/mkl/lib/intel64
 # export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/pkg/suse11/caffe/protobuf/2.5.0/lib
 # export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/pkg/suse11/boost/1.49.0_py-2.7.5/lib
 # export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/pkg/suse11/hdf5/1.8.11/lib
 # export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/pkg/suse11/caffe/opencv/2.4.8/lib
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/pkg/suse11/matlab/R2014a/bin/glnxa64
+# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/pkg/suse11/matlab/R2014a/bin/glnxa64
+# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/pkg/suse11/matlab/R2011a/bin/glnxa64/libtiff.so.3
 
 USEGPU='true'
 if [[ $(lsb_release -si) == *"SUSE LINUX"* ]]; then
