@@ -70,7 +70,7 @@ class CStripSegDataLayer(caffe.Layer):
         self.mean_bgr = np.array((0, 0, 0), dtype=np.float32)
         self.mean_hha = np.array(
             (0.28977805, 0.44051939, 0.26969752), dtype=np.float32)
-        self.mean_logd = np.array((0,), dtype=np.float32)
+        self.mean_logd = np.array((0.999999947113,), dtype=np.float32)
 
         # tops: check configuration
         if len(top) != len(self.tops):
@@ -193,8 +193,10 @@ class CStripSegDataLayer(caffe.Layer):
         # shape {}'.format(np.unique(d), min(d.flatten()),max(d.flatten()),
         # np.shape(d))
         d = np.log(d)
-        d[np.isneginf(d)] = self.null_value
+        # d[np.isneginf(d)] = self.null_value
         d -= self.mean_logd
+        d[np.isinf(d)] = self.null_value
+        d[np.isnan(d)] = self.null_value
         d = d[np.newaxis, ...]
         # print 'depth pixel values are {}\nMin {}, max {} and shape
         # {}'.format(np.unique(d), min(d.flatten()),max(d.flatten()),
