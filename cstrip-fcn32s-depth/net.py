@@ -2,21 +2,26 @@ import caffe
 from caffe import layers as L, params as P
 from caffe.coord_map import crop
 
+
 def conv_relu(bottom, nout, ks=3, stride=1, pad=1):
     conv = L.Convolution(bottom, kernel_size=ks, stride=stride,
-        num_output=nout, pad=pad,
-        param=[dict(lr_mult=1, decay_mult=1), dict(lr_mult=2, decay_mult=0)])
+                         num_output=nout, pad=pad,
+                         param=[dict(lr_mult=1, decay_mult=1), dict(lr_mult=2, decay_mult=0)])
     return conv, L.ReLU(conv, in_place=True)
+
 
 def max_pool(bottom, ks=2, stride=2):
     return L.Pooling(bottom, pool=P.Pooling.MAX, kernel_size=ks, stride=stride)
 
+
 def fcn(split, tops):
     n = caffe.NetSpec()
-    n.data, n.label = L.Python(module='nyud_layers',
-            layer='NYUDSegDataLayer', ntop=2,
-            param_str=str(dict(nyud_dir='../data/nyud', split=split,
-                tops=tops, seed=1337)))
+    n.data, n.label = L.Python(module='cs_trip_layers',
+                               layer='CStripSegDataLayer', ntop=2,
+                               param_str=str(dict(cstrip_dir='/Construction_' +
+                                                  'Site/Springfield/12Aug16/K2',
+                                                  split=split, tops=tops,
+                                                  seed=1337)))
 
     # the base net
     n.conv1_1, n.relu1_1 = conv_relu(n.data, 64, pad=100)
@@ -49,19 +54,20 @@ def fcn(split, tops):
     n.drop7 = L.Dropout(n.relu7, dropout_ratio=0.5, in_place=True)
 
     n.score_fr = L.Convolution(n.drop7, num_output=40, kernel_size=1, pad=0,
-        param=[dict(lr_mult=1, decay_mult=1), dict(lr_mult=2, decay_mult=0)])
+                               param=[dict(lr_mult=1, decay_mult=1), dict(lr_mult=2, decay_mult=0)])
     n.upscore = L.Deconvolution(n.score_fr,
-        convolution_param=dict(num_output=40, kernel_size=64, stride=32,
-            bias_term=False),
-        param=[dict(lr_mult=0)])
+                                convolution_param=dict(num_output=40, kernel_size=64, stride=32,
+                                                       bias_term=False),
+                                param=[dict(lr_mult=0)])
     n.score = crop(n.upscore, n.data)
     n.loss = L.SoftmaxWithLoss(n.score, n.label,
-            loss_param=dict(normalize=False, ignore_label=255))
+                               loss_param=dict(normalize=False, ignore_label=255))
 
     return n.to_proto()
 
+
 def make_net():
-    tops = ['hha', 'label']
+    tops = ['depth', 'label']
     with open('trainval.prototxt', 'w') as f:
         f.write(str(fcn('trainval', tops)))
 
