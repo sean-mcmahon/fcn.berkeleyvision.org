@@ -64,7 +64,7 @@ if [[ -z "$set_mode" ]]; then
   set_mode='gpu'
 fi
 current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/logs/FCNdepth_train'$current_date'.log'
+log_filename=$working_dir'/logs/FCNdepth_train'$current_date'_negOneNull.log'
 
 python $python_script --mode $set_mode 2>&1 | tee $log_filename
 echo $log_filename
