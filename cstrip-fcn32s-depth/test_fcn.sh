@@ -6,9 +6,10 @@
 #PBS -l mem=4GB
 #PBS -l walltime=4:00:00
 
-module load python
+module load python/2.7.11-foss-2016a
 module load caffe
-module load cuda
+module unload caffe
+module load cuda/7.5.18-foss-2016a
 
 USEGPU='true'
 if [[ $(lsb_release -si) == *"SUSE LINUX"* ]]; then
