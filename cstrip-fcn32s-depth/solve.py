@@ -1,6 +1,6 @@
 #! /usr/bin/python
 """
-cstrip HHA only
+cstrip Depth only
 
 """
 # import caffe
@@ -22,7 +22,7 @@ home_dir = expanduser("~")
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', default='gpu')
 args = parser.parse_args()
-print 'This is the HHA only solver!'
+print 'This is the Depth only solver!'
 
 # import support functions
 if 'n8307628' in home_dir:
@@ -53,7 +53,7 @@ import surgery
 import score
 
 # init
-print 'initialising depth only from HHA network, using weights' + \
+print 'initialising depth only from Depth network, using weights' + \
     ' {}'.format(weights)
 hha_net_arch = file_location[:file_location.rfind(
     '/')] + '/cstrip-fcn32s-hha/test.prototxt'

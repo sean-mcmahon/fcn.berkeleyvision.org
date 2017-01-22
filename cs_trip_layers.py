@@ -177,6 +177,11 @@ class CStripSegDataLayer(caffe.Layer):
             self.cstrip_dir, sub_dir, idx))[0])['binary_labels'].astype(np.uint8)
         # label -= 1  # rotate labels
         label = label[np.newaxis, ...]
+        if 'depth' in self.tops:
+            depth = self.load_depth(idx, sub_dir)
+            depth_nulls = np.where(np.logical_or(
+                np.isinf(depth, np.isnan(depth))))
+            label[depth_nulls] = 0
         # print 'cs_trip_layers: Label loaded, shape {}, has values {} and id
         # {}/{}'.format(np.shape(label), np.unique(label),sub_dir, idx)
         return label
