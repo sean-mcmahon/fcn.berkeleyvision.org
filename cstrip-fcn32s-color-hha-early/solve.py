@@ -28,10 +28,13 @@ print 'This is the colour-HHA Early Fusion solver!'
 if 'n8307628' in home_dir:
     caffe_root = home_dir + '/Fully-Conv-Network/Resources/caffe'
     weights = home_dir + \
-        '/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel'
+        '/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-hha/HHASnapshot/_iter_2000.caffemodel'
+    weights_hha = home_dir + \
+        '/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-hha/HHASnapshot/_iter_2000.caffemodel'
 elif 'sean' in home_dir:
     caffe_root = home_dir + '/src/caffe'
-    weights = home_dir + '/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel'
+    weights = home_dir + '/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-hha/HHASnapshot/_iter_2000.caffemodel'
+    weights_hha = home_dir + '/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-hha/HHASnapshot/secondTrain_lowerLR_iter_2000.caffemodel'
 filename, path, desc = imp.find_module('caffe', [caffe_root + '/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
 if 'g' in args.mode or 'G' in args.mode:
@@ -54,14 +57,15 @@ print 'Using colour weights from {}'.format(weights)
 base_net_color_arch = file_location[:file_location.rfind(
     '/')] + '/cstrip-fcn32s-color/test.prototxt'
 base_net_color = caffe.Net(base_net_color_arch, weights,
-                     caffe.TEST)
+                           caffe.TEST)
 print 'Using HHA weights from {}'.format(weights_hha)
 base_net_hha_arch = file_location[:file_location.rfind(
     '/')] + '/cstrip-fcn32s-hha/test.prototxt'
 base_net_hha = caffe.Net(base_net_hha_arch, weights_hha,
-                     caffe.TEST)
+                         caffe.TEST)
 solver = caffe.SGDSolver(file_location + '/solver.prototxt')
-surgery.transplant(solver.net, base_net_color)  # copy weights to solver network
+# copy weights to solver network
+surgery.transplant(solver.net, base_net_color)
 
 # surgeries
 interp_layers = [k for k in solver.net.params.keys() if 'up' in k]
@@ -79,24 +83,24 @@ solver.net.params['conv1_1_bgrhha'][0].data[:, :3] = base_net_color.params[
 solver.net.params['conv1_1_bgrhha'][0].data[:, 3] = np.mean(base_net_color.params[
     'conv1_1'][0].data, axis=1)
 solver.net.params['conv1_1_bgrhha'][1].data[...] = base_net_color.params[
-    'conv1_1'][1].data
+    'conv1_1'][1].data  # copies the bias's
 
 print 'copying hha params from conv1_1  ->  conv1_1_bgrhha'
 solver.net.params['conv1_1_bgrhha'][0].data[:, 3:6] = base_net_hha.params[
     'conv1_1'][0].data
 solver.net.params['conv1_1_bgrhha'][0].data[:, 5] = np.mean(base_net_hha.params[
     'conv1_1'][0].data, axis=1)
-solver.net.params['conv1_1_bgrhha'][1].data[...] = base_net_hha.params[
-    'conv1_1'][1].data
+# solver.net.params['conv1_1_bgrhha'][1].data[...] = base_net_hha.params[
+#     'conv1_1'][1].data # copies the bias's
 
-# print '\n----' # to determine conv1 blob dimensions
-# print 'conv1_1_bgrhha[0] shape {} \n conv1_1_bgr[0] shape {}'.format(
-#     np.shape(solver.net.params['conv1_1_bgrhha'][0].data),
-#     np.shape(base_net_color.params['conv1_1'][0].data))
-# print 'conv1_1_bgrhha[1] shape {} \n conv1_1_bgr[1] shape {}'.format(
-#     np.shape(solver.net.params['conv1_1_bgrhha'][1].data),
-#     np.shape(base_net_color.params['conv1_1'][1].data))
-# print '\n----'
+print '\n----'  # to determine conv1 blob dimensions
+print 'conv1_1_bgrhha[0] shape {} \n conv1_1_bgr[0] shape {}'.format(
+    np.shape(solver.net.params['conv1_1_bgrhha'][0].data),
+    np.shape(base_net_color.params['conv1_1'][0].data))
+print 'conv1_1_bgrhha[1] shape {} \n conv1_1_bgr[1] shape {}'.format(
+    np.shape(solver.net.params['conv1_1_bgrhha'][1].data),
+    np.shape(base_net_color.params['conv1_1'][1].data))
+print '\n----'
 
 
 del base_net_color, base_net_hha
