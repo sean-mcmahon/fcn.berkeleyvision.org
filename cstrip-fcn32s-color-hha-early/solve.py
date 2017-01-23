@@ -99,14 +99,14 @@ if (pretrain_hha):
 # solver.net.params['conv1_1_bgrhha'][1].data[...] = base_net_hha.params[
 #     'conv1_1'][1].data # copies the bias's
 
-print '\n----'  # to determine conv1 blob dimensions
-print 'conv1_1_bgrhha[0] shape {} \n conv1_1_bgr[0] shape {}'.format(
-    np.shape(solver.net.params['conv1_1_bgrhha'][0].data),
-    np.shape(base_net_color.params['conv1_1'][0].data))
-print 'conv1_1_bgrhha[1] shape {} \n conv1_1_bgr[1] shape {}'.format(
-    np.shape(solver.net.params['conv1_1_bgrhha'][1].data),
-    np.shape(base_net_color.params['conv1_1'][1].data))
-print '\n----'
+# print '\n----'  # to determine conv1 blob dimensions
+# print 'conv1_1_bgrhha[0] shape {} \n conv1_1_bgr[0] shape {}'.format(
+#     np.shape(solver.net.params['conv1_1_bgrhha'][0].data),
+#     np.shape(base_net_color.params['conv1_1'][0].data))
+# print 'conv1_1_bgrhha[1] shape {} \n conv1_1_bgr[1] shape {}'.format(
+#     np.shape(solver.net.params['conv1_1_bgrhha'][1].data),
+#     np.shape(base_net_color.params['conv1_1'][1].data))
+# print '\n----'
 
 
 del base_net_color, base_net_hha
