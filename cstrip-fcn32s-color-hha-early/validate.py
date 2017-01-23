@@ -1,6 +1,6 @@
 #! /usr/bin/python
 """
-cstrip validate Color-DEPTH only
+cstrip validate Color-HHA (early) only
 
 """
 # import caffe
@@ -31,7 +31,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--mode', default='cpu')
 parser.add_argument('--iteration', default=8000)
 parser.add_argument('--test_type', default='val')
-parser.add_argument('--network_dir', default='cstrip-fcn32s-color-d')
+parser.add_argument('--network_dir', default='cstrip-fcn32s-color-hha-early')
 parser.add_argument('--snapshot_filter', default='train')
 args = parser.parse_args()
 iteration = args.iteration
@@ -70,7 +70,7 @@ else:
 import score
 
 # init
-logFilenames = glob.glob(file_location + '/logs/FCNcolorDepth_train*')
+logFilenames = glob.glob(file_location + '/logs/FCNcolorHhaEarly_*')
 if args.test_type == 'val':
     solver = caffe.SGDSolver(file_location + '/solver.prototxt')
     test_set = np.loadtxt(file_location[:file_location.rfind(
@@ -90,7 +90,7 @@ else:
 solver.net.copy_from(weights)
 print '-- test_type is', args.test_type, ' --'
 weight_name = os.path.basename(weights)
-print '-- network (colorDepth) weights used: {}'.format(weight_name)
+print '-- network (color-HHa-early) weights used: {}'.format(weight_name)
 print 'For more details on taining view log file(s):'
 match_found = False
 for filename in logFilenames:
@@ -101,5 +101,5 @@ if not match_found:
     print 'Error, no logfile found for {}'.format(weight_name)
 
 print '\n>>>> Validation <<<<\n'
-score.seg_tests(solver, file_location + '/' + args.test_type +
-                '_images', test_set, layer='score', dataL='color')
+score.seg_tests(solver, os.path.join(file_location, args.test_type +
+                '_images'), test_set, layer='score', dataL='color')

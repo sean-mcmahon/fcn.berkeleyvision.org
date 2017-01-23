@@ -6,12 +6,15 @@
 #PBS -l mem=4GB
 #PBS -l walltime=4:00:00
 
-module load python
+module load python/2.7.11-foss-2016a
 module load caffe
-module load cuda
+module unload caffe # keeps dependencies
+module load cuda/7.5.18-foss-2016a
 
 USEGPU='true'
-if [[ $(lsb_release -si) == *"SUSE LINUX"* ]]; then
+ON_HPC="true"
+# if [[ $(lsb_release -si) == *"SUSE LINUX"* ]]; then
+  if [[ "$ON_HPC" == "true" ]]; then
     # On HPC (probably)
 
     # Old GPU ID method only works on nodes with 2x GPUs
@@ -46,10 +49,10 @@ fi
 hpc_dir='/home/n8307628'
 local_dir='/home/sean'
 if [[ -d $local_dir ]]; then
-  working_dir=$local_dir'/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-d'
+  working_dir=$local_dir'/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha-early'
   python_script=$working_dir'/validate.py'
 elif [[ -d $hpc_dir ]]; then
-  working_dir=$hpc_dir'/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-d'
+  working_dir=$hpc_dir'/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha-early'
   python_script=$working_dir'/validate.py'
   # Because using MKL Blas on HPC
   export MKL_CBWR=AUTO
@@ -63,15 +66,15 @@ if [[ -z "$set_mode" ]]; then
 fi
 split="$2"
 if [[ -z "$split" ]]; then
-  split='val'
+  split='test'
 fi
 snapshot_iter="$3"
 if [[ -z "$snapshot_iter" ]]; then
-  snapshot_iter='24000'
+  snapshot_iter='20000'
 fi
 snapshot_filter_="$4"
 if [[ -z "$snapshot_filter_" ]]; then
-  snapshot_filter_='colorInit'
+  snapshot_filter_='colorHhaInit_5xLR'
 fi
 
 # current_date=`date +%Y-%m-%d_%H-%M-%S`
