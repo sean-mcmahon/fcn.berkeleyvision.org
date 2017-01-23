@@ -1,6 +1,6 @@
 #! /usr/bin/python
 """
-cstrip color DEPTH
+cstrip color HHA Early Fusion
 
 """
 # import caffe
@@ -22,14 +22,13 @@ home_dir = expanduser("~")
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', default='CPU')
 args = parser.parse_args()
-print 'This is the colour-DEPTH solver!'
+print 'This is the colour-HHA Early Fusion solver!'
 
 # import support functions
 if 'n8307628' in home_dir:
     caffe_root = home_dir + '/Fully-Conv-Network/Resources/caffe'
-    weights = home_dir + \
-        '/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/'+
-        'colorSnapshot/_iter_2000.caffemodel'
+    weights = home_dir + '/Fully-Conv-Network/Resources/FCN_models/' +
+        'cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel'
 elif 'sean' in home_dir:
     caffe_root = home_dir + '/src/caffe'
     weights = home_dir + '/hpc-home/Fully-Conv-Network/Resources/'+
@@ -65,12 +64,12 @@ interp_layers = [k for k in solver.net.params.keys() if 'up' in k]
 print 'performing surgery on {}'.format(interp_layers)
 surgery.interp(solver.net, interp_layers)  # calc deconv filter weights
 # Copy weights from color network into color-depth network (I think)
-print 'copying color params from conv1_1  ->  conv1_1_bgrd'
-solver.net.params['conv1_1_bgrd'][0].data[:, :3] = base_net.params[
+print 'copying color params from conv1_1  ->  conv1_1_bgrhha'
+solver.net.params['conv1_1_bgrhha'][0].data[:, :3] = base_net.params[
     'conv1_1'][0].data
-solver.net.params['conv1_1_bgrd'][0].data[:, 3] = np.mean(base_net.params[
+solver.net.params['conv1_1_bgrhha'][0].data[:, 3] = np.mean(base_net.params[
     'conv1_1'][0].data, axis=1)
-solver.net.params['conv1_1_bgrd'][1].data[...] = base_net.params[
+solver.net.params['conv1_1_bgrhha'][1].data[...] = base_net.params[
     'conv1_1'][1].data
 del base_net
 
