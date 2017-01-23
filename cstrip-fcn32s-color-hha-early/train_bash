@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #:
-#PBS -N FCN_colHHA_preHha
+#PBS -N FCN_colHHA_randHha
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=8GB
@@ -68,10 +68,10 @@ if [[ -z "$set_mode" ]]; then
 fi
 load_hha="$2"
 if [[ -z "$load_hha" ]]; then
-  load_hha='true'
+  load_hha='false'
 fi
 current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/logs/FCNcolorHhaEarly_train'$current_date'_pretrainHha.log'
+log_filename=$working_dir'/logs/FCNcolorHhaEarly_train'$current_date'_randHha.log'
 
 python $python_script --mode $set_mode --pretrain_hha $load_hha 2>&1 | tee $log_filename
 echo $log_filename
