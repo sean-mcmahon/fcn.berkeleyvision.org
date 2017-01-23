@@ -86,11 +86,11 @@ layer {
   bottom: "pool1"
   top: "conv2_1"
   param {
-    lr_mult: 4
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 8
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -112,11 +112,11 @@ layer {
   bottom: "conv2_1"
   top: "conv2_2"
   param {
-    lr_mult: 4
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 8
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -149,11 +149,11 @@ layer {
   bottom: "pool2"
   top: "conv3_1"
   param {
-    lr_mult: 4
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 8
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -175,11 +175,11 @@ layer {
   bottom: "conv3_1"
   top: "conv3_2"
   param {
-    lr_mult: 4
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 8
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -201,11 +201,11 @@ layer {
   bottom: "conv3_2"
   top: "conv3_3"
   param {
-    lr_mult: 4
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 8
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -238,11 +238,11 @@ layer {
   bottom: "pool3"
   top: "conv4_1"
   param {
-    lr_mult: 4
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 8
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -264,11 +264,11 @@ layer {
   bottom: "conv4_1"
   top: "conv4_2"
   param {
-    lr_mult: 4
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 8
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -290,11 +290,11 @@ layer {
   bottom: "conv4_2"
   top: "conv4_3"
   param {
-    lr_mult: 4
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 8
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -327,11 +327,11 @@ layer {
   bottom: "pool4"
   top: "conv5_1"
   param {
-    lr_mult: 4
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 8
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -353,11 +353,11 @@ layer {
   bottom: "conv5_1"
   top: "conv5_2"
   param {
-    lr_mult: 4
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 8
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -379,11 +379,11 @@ layer {
   bottom: "conv5_2"
   top: "conv5_3"
   param {
-    lr_mult: 4
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 8
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -416,11 +416,11 @@ layer {
   bottom: "pool5"
   top: "fc6"
   param {
-    lr_mult: 4
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 8
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -451,11 +451,11 @@ layer {
   bottom: "fc6"
   top: "fc7"
   param {
-    lr_mult: 4
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 8
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -486,11 +486,11 @@ layer {
   bottom: "fc7"
   top: "score_fr"
   param {
-    lr_mult: 10
+    lr_mult: 5
     decay_mult: 1
   }
   param {
-    lr_mult: 15
+    lr_mult: 10
     decay_mult: 0
   }
   convolution_param {
