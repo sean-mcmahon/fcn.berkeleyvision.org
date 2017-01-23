@@ -21,20 +21,24 @@ home_dir = expanduser("~")
 # User Input
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', default='CPU')
+parser.add_argument('--pretrain_hha', default='False')
 args = parser.parse_args()
+pretrain_hha = False
+if args.pretrain_hha == "True" or args.pretrain_hha == "true":
+    pretrain_hha = True
 print 'This is the colour-HHA Early Fusion solver!'
 
 # import support functions
 if 'n8307628' in home_dir:
     caffe_root = home_dir + '/Fully-Conv-Network/Resources/caffe'
     weights = home_dir + \
-        '/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-hha/HHASnapshot/_iter_2000.caffemodel'
+        '/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel'
     weights_hha = home_dir + \
-        '/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-hha/HHASnapshot/_iter_2000.caffemodel'
+        '/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-hha/HHAsnapshot/secondTrain_lowerLR_iter_2000.caffemodel'
 elif 'sean' in home_dir:
     caffe_root = home_dir + '/src/caffe'
-    weights = home_dir + '/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-hha/HHASnapshot/_iter_2000.caffemodel'
-    weights_hha = home_dir + '/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-hha/HHASnapshot/secondTrain_lowerLR_iter_2000.caffemodel'
+    weights = home_dir + '/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel'
+    weights_hha = home_dir + '/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-hha/HHAsnapshot/secondTrain_lowerLR_iter_2000.caffemodel'
 filename, path, desc = imp.find_module('caffe', [caffe_root + '/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
 if 'g' in args.mode or 'G' in args.mode:
@@ -60,7 +64,7 @@ base_net_color = caffe.Net(base_net_color_arch, weights,
                            caffe.TEST)
 print 'Using HHA weights from {}'.format(weights_hha)
 base_net_hha_arch = file_location[:file_location.rfind(
-    '/')] + '/cstrip-fcn32s-hha/test.prototxt'
+    '/')] + '/cstrip-fcn32s-hha/val.prototxt'
 base_net_hha = caffe.Net(base_net_hha_arch, weights_hha,
                          caffe.TEST)
 solver = caffe.SGDSolver(file_location + '/solver.prototxt')
@@ -77,6 +81,7 @@ surgery.interp(solver.net, interp_layers)  # calc deconv filter weights
 #  conv1_1_bgr[0] shape (64, 3, 3, 3)
 # conv1_1_bgrhha[1] shape (64,)
 #  conv1_1_bgr[1] shape (64,)
+
 print 'copying color params from conv1_1  ->  conv1_1_bgrhha'
 solver.net.params['conv1_1_bgrhha'][0].data[:, :3] = base_net_color.params[
     'conv1_1'][0].data
@@ -85,11 +90,12 @@ solver.net.params['conv1_1_bgrhha'][0].data[:, 3] = np.mean(base_net_color.param
 solver.net.params['conv1_1_bgrhha'][1].data[...] = base_net_color.params[
     'conv1_1'][1].data  # copies the bias's
 
-print 'copying hha params from conv1_1  ->  conv1_1_bgrhha'
-solver.net.params['conv1_1_bgrhha'][0].data[:, 3:6] = base_net_hha.params[
-    'conv1_1'][0].data
-solver.net.params['conv1_1_bgrhha'][0].data[:, 5] = np.mean(base_net_hha.params[
-    'conv1_1'][0].data, axis=1)
+if (pretrain_hha):
+    print 'copying HHA params from conv1_1  ->  conv1_1_bgrhha'
+    solver.net.params['conv1_1_bgrhha'][0].data[:, 3:6] = base_net_hha.params[
+        'conv1_1'][0].data
+    solver.net.params['conv1_1_bgrhha'][0].data[:, 5] = np.mean(base_net_hha.params[
+        'conv1_1'][0].data, axis=1)
 # solver.net.params['conv1_1_bgrhha'][1].data[...] = base_net_hha.params[
 #     'conv1_1'][1].data # copies the bias's
 
