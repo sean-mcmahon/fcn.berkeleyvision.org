@@ -61,7 +61,7 @@ class CStripSegDataLayer(caffe.Layer):
 
         # Null value for when depth pixels are 0
         # - log(0) gives -inf which makes the CNN ouput NaNs
-        self.null_value = 0
+        self.null_value = -1
         print '***********************'
         print 'null_value set to {}'.format(self.null_value)
         print '***********************'
