@@ -53,15 +53,15 @@ def fcn(split, tops):
     n.fc7, n.relu7 = conv_relu(n.drop6, 4096, ks=1, pad=0)
     n.drop7 = L.Dropout(n.relu7, dropout_ratio=0.5, in_place=True)
 
-    n.score_fr = L.Convolution(n.drop7, num_output=40, kernel_size=1, pad=0,
-                               param=[dict(lr_mult=1, decay_mult=1), dict(lr_mult=2, decay_mult=0)])
+    n.score_fr = L.Convolution(n.drop7, num_output=2, kernel_size=1, pad=0,
+                               param=[dict(lr_mult=5, decay_mult=1), dict(lr_mult=10, decay_mult=0)])
     n.upscore = L.Deconvolution(n.score_fr,
-                                convolution_param=dict(num_output=40, kernel_size=64, stride=32,
+                                convolution_param=dict(num_output=2, kernel_size=64, stride=32,
                                                        bias_term=False),
                                 param=[dict(lr_mult=0)])
     n.score = crop(n.upscore, n.data)
     n.loss = L.SoftmaxWithLoss(n.score, n.label,
-                               loss_param=dict(normalize=False, ignore_label=255))
+                               loss_param=dict(normalize=False))
 
     return n.to_proto()
 
@@ -69,7 +69,7 @@ def fcn(split, tops):
 def make_net():
     tops = ['depth', 'label']
     with open('trainval.prototxt', 'w') as f:
-        f.write(str(fcn('trainval', tops)))
+        f.write(str(fcn('train', tops)))
 
     with open('test.prototxt', 'w') as f:
         f.write(str(fcn('test', tops)))
