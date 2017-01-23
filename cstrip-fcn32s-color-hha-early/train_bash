@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #:
-#PBS -N FCN_colHHA
+#PBS -N FCN_colHHA_RandHha
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=8GB
@@ -9,11 +9,14 @@
 
 module load python/2.7.11-foss-2016a
 module load caffe
-module unload caffe
+module unload caffe # keeps dependencies
 module load cuda/7.5.18-foss-2016a
 
 USEGPU='true'
-if [[ $(lsb_release -si) == *"SUSE LINUX"* ]]; then
+ON_HPC="true"
+# if [[ $(lsb_release -si) == *"SUSE LINUX"* ]]; then
+  if [[ "$ON_HPC" == "true" ]]; then
+    # echo "On HPC!"
     # On HPC (probably)
 
     # Old GPU ID method only works on nodes with 2x GPUs
@@ -64,7 +67,7 @@ if [[ -z "$set_mode" ]]; then
   set_mode='gpu'
 fi
 current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/logs/FCNcolorHhaEarly_train'$current_date'.log'
+log_filename=$working_dir'/logs/FCNcolorHhaEarly_train'$current_date'_RandHha.log'
 
 python $python_script --mode $set_mode 2>&1 | tee $log_filename
 echo $log_filename
