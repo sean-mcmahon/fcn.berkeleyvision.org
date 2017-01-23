@@ -95,7 +95,7 @@ def fcn(split, tops):
 def make_net():
     tops = ['color', 'depth', 'label']
     with open('trainval.prototxt', 'w') as f:
-        f.write(str(fcn('trainval', tops)))
+        f.write(str(fcn('train', tops)))
 
     with open('test.prototxt', 'w') as f:
         f.write(str(fcn('test', tops)))
