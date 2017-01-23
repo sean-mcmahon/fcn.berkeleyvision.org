@@ -61,7 +61,7 @@ class CStripSegDataLayer(caffe.Layer):
 
         # Null value for when depth pixels are 0
         # - log(0) gives -inf which makes the CNN ouput NaNs
-        self.null_value = -1
+        self.null_value = 0
         print '***********************'
         print 'null_value set to {}'.format(self.null_value)
         print '***********************'
@@ -178,10 +178,14 @@ class CStripSegDataLayer(caffe.Layer):
         # label -= 1  # rotate labels
         label = label[np.newaxis, ...]
         if 'depth' in self.tops:
+            print '\n----\nDepth image requested, modified label returned\n----\n'
             depth = self.load_depth(idx, sub_dir)
             depth_nulls = np.where(np.logical_or(
-                np.isinf(depth, np.isnan(depth))))
+                np.isinf(depth), np.isnan(depth)))
+            # WARNING: This is a potential source of error!
             label[depth_nulls] = 0
+        else:
+            print 'No depth image requested, standard label returned'
         # print 'cs_trip_layers: Label loaded, shape {}, has values {} and id
         # {}/{}'.format(np.shape(label), np.unique(label),sub_dir, idx)
         return label

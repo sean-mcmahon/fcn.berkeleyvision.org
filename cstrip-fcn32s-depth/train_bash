@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #:
-#PBS -N FCN_hha2
+#PBS -N FCN_depth2_zeroN
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=8GB
@@ -48,10 +48,10 @@ fi
 hpc_dir='/home/n8307628'
 local_dir='/home/sean'
 if [[ -d $local_dir ]]; then
-  working_dir=$local_dir'/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-hha'
+  working_dir=$local_dir'/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-depth'
   python_script=$working_dir'/solve.py'
 elif [[ -d $hpc_dir ]]; then
-  working_dir=$hpc_dir'/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-hha'
+  working_dir=$hpc_dir'/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-depth'
   python_script=$working_dir'/solve.py'
   # Because using MKL Blas on HPC
   export MKL_CBWR=AUTO
@@ -64,7 +64,7 @@ if [[ -z "$set_mode" ]]; then
   set_mode='gpu'
 fi
 current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/logs/FCNdepth_train'$current_date'_negOneNull.log'
+log_filename=$working_dir'/logs/FCNdepth_train'$current_date'_ZeroNull.log'
 
 python $python_script --mode $set_mode 2>&1 | tee $log_filename
 echo $log_filename
