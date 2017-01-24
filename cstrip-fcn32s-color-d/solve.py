@@ -21,19 +21,22 @@ home_dir = expanduser("~")
 # User Input
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', default='CPU')
+parser.add_argument('--pretrain_depth', default='False')
 args = parser.parse_args()
+pretrain_depth = False
+if args.pretrain_depth == "True" or args.pretrain_depth == "true":
+    pretrain_depth = True
 print 'This is the colour-DEPTH solver!'
 
 # import support functions
 if 'n8307628' in home_dir:
     caffe_root = home_dir + '/Fully-Conv-Network/Resources/caffe'
-    weights = home_dir + \
-        '/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/'+
-        'colorSnapshot/_iter_2000.caffemodel'
+    weights = home_dir + '/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel'
+    weights_depth = home_dir + '/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-depth/DepthSnapshot/negOneNull_mean_sub_iter_8000.caffemodel'
 elif 'sean' in home_dir:
     caffe_root = home_dir + '/src/caffe'
-    weights = home_dir + '/hpc-home/Fully-Conv-Network/Resources/'+
-    'FCN_models/cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel'
+    weights = home_dir + '/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel'
+    weights_depth = home_dir + '/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-depth/DepthSnapshot/negOneNull_mean_sub_iter_8000.caffemodel'
 filename, path, desc = imp.find_module('caffe', [caffe_root + '/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
 if 'g' in args.mode or 'G' in args.mode:
@@ -52,11 +55,18 @@ import surgery
 import score
 
 # init
-print 'Using weights from {}'.format(weights)
+print 'Using colour weights from {}'.format(weights)
 base_net_arch = file_location[:file_location.rfind(
     '/')] + '/cstrip-fcn32s-color/test.prototxt'
 base_net = caffe.Net(base_net_arch, weights,
                      caffe.TEST)
+
+print 'Using Depth weights from {}'.format(weights_depth)
+base_net_depth_arch = file_location[:file_location.rfind(
+    '/')] + '/cstrip-fcn32s-depth/val.prototxt'
+base_net_depth = caffe.Net(base_net_depth_arch, weights_depth,
+                         caffe.TEST)
+
 solver = caffe.SGDSolver(file_location + '/solver.prototxt')
 surgery.transplant(solver.net, base_net)  # copy weights to solver network
 
@@ -72,7 +82,14 @@ solver.net.params['conv1_1_bgrd'][0].data[:, 3] = np.mean(base_net.params[
     'conv1_1'][0].data, axis=1)
 solver.net.params['conv1_1_bgrd'][1].data[...] = base_net.params[
     'conv1_1'][1].data
-del base_net
+
+if (pretrain_depth):
+    print 'copying Depth params from conv1_1  ->  conv1_1_bgrd'
+    solver.net.params['conv1_1_bgrd'][0].data[:, 3] = base_net_depth.params[
+        'conv1_1'][0].data
+    # solver.net.params['conv1_1_bgrd'][0].data[:, 3] = np.mean(base_net_depth.params[
+    #     'conv1_1'][0].data, axis=1)
+del base_net, base_net_depth
 
 # scoring
 val = np.loadtxt(file_location[:file_location.rfind('/')] +
