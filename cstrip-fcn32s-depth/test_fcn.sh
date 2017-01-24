@@ -12,7 +12,9 @@ module unload caffe
 module load cuda/7.5.18-foss-2016a
 
 USEGPU='true'
-if [[ $(lsb_release -si) == *"SUSE LINUX"* ]]; then
+ON_HPC="true"
+# if [[ $(lsb_release -si) == *"SUSE LINUX"* ]]; then
+if [[ "$ON_HPC" == "true" ]]; then
     # On HPC (probably)
 
     # Old GPU ID method only works on nodes with 2x GPUs
@@ -63,7 +65,7 @@ if [[ -z "$set_mode" ]]; then
 fi
 split="$2"
 if [[ -z "$split" ]]; then
-  split='val'
+  split='test'
 fi
 snapshot_iter="$3"
 if [[ -z "$snapshot_iter" ]]; then
@@ -71,15 +73,15 @@ if [[ -z "$snapshot_iter" ]]; then
 fi
 snapshot_filter_="$4"
 if [[ -z "$snapshot_filter_" ]]; then
-  snapshot_filter_='secondTrain_lowerLR'
+  snapshot_filter_='negOneNull_mean_sub'
 fi
-network_dir="$5"
-if [[ -z "$network_dir" ]]; then
-  network_dir='cstrip-fcn32s-hha'
+network_dir_="$5"
+if [[ -z "$network_dir_" ]]; then
+  network_dir_='cstrip-fcn32s-depth'
 fi
 
 # current_date=`date +%Y-%m-%d_%H-%M-%S`
 log_filename=$working_dir'/'$network_dir'/logs/'$split'_dataset_snapshot_'$snapshot_filter_'_'$snapshot_iter'_results.log'
 
-python $python_script --mode $set_mode --test_type $split --iteration $snapshot_iter --snapshot_filter $snapshot_filter_ 2>&1 | tee $log_filename
-echo "Tested on network: $network_dir"
+python $python_script --mode $set_mode --test_type $split --iteration $snapshot_iter --snapshot_filter $snapshot_filter_ --network_dir $network_dir_ 2>&1 | tee $log_filename
+echo "Tested on network: $network_dir_ and snapshot $snapshot_filter_"
