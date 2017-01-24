@@ -7,7 +7,7 @@ layer {
   python_param {
     module: "cs_trip_layers"
     layer: "CStripSegDataLayer"
-    param_str: "{\'tops\': [\'color\', \'depth\', \'label\'], \'seed\': 1337, \'cstrip_dir\': \'/Construction_Site/Springfield/12Aug16/K2\', \'split\': \'train\'}"
+    param_str: "{\'seed\': 1337, \'tops\': [\'color\', \'depth\', \'label\'], \'split\': \'trainval\', \'cstrip_dir\': \'/Construction_Site/Springfield/12Aug16/K2\'}"
   }
 }
 layer {
@@ -23,11 +23,11 @@ layer {
   bottom: "data"
   top: "conv1_1_bgrd"
   param {
-    lr_mult: 10
+    lr_mult: 4
     decay_mult: 1
   }
   param {
-    lr_mult: 20
+    lr_mult: 8
     decay_mult: 0
   }
   convolution_param {
@@ -35,9 +35,6 @@ layer {
     pad: 100
     kernel_size: 3
     stride: 1
-    weight_filler {
-      type: "xavier"
-    }
   }
 }
 layer {
@@ -52,11 +49,11 @@ layer {
   bottom: "conv1_1_bgrd"
   top: "conv1_2"
   param {
-    lr_mult: 1
+    lr_mult: 4
     decay_mult: 1
   }
   param {
-    lr_mult: 2
+    lr_mult: 8
     decay_mult: 0
   }
   convolution_param {
@@ -489,24 +486,21 @@ layer {
   bottom: "fc7"
   top: "score_fr_trip_d"
   param {
-    lr_mult: 1
+    lr_mult: 5
     decay_mult: 1
   }
   param {
-    lr_mult: 2
+    lr_mult: 10
     decay_mult: 0
   }
   convolution_param {
     num_output: 2
     pad: 0
     kernel_size: 1
-    weight_filler {
-      type: "xavier"
-    }
   }
 }
 layer {
-  name: "upscore_trip"
+  name: "upscore"
   type: "Deconvolution"
   bottom: "score_fr_trip_d"
   top: "upscore"
@@ -538,6 +532,6 @@ layer {
   bottom: "label"
   top: "loss"
   loss_param {
-    normalize: true
+    normalize: false
   }
 }
