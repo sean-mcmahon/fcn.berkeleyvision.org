@@ -177,7 +177,7 @@ class CStripSegDataLayer(caffe.Layer):
             self.cstrip_dir, sub_dir, idx))[0])['binary_labels'].astype(np.uint8)
         # label -= 1  # rotate labels
         label = label[np.newaxis, ...]
-        if 'depth' in self.tops:
+        if 'depth' in self.tops and 'test' not in self.split:
             print '\n----\nDepth image requested, modified label returned\n----\n'
             depth = self.load_depth(idx, sub_dir)
             depth_nulls = np.where(np.logical_or(
@@ -185,7 +185,7 @@ class CStripSegDataLayer(caffe.Layer):
             # WARNING: This is a potential source of error!
             label[depth_nulls] = 0
         else:
-            print 'No depth image requested, standard label returned'
+            print 'No depth image requested or testing, standard label returned'
         # print 'cs_trip_layers: Label loaded, shape {}, has values {} and id
         # {}/{}'.format(np.shape(label), np.unique(label),sub_dir, idx)
         return label
