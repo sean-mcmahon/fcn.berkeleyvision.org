@@ -94,8 +94,10 @@ if (pretrain_hha):
     print 'copying HHA params from conv1_1  ->  conv1_1_bgrhha'
     solver.net.params['conv1_1_bgrhha'][0].data[:, 3:6] = base_net_hha.params[
         'conv1_1'][0].data
-    solver.net.params['conv1_1_bgrhha'][0].data[:, 5] = np.mean(base_net_hha.params[
-        'conv1_1'][0].data, axis=1)
+        # I'm pretty sure the line above was originally used as a
+        # way to initialise the depth part of conv1_1
+    # solver.net.params['conv1_1_bgrhha'][0].data[:, 5] = np.mean(base_net_hha.params[
+    #     'conv1_1'][0].data, axis=1)
 # solver.net.params['conv1_1_bgrhha'][1].data[...] = base_net_hha.params[
 #     'conv1_1'][1].data # copies the bias's
 
