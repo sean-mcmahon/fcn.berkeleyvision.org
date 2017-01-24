@@ -64,7 +64,7 @@ else:
     print '-- GPU Mode Chosen --'
     print '==============='
 # caffe.set_device(1)
-snapshot_dir = glob.glob(weight_dir + '*napshot*')
+snapshot_dir = glob.glob(os.path.join(weight_dir, '*napshot*'))
 weights = snapshot_dir[0] + '/' + snapshot_filter + \
     '_iter_' + str(iteration) + '.caffemodel'
 
@@ -105,3 +105,5 @@ if not match_found:
 print '\n>>>> Validation <<<<\n'
 score.seg_tests(solver, file_location + '/' + network_dir +
                 args.test_type + '_images', test_set, layer='score')
+
+print '\n(python) Test Network: {}, snapshot: {} \n'.format(network_dir, snapshot_filter)
