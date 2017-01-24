@@ -152,7 +152,8 @@ class CStripSegDataLayer(caffe.Layer):
         """
         # idx_str = str(idx).zfill(4)
         im = Image.open(glob.glob(
-            '{}/{}/colour/colourimg_{}_*'.format(self.cstrip_dir, sub_dir, idx))[0])
+            '{}/{}/colour/colourimg_{}_*'.format(
+                self.cstrip_dir, sub_dir, idx))[0])
         # im = Image.open(
         # '{}/{}/colour/colourimg{}.png'.format(self.cstrip_dir, idx))
         in_ = np.array(im, dtype=np.float32)
@@ -196,7 +197,8 @@ class CStripSegDataLayer(caffe.Layer):
         """
 
         im = Image.open(glob.glob(
-            '{}/{}/depth/depthimg_{}_*'.format(self.cstrip_dir, sub_dir, idx))[0])
+            '{}/{}/depth/depthimg_{}_*'.format(
+                self.cstrip_dir, sub_dir, idx))[0])
         d = np.array(im, dtype=np.float32)
         # print 'depth pixel values before log are: {}\nMin {}, max {} and
         # shape {}'.format(np.unique(d), min(d.flatten()),max(d.flatten()),
@@ -218,7 +220,8 @@ class CStripSegDataLayer(caffe.Layer):
         See https://github.com/s-gupta/rcnn-depth/blob/master/rcnn/saveHHA.m
         """
         im = Image.open(
-            glob.glob('{}/{}/HHA/HHAimg_{}_*'.format(self.cstrip_dir, sub_dir, idx))[0])
+            glob.glob('{}/{}/HHA/HHAimg_{}_*'.format(
+                self.cstrip_dir, sub_dir, idx))[0])
         hha = np.array(im, dtype=np.float32)
         hha -= self.mean_hha
         hha = hha.transpose((2, 0, 1))
