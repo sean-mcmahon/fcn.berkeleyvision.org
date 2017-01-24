@@ -524,6 +524,7 @@ layer {
   bottom: "label"
   top: "loss"
   loss_param {
+    ignore_label: 255
     normalize: false
   }
 }

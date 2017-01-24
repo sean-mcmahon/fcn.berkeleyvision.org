@@ -61,7 +61,8 @@ def fcn(split, tops):
                                 param=[dict(lr_mult=0)])
     n.score = crop(n.upscore, n.data)
     n.loss = L.SoftmaxWithLoss(n.score, n.label,
-                               loss_param=dict(normalize=False))
+                               loss_param=dict(normalize=False,
+                                               ignore_label=255))
 
     return n.to_proto()
 
@@ -70,6 +71,9 @@ def make_net():
     tops = ['depth', 'label']
     with open('trainval.prototxt', 'w') as f:
         f.write(str(fcn('train', tops)))
+
+    with open('val.prototxt', 'w') as f:
+        f.write(str(fcn('val', tops)))
 
     with open('test.prototxt', 'w') as f:
         f.write(str(fcn('test', tops)))
