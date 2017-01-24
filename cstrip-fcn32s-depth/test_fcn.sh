@@ -81,7 +81,8 @@ if [[ -z "$network_dir_" ]]; then
 fi
 
 # current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/'$network_dir'/logs/'$split'_dataset_snapshot_'$snapshot_filter_'_'$snapshot_iter'_results.log'
+log_filename=$working_dir'/'$network_dir_'/logs/'$split'_dataset_snapshot_'$snapshot_filter_'_'$snapshot_iter'_results.log'
 
 python $python_script --mode $set_mode --test_type $split --iteration $snapshot_iter --snapshot_filter $snapshot_filter_ --network_dir $network_dir_ 2>&1 | tee $log_filename
 echo "Tested on network: $network_dir_ and snapshot $snapshot_filter_"
+echo "Saved to $log_filename"
