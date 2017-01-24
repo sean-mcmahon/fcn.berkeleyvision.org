@@ -2,26 +2,34 @@ import caffe
 from caffe import layers as L, params as P
 from caffe.coord_map import crop
 
-def conv_relu(bottom, nout, ks=3, stride=1, pad=1):
+
+def conv_relu(bottom, nout, ks=3, stride=1, pad=1, lr=1):
     conv = L.Convolution(bottom, kernel_size=ks, stride=stride,
-        num_output=nout, pad=pad,
-        param=[dict(lr_mult=1, decay_mult=1), dict(lr_mult=2, decay_mult=0)])
+                         num_output=nout, pad=pad,
+                         param=[dict(lr_mult=lr, decay_mult=1),
+                                dict(lr_mult=2 * lr,
+                                     decay_mult=0)])
     return conv, L.ReLU(conv, in_place=True)
+
 
 def max_pool(bottom, ks=2, stride=2):
     return L.Pooling(bottom, pool=P.Pooling.MAX, kernel_size=ks, stride=stride)
 
+
 def fcn(split, tops):
     n = caffe.NetSpec()
-    n.color, n.depth, n.label = L.Python(module='nyud_layers',
-            layer='NYUDSegDataLayer', ntop=3,
-            param_str=str(dict(nyud_dir='../data/nyud', split=split,
-                tops=tops, seed=1337)))
+    n.color, n.depth, n.label = L.Python(module='cs_trip_layers',
+                                         layer='CStripSegDataLayer', ntop=3,
+                                         param_str=str(dict(
+                                             cstrip_dir='/Construction_Site/' +
+                                             'Springfield/12Aug16/K2',
+                                             split=split, tops=tops,
+                                             seed=1337)))
     n.data = L.Concat(n.color, n.depth)
 
     # the base net
-    n.conv1_1_bgrd, n.relu1_1 = conv_relu(n.data, 64, pad=100)
-    n.conv1_2, n.relu1_2 = conv_relu(n.relu1_1, 64)
+    n.conv1_1_bgrd, n.relu1_1 = conv_relu(n.data, 64, pad=100, lr=4)
+    n.conv1_2, n.relu1_2 = conv_relu(n.relu1_1, 64, lr=4)
     n.pool1 = max_pool(n.relu1_2)
 
     n.conv2_1, n.relu2_1 = conv_relu(n.pool1, 128)
@@ -49,22 +57,30 @@ def fcn(split, tops):
     n.fc7, n.relu7 = conv_relu(n.drop6, 4096, ks=1, pad=0)
     n.drop7 = L.Dropout(n.relu7, dropout_ratio=0.5, in_place=True)
 
-    n.score_fr = L.Convolution(n.drop7, num_output=40, kernel_size=1, pad=0,
-        param=[dict(lr_mult=1, decay_mult=1), dict(lr_mult=2, decay_mult=0)])
-    n.upscore = L.Deconvolution(n.score_fr,
-        convolution_param=dict(num_output=40, kernel_size=64, stride=32,
-            bias_term=False),
-        param=[dict(lr_mult=0)])
+    n.score_fr_trip_d = L.Convolution(n.drop7, num_output=2, kernel_size=1,
+                                      pad=0,
+                                      param=[dict(lr_mult=5, decay_mult=1),
+                                             dict(lr_mult=10, decay_mult=0)])
+    n.upscore = L.Deconvolution(n.score_fr_trip_d,
+                                convolution_param=dict(num_output=2,
+                                                       kernel_size=64,
+                                                       stride=32,
+                                                       bias_term=False),
+                                param=[dict(lr_mult=0)])
     n.score = crop(n.upscore, n.data)
     n.loss = L.SoftmaxWithLoss(n.score, n.label,
-            loss_param=dict(normalize=False, ignore_label=255))
+                               loss_param=dict(normalize=False))
 
     return n.to_proto()
+
 
 def make_net():
     tops = ['color', 'depth', 'label']
     with open('trainval.prototxt', 'w') as f:
         f.write(str(fcn('trainval', tops)))
+
+    with open('val.prototxt', 'w') as f:
+        f.write(str(fcn('val', tops)))
 
     with open('test.prototxt', 'w') as f:
         f.write(str(fcn('test', tops)))
