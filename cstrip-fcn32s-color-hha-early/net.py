@@ -7,7 +7,7 @@ def conv_relu(bottom, nout, ks=3, stride=1, pad=1, lr=1):
     conv = L.Convolution(bottom, kernel_size=ks, stride=stride,
                          num_output=nout, pad=pad,
                          param=[dict(lr_mult=lr, decay_mult=1),
-                                dict(lr_mult=2*lr,
+                                dict(lr_mult=2 * lr,
                                      decay_mult=0)])
     return conv, L.ReLU(conv, in_place=True)
 
@@ -19,8 +19,8 @@ def max_pool(bottom, ks=2, stride=2):
 def fcn(split, tops):
     n = caffe.NetSpec()
     n.color, n.hha, n.label = L.Python(module='cs_trip_layers',
-                                         layer='CStripSegDataLayer', ntop=3,
-                                         param_str=str(dict(
+                                       layer='CStripSegDataLayer', ntop=3,
+                                       param_str=str(dict(
                                              cstrip_dir='/Construction_Site/' +
                                              'Springfield/12Aug16/K2',
                                              split=split, tops=tops,
@@ -58,9 +58,12 @@ def fcn(split, tops):
     n.drop7 = L.Dropout(n.relu7, dropout_ratio=0.5, in_place=True)
 
     n.score_fr = L.Convolution(n.drop7, num_output=2, kernel_size=1, pad=0,
-                               param=[dict(lr_mult=5, decay_mult=1), dict(lr_mult=10, decay_mult=0)])
+                               param=[dict(lr_mult=5, decay_mult=1),
+                                      dict(lr_mult=10, decay_mult=0)])
     n.upscore = L.Deconvolution(n.score_fr,
-                                convolution_param=dict(num_output=2, kernel_size=64, stride=32,
+                                convolution_param=dict(num_output=2,
+                                                       kernel_size=64,
+                                                       stride=32,
                                                        bias_term=False),
                                 param=[dict(lr_mult=0)])
     n.score = crop(n.upscore, n.data)
