@@ -33,7 +33,7 @@ parser.add_argument('--mode', default='cpu')
 parser.add_argument('--iteration', default=8000)
 parser.add_argument('--test_type', default='val')
 parser.add_argument('--network_dir', default='cstrip-fcn32s-hha')
-parser.add_argument('--snapshot_filter', default='train')
+parser.add_argument('--snapshot_filter', default='val')
 args = parser.parse_args()
 iteration = args.iteration
 network_dir = args.network_dir
@@ -71,28 +71,27 @@ weights = snapshot_dir[0] + '/' + snapshot_filter + \
 
 # init
 logFilenames = glob.glob(file_location + '/' + network_dir + 'logs/*_train*')
+train_set = None
 if args.test_type == 'val':
     solver = caffe.SGDSolver(file_location + '/' +
                              network_dir + 'solver.prototxt')
     test_set = np.loadtxt(file_location + '/data/cs-trip/val.txt', dtype=str)
+    train_set = np.loadtxt(
+        file_location + '/data/cs-trip/train.txt', dtype=str)
 elif args.test_type == 'test':
     solver = caffe.SGDSolver(file_location + '/' +
                              network_dir + 'solver_test.prototxt')
     test_set = np.loadtxt(file_location + '/data/cs-trip/test.txt', dtype=str)
-elif args.test_type == 'train':
-    solver = caffe.SGDSolver(file_location + '/' +
-                             network_dir + 'solver_test-trainingSet.prototxt')
-    test_set = np.loadtxt(file_location + '/data/cs-trip/train.txt', dtype=str)
 else:
-    print 'Incorrect test_type given {}; expecting "train", "val" or "test"'.format(args.test_type)
+    print 'Incorrect test_type given {}; expecting "val" or "test"'.format(args.test_type)
     raise
 solver.net.copy_from(weights)
 print '----------------------------------------'
-print 'Testing Network {}'.format(network_dir)
+print 'Validating all iterations of Network {}'.format(network_dir)
 print '----------------------------------------'
 print '\n-- test_type is', args.test_type, ' --'
 weight_name = os.path.basename(weights)
-print '-- network (colorDepth) weights used: {}'.format(weight_name)
+print '-- network weights used: {}'.format(weight_name)
 print 'For more details on taining view log file(s):'
 match_found = False
 for filename in logFilenames:
@@ -102,8 +101,16 @@ for filename in logFilenames:
 if not match_found:
     print 'Error, no logfile found for {}'.format(weight_name)
 
-print '\n>>>> Validation <<<<\n'
+new_weight = os.path.join(
+    snapshot_dir[0], 'secondTrain_lowerLR_iter_14000.caffemodel')
+
+if train_set:
+    print '\n>>>> Training Set <<<<\n'
+    # solver.net.CopyTrainedLayersFromBinaryProto(new_weight) # this wont work - method not passed to python
+    score.do_seg_tests(solver.net, solver.iter, None, train_set, layer='score')
+
+print '\n>>>> Validation Set <<<<\n'
 score.seg_tests(solver, file_location + '/' + network_dir +
                 args.test_type + '_images', test_set, layer='score')
 
-print '\n(python) Test Network: {}, snapshot: {} \n'.format(network_dir, snapshot_filter)
+print '\n(python) Test Network: {} \n'.format(network_dir)
