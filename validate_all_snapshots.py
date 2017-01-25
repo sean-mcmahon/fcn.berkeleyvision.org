@@ -68,7 +68,8 @@ snapshot_dir = glob.glob(os.path.join(weight_dir, '*napshot*'))
 weights = snapshot_dir[0] + '/' + snapshot_filter + \
     '_iter_' + str(iteration) + '.caffemodel'
 
-
+caffemodel_files = glob.glob(os.path.join(
+    snapshot_dir[0], snapshot_filter + '_iter_*' + '*.caffemodel'))
 # init
 logFilenames = glob.glob(file_location + '/' + network_dir + 'logs/*_train*')
 train_set = None
@@ -104,13 +105,17 @@ if not match_found:
 new_weight = os.path.join(
     snapshot_dir[0], 'secondTrain_lowerLR_iter_14000.caffemodel')
 
-if train_set:
-    print '\n>>>> Training Set <<<<\n'
-    # solver.net.CopyTrainedLayersFromBinaryProto(new_weight) # this wont work - method not passed to python
-    score.do_seg_tests(solver.net, solver.iter, None, train_set, layer='score')
 
-print '\n>>>> Validation Set <<<<\n'
-score.seg_tests(solver, file_location + '/' + network_dir +
-                args.test_type + '_images', test_set, layer='score')
+for model_file in caffemodel_files:
+    if train_set:
+        print '\n>>>> Training Set <<<<\n'
+        # solver.net.CopyTrainedLayersFromBinaryProto(new_weight) # this wont
+        # work - method not passed to python
+        score.do_seg_tests(solver.net, solver.iter, None,
+                           train_set, layer='score')
+
+    print '\n>>>> Validation Set <<<<\n'
+    score.seg_tests(solver, file_location + '/' + network_dir +
+                    args.test_type + '_images', test_set, layer='score')
 
 print '\n(python) Test Network: {} \n'.format(network_dir)
