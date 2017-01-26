@@ -103,3 +103,6 @@ if not match_found:
 print '\n>>>> Validation <<<<\n'
 score.seg_tests(solver, file_location + '/' + args.test_type +
                 '_images', test_set, layer='score', dataL='color')
+print 'WARNING if your getting 0 trip acc and no trip predicitons, \
+check the name of the upscore layers in trainval, val and test.prototxt. \
+ Some networks load with "upscore_trip" and others just "upscore"'
