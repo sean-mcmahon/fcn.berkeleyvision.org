@@ -20,6 +20,27 @@ def add_slash(mystring):
     else:
         return mystring + '/'
 
+
+def find_between(s, first, last):
+    # from:
+    # http://stackoverflow.com/questions/3368969/find-string-between-two-substrings
+    try:
+        start = s.index(first) + len(first)
+        end = s.index(last, start)
+        return s[start:end]
+    except ValueError:
+        return ""
+
+
+def find_between_r(s, first, last):
+    # from:
+    # http://stackoverflow.com/questions/3368969/find-string-between-two-substrings
+    try:
+        start = s.rindex(first) + len(first)
+        end = s.rindex(last, start)
+        return s[start:end]
+    except ValueError:
+        return ""
 # add '../' directory to path for importing score.py, surgery.py and
 # pycaffe layer
 file_location = os.path.realpath(os.path.join(
@@ -63,15 +84,8 @@ else:
     print 'No Mode (CPU or GPU) Given'
     print '-- GPU Mode Chosen --'
     print '==============='
-# caffe.set_device(1)
-snapshot_dir = glob.glob(os.path.join(weight_dir, '*napshot*'))
-weights = snapshot_dir[0] + '/' + snapshot_filter + \
-    '_iter_' + str(iteration) + '.caffemodel'
 
-caffemodel_files = glob.glob(os.path.join(
-    snapshot_dir[0], snapshot_filter + '_iter_*' + '*.caffemodel'))
 # init
-logFilenames = glob.glob(file_location + '/' + network_dir + 'logs/*_train*')
 train_set = None
 if args.test_type == 'val':
     solver = caffe.SGDSolver(file_location + '/' +
@@ -79,42 +93,38 @@ if args.test_type == 'val':
     test_set = np.loadtxt(file_location + '/data/cs-trip/val.txt', dtype=str)
     train_set = np.loadtxt(
         file_location + '/data/cs-trip/train.txt', dtype=str)
-elif args.test_type == 'test':
-    solver = caffe.SGDSolver(file_location + '/' +
-                             network_dir + 'solver_test.prototxt')
-    test_set = np.loadtxt(file_location + '/data/cs-trip/test.txt', dtype=str)
+# elif args.test_type == 'test':
+#     solver = caffe.SGDSolver(file_location + '/' +
+#                              network_dir + 'solver_test.prototxt')
+#     test_set = np.loadtxt(file_location + '/data/cs-trip/test.txt', dtype=str)
 else:
     print 'Incorrect test_type given {}; expecting "val" or "test"'.format(args.test_type)
     raise
-solver.net.copy_from(weights)
+
 print '----------------------------------------'
 print 'Validating all iterations of Network {}'.format(network_dir)
+print '\nTest_type is', args.test_type, '    '
 print '----------------------------------------'
-print '\n-- test_type is', args.test_type, ' --'
-weight_name = os.path.basename(weights)
-print '-- network weights used: {}'.format(weight_name)
-print 'For more details on taining view log file(s):'
-match_found = False
-for filename in logFilenames:
-    if weight_name in open(filename).read():
-        print os.path.basename(filename)
-        match_found = True
-if not match_found:
-    print 'Error, no logfile found for {}'.format(weight_name)
 
-new_weight = os.path.join(
-    snapshot_dir[0], 'secondTrain_lowerLR_iter_14000.caffemodel')
+snapshot_dir = glob.glob(os.path.join(weight_dir, '*napshot*'))
+caffemodel_files = glob.glob(os.path.join(
+    snapshot_dir[0], snapshot_filter + '_iter_*' + '*.caffemodel'))
+# new_weight = os.path.join(
+#     snapshot_dir[0], 'secondTrain_lowerLR_iter_14000.caffemodel')
 
-
-for model_file in caffemodel_files:
+for weight_file in caffemodel_files:
+    iteration = int(find_between_r(weight_file, '_iter_', '.caffemodel'))
+    print 'Network weights used: {} iter {}'.format(
+        os.path.basename(weight_file), iteration)
+    solver.net.copy_from(weight_file)
     if train_set:
-        print '\n>>>> Training Set <<<<\n'
+        print '>>>> Training Set {} <<<<'.format(iteration)
         # solver.net.CopyTrainedLayersFromBinaryProto(new_weight) # this wont
         # work - method not passed to python
-        score.do_seg_tests(solver.net, solver.iter, None,
+        score.do_seg_tests(solver.net, iteration, None,
                            train_set, layer='score')
 
-    print '\n>>>> Validation Set <<<<\n'
+    print '>>>> Validation Set {} <<<<'.format(iteration)
     score.seg_tests(solver, file_location + '/' + network_dir +
                     args.test_type + '_images', test_set, layer='score')
 
