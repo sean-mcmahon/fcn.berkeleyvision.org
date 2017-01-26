@@ -50,7 +50,7 @@ class CStripSegDataLayer(caffe.Layer):
             self.cstrip_dir = '/home/n8307628' + params['cstrip_dir']
         self.split = params['split']
         self.tops = params['tops']
-        self.random = params.get('randomize', True)
+        self.random = params.get('randomize', False)
         self.seed = params.get('seed', None)
         # self.null_value = params.get('null_value',-1)
         self.file_location = os.path.realpath(
@@ -188,7 +188,8 @@ class CStripSegDataLayer(caffe.Layer):
             # WARNING: This is a potential source of error!
             label[depth_nulls] = ignore_label
         else:
-            print 'No depth image requested or testing, standard label returned'
+            # print 'No depth image requested or testing, standard label returned'
+            pass
         # print 'cs_trip_layers: Label loaded, shape {}, has values {} and id
         # {}/{}'.format(np.shape(label), np.unique(label),sub_dir, idx)
         # print 'label split {} loaded from {}'.format(self.split, sub_dir)
