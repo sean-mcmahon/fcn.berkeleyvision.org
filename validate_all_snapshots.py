@@ -88,7 +88,6 @@ train_set = None
 if args.test_type == 'val':
     solver = caffe.SGDSolver(file_location + '/' +
                              network_dir + 'solver.prototxt')
-    solver.net.params['data']
     test_set = np.loadtxt(file_location + '/data/cs-trip/val.txt', dtype=str)
     train_set = np.loadtxt(
         file_location + '/data/cs-trip/train.txt', dtype=str)
@@ -128,9 +127,13 @@ for count, weight_file in enumerate(caffemodel_files):
                            train_set, layer='score')
 
     print '\n>>>> Validation Set {} <<<<\n'.format(iteration)
-    score.seg_tests(solver, file_location + '/' + network_dir +
-                    args.test_type + '_images', test_set, layer='score')
-    if count > 2:
-        print 'prematurely exiting loop for testing'
+    save_format = file_location + '/' + network_dir + args.test_type + '_images'
+    # score.seg_tests(solver, save_format , test_set, layer='score')
+    solver.test_nets[0].share_with(solver.net)
+    score.do_seg_tests(solver.test_nets[0], iteration,
+                     save_format, test_set, layer='score')
+    # if count > 2:
+    #     print 'prematurely exiting loop for testing'
+    #     break
 
 print '\n(python) Test Network: {} \n'.format(network_dir)
