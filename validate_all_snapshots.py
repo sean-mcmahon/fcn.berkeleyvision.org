@@ -50,13 +50,11 @@ home_dir = expanduser("~")
 
 # User Input
 parser = argparse.ArgumentParser()
-parser.add_argument('--mode', default='cpu')
-parser.add_argument('--iteration', default=8000)
+parser.add_argument('--mode', default='gpu')
 parser.add_argument('--test_type', default='val')
 parser.add_argument('--network_dir', default='cstrip-fcn32s-hha')
-parser.add_argument('--snapshot_filter', default='val')
+parser.add_argument('--snapshot_filter', default='secondTrain_lowerLR')
 args = parser.parse_args()
-iteration = args.iteration
 network_dir = args.network_dir
 network_dir = add_slash(network_dir)  # ensure slash present
 snapshot_filter = args.snapshot_filter
@@ -90,6 +88,7 @@ train_set = None
 if args.test_type == 'val':
     solver = caffe.SGDSolver(file_location + '/' +
                              network_dir + 'solver.prototxt')
+    solver.net.params['data']
     test_set = np.loadtxt(file_location + '/data/cs-trip/val.txt', dtype=str)
     train_set = np.loadtxt(
         file_location + '/data/cs-trip/train.txt', dtype=str)
@@ -104,7 +103,7 @@ else:
 print '----------------------------------------'
 print 'Validating all iterations of Network {}'.format(network_dir)
 print '\nTest_type is', args.test_type, '    '
-print '----------------------------------------'
+print '----------------------------------------\n'
 
 snapshot_dir = glob.glob(os.path.join(weight_dir, '*napshot*'))
 caffemodel_files = glob.glob(os.path.join(
@@ -112,20 +111,26 @@ caffemodel_files = glob.glob(os.path.join(
 # new_weight = os.path.join(
 #     snapshot_dir[0], 'secondTrain_lowerLR_iter_14000.caffemodel')
 
-for weight_file in caffemodel_files:
+if not caffemodel_files:
+    print("caffemodel_files list is empty")
+    print 'snapshot_dir[0]: {}\nsnapshot_filter {}'.format(snapshot_dir[0],
+                                                           snapshot_filter)
+for count, weight_file in enumerate(caffemodel_files):
     iteration = int(find_between_r(weight_file, '_iter_', '.caffemodel'))
-    print 'Network weights used: {} iter {}'.format(
+    print 'Network weights: {} iter {}'.format(
         os.path.basename(weight_file), iteration)
     solver.net.copy_from(weight_file)
-    if train_set:
-        print '>>>> Training Set {} <<<<'.format(iteration)
+    if train_set is not None:
+        print '\n>>>> Training Set {} <<<<\n'.format(iteration)
         # solver.net.CopyTrainedLayersFromBinaryProto(new_weight) # this wont
         # work - method not passed to python
         score.do_seg_tests(solver.net, iteration, None,
                            train_set, layer='score')
 
-    print '>>>> Validation Set {} <<<<'.format(iteration)
+    print '\n>>>> Validation Set {} <<<<\n'.format(iteration)
     score.seg_tests(solver, file_location + '/' + network_dir +
                     args.test_type + '_images', test_set, layer='score')
+    if count > 2:
+        print 'prematurely exiting loop for testing'
 
 print '\n(python) Test Network: {} \n'.format(network_dir)
