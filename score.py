@@ -46,6 +46,8 @@ def compute_flagMetric(score, folder, index, gt=False):
     matfilename = glob.glob('{}/{}/labels/colourimg_{}_*'.format(
         cstrip_dir, folder, index))[0]
     matfile = loadmat(matfilename)
+    # get binary image of each trip label, assumes each label is of a
+    # different trip hazard
     rawmasks = matfile['objects'][0][0][2][0]
     score = score.flatten()
     scoretrips = np.where(score > 0)[0]
@@ -198,9 +200,9 @@ def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label',
     print '>>>', datetime.now(), 'Iteration', iter, 'trip accuracy', acc[1], \
         'non-trip accuracy', acc[0]
 
-    recall = hist[1,1] / hist.sum(0)[1] # hist[1,1] / (hist[1,0] + hist[1,1])
-    precision = hist[1,1] /  hist.sum(1)[1] # hist[1,1] / (hist[0,1] + hist[1,1])
-    Fone = ((precision*recall) / (precision+recall)) * 2
+    recall = hist[1, 1] / hist.sum(0)[1]  # hist[1,1] / (hist[1,0] + hist[1,1])
+    precision = hist[1, 1] / hist.sum(1)[1] # hist[1,1] / (hist[0,1] + hist[1,1])
+    Fone = ((precision * recall) / (precision + recall)) * 2
     print '>>>', datetime.now(), 'Iteration', iter, 'precision', precision
     print '>>>', datetime.now(), 'Iteration', iter, 'recall', recall
     print '>>>', datetime.now(), 'Iteration', iter, 'F1-score', Fone
