@@ -12,9 +12,9 @@ module unload caffe
 module load cuda/7.5.18-foss-2016a
 
 USEGPU='true'
-ON_HPC="true"
-# if [[ $(lsb_release -si) == *"SUSE LINUX"* ]]; then
-if [[ "$ON_HPC" == "true" ]]; then
+# ON_HPC="true"
+if [[ $(lsb_release -si) == *"SUSE LINUX"* ]]; then
+# if [[ "$ON_HPC" == "true" ]]; then
     # On HPC (probably)
 
     # Old GPU ID method only works on nodes with 2x GPUs

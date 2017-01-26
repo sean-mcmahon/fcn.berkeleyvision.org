@@ -12,9 +12,9 @@ module unload caffe # keeps dependencies
 module load cuda/7.5.18-foss-2016a
 
 USEGPU='true'
-ON_HPC="true"
-# if [[ $(lsb_release -si) == *"SUSE LINUX"* ]]; then
-  if [[ "$ON_HPC" == "true" ]]; then
+# ON_HPC="true"
+if [[ $(lsb_release -si) == *"SUSE LINUX"* ]]; then
+  # if [[ "$ON_HPC" == "true" ]]; then
     # On HPC (probably)
 
     # Old GPU ID method only works on nodes with 2x GPUs
@@ -74,11 +74,11 @@ if [[ -z "$snapshot_iter" ]]; then
 fi
 snapshot_filter_="$4"
 if [[ -z "$snapshot_filter_" ]]; then
-  snapshot_filter_='colorInit_randHha'
+  snapshot_filter_='colorHhaInit_5xLR'
 fi
 
 # current_date=`date +%Y-%m-%d_%H-%M-%S`
 log_filename=$working_dir'/logs/'$split'_dataset_snapshot_'$snapshot_filter_'_'$snapshot_iter'_results.log'
 
 python $python_script --mode $set_mode --test_type $split --iteration $snapshot_iter --snapshot_filter $snapshot_filter_ 2>&1 | tee $log_filename
-echo $snapshot_filter_
+echo 'network: color-hha-early '$snapshot_filter_
