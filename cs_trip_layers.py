@@ -191,6 +191,7 @@ class CStripSegDataLayer(caffe.Layer):
             print 'No depth image requested or testing, standard label returned'
         # print 'cs_trip_layers: Label loaded, shape {}, has values {} and id
         # {}/{}'.format(np.shape(label), np.unique(label),sub_dir, idx)
+        # print 'label split {} loaded from {}'.format(self.split, sub_dir)
         return label
 
     def load_depth(self, idx, sub_dir):
