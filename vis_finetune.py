@@ -43,6 +43,21 @@ def parse_log(log_file):
     loss_iterations = np.array(loss_iterations)
     losses = np.array(losses)
 
+
+    training_loss_pattern = r"Iteration (?P<iter_num>\d+) training set loss = (?P<loss_val>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
+    # 8000 training test loss = 947637.789062
+    training_losses = []
+    training_loss_iterations = []
+
+    for r in re.findall(training_loss_pattern, log):
+        training_loss_iterations.append(int(r[0]))
+        training_losses.append(float(r[1]))
+
+    training_loss_iterations = np.array(training_loss_iterations)
+    training_losses = np.array(training_losses)
+    print 'Number of train loss iter {}, Number of train losses {}'.format(
+    np.shape(training_loss_iterations), np.shape(training_losses))
+
     # accuracy_pattern = r"Iteration (?P<iter_num>\d+), Testing net \(#0\)\n.* accuracy = (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
     accuracy_pattern = r"Iteration (?P<iter_num>\d+) trip accuracy (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
     accuracies = []
