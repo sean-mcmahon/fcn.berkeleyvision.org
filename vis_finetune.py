@@ -23,10 +23,12 @@ def main(files):
     ax1.set_ylabel('loss')
     ax2.set_ylabel('accuracy %')
     for i, log_file in enumerate(files):
-        loss_iterations, losses, accuracy_iterations, accuracies, accuracies_iteration_checkpoints_ind, t_loss_iterations, t_losses = parse_log(
-            log_file)
+        loss_iterations, losses, accuracy_iterations, accuracies, \
+            accuracies_iteration_checkpoints_ind, t_loss_iterations, \
+            t_losses = parse_log(log_file)
         disp_results(fig, ax1, ax2, loss_iterations, losses, accuracy_iterations,
-                     accuracies, accuracies_iteration_checkpoints_ind, t_loss_iterations, t_losses, color_ind=i)
+                     accuracies, accuracies_iteration_checkpoints_ind,
+                     t_loss_iterations, t_losses, color_ind=i)
     plt.show()
 
 
