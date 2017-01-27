@@ -6,9 +6,10 @@
 #PBS -l mem=4GB
 #PBS -l walltime=4:00:00
 
-module load python
+module load python/2.7.11-foss-2016a
 module load caffe
-module load cuda
+module unload caffe
+module load cuda/7.5.18-foss-2016a
 
 USEGPU='true'
 if [[ $(lsb_release -si) == *"SUSE LINUX"* ]]; then
@@ -62,7 +63,7 @@ if [[ -z "$set_mode" ]]; then
 fi
 split="$2"
 if [[ -z "$split" ]]; then
-  split='val'
+  split='test'
 fi
 snapshot_iter="$3"
 if [[ -z "$snapshot_iter" ]]; then
@@ -78,7 +79,7 @@ if [[ -z "$network_dir" ]]; then
 fi
 
 # current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/'$network_dir'/logs/'$split'_dataset_snapshot_'$snapshot_filter_'_'$snapshot_iter'_results.log'
+log_filename=$working_dir'/'$network_dir'/logs/'$split'_dataset_snapshot_'$snapshot_filter_'_'$snapshot_iter'_results2.log'
 
 python $python_script --mode $set_mode --test_type $split --iteration $snapshot_iter --snapshot_filter $snapshot_filter_ 2>&1 | tee $log_filename
 echo "Tested on network: $network_dir"
