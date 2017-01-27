@@ -208,7 +208,7 @@ def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label',
     print '>>> Hist = {}'.format(hist)
     # mean loss, this prinout is tweaked to match caffe prinout for string
     # parsing
-    print '>>>', datetime.now(), 'Iteration,', iter, 'loss =', loss
+    print '>>>', datetime.now(), 'Iteration', ' {}, '.format(iter), 'loss =', loss
     # mean forward pass times
     print '>>>', datetime.now(), 'Iteration', iter, 'mean forward', mean_run_time
     # overall accuracy
