@@ -88,15 +88,20 @@ def disp_results(fig, ax1, ax2, loss_iterations, losses, accuracy_iterations,
                  accuracies, accuracies_iteration_checkpoints_ind, t_loss_iterations,
                  t_losses, color_ind=0):
     modula = len(plt.rcParams['axes.color_cycle'])
-    ax1.plot(loss_iterations, losses, color=plt.rcParams[
-             'axes.color_cycle'][(color_ind * 2 + 0) % modula])
-    ax1.plot(t_loss_iterations, t_losses, color=plt.rcParams[
-             'axes.color_cycle'][(color_ind * 2 + 2) % modula])
+    val_l_h, = ax1.plot(loss_iterations, losses, color=plt.rcParams[
+             'axes.color_cycle'][(color_ind * 2 + 0) % modula], linestyle='-.',
+             label='val loss')
+    train_l_h, = ax1.plot(t_loss_iterations, t_losses, color=plt.rcParams[
+             'axes.color_cycle'][(color_ind * 2 + 2) % modula], linestyle='--',
+             label='training loss')
 
-    ax2.plot(accuracy_iterations, accuracies, plt.rcParams[
-             'axes.color_cycle'][(color_ind * 2 + 1) % modula])
+    val_a_h, = ax2.plot(accuracy_iterations, accuracies, plt.rcParams[
+             'axes.color_cycle'][(color_ind * 2 + 1) % modula],
+             label='val accuracy')
     ax2.plot(accuracy_iterations[accuracies_iteration_checkpoints_ind], accuracies[
-             accuracies_iteration_checkpoints_ind], 'o', color=plt.rcParams['axes.color_cycle'][(color_ind * 2 + 1) % modula])
+             accuracies_iteration_checkpoints_ind], 'o',
+             color=plt.rcParams['axes.color_cycle'][(color_ind * 2 + 1) % modula])
+    fig.legend((val_l_h, train_l_h, val_a_h), ('Val loss', 'Train Loss', 'Val Trip Acc'), loc='upper right')
 
 
 if __name__ == '__main__':
