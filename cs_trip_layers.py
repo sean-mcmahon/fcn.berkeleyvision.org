@@ -50,7 +50,7 @@ class CStripSegDataLayer(caffe.Layer):
             self.cstrip_dir = '/home/n8307628' + params['cstrip_dir']
         self.split = params['split']
         self.tops = params['tops']
-        self.random = params.get('randomize', False)
+        self.random = params.get('randomize', True)
         self.seed = params.get('seed', None)
         # self.null_value = params.get('null_value',-1)
         self.file_location = os.path.realpath(
