@@ -23,10 +23,10 @@ def main(files):
     ax1.set_ylabel('loss')
     ax2.set_ylabel('accuracy %')
     for i, log_file in enumerate(files):
-        loss_iterations, losses, accuracy_iterations, accuracies, accuracies_iteration_checkpoints_ind = parse_log(
+        loss_iterations, losses, accuracy_iterations, accuracies, accuracies_iteration_checkpoints_ind, t_loss_iterations, t_losses = parse_log(
             log_file)
         disp_results(fig, ax1, ax2, loss_iterations, losses, accuracy_iterations,
-                     accuracies, accuracies_iteration_checkpoints_ind, color_ind=i)
+                     accuracies, accuracies_iteration_checkpoints_ind, t_loss_iterations, t_losses, color_ind=i)
     plt.show()
 
 
@@ -46,18 +46,17 @@ def parse_log(log_file):
     losses = np.array(losses)
 
     training_loss_pattern = r"Iteration (?P<iter_num>\d+) training set loss = (?P<loss_val>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
-    # 8000 training test loss = 947637.789062
-    training_losses = []
-    training_loss_iterations = []
+    t_losses = []
+    t_loss_iterations = []
 
     for r in re.findall(training_loss_pattern, log):
-        training_loss_iterations.append(int(r[0]))
-        training_losses.append(float(r[1]))
+        t_loss_iterations.append(int(r[0]))
+        t_losses.append(float(r[1]))
 
-    training_loss_iterations = np.array(training_loss_iterations)
-    training_losses = np.array(training_losses)
+    t_loss_iterations = np.array(t_loss_iterations)
+    t_losses = np.array(t_losses)
     print 'Number of train loss iter {}, Number of train losses {}'.format(
-        np.shape(training_loss_iterations), np.shape(training_losses))
+        np.shape(t_loss_iterations), np.shape(t_losses))
 
     # accuracy_pattern = r"Iteration (?P<iter_num>\d+), Testing net \(#0\)\n.*
     # accuracy = (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
@@ -80,13 +79,18 @@ def parse_log(log_file):
     accuracy_iterations = np.array(accuracy_iterations)
     accuracies = np.array(accuracies)
 
-    return loss_iterations, losses, accuracy_iterations, accuracies, accuracies_iteration_checkpoints_ind
+    return loss_iterations, losses, accuracy_iterations, accuracies, accuracies_iteration_checkpoints_ind, t_loss_iterations, t_losses
 
 
-def disp_results(fig, ax1, ax2, loss_iterations, losses, accuracy_iterations, accuracies, accuracies_iteration_checkpoints_ind, color_ind=0):
+def disp_results(fig, ax1, ax2, loss_iterations, losses, accuracy_iterations,
+                 accuracies, accuracies_iteration_checkpoints_ind, t_loss_iterations,
+                 t_losses, color_ind=0):
     modula = len(plt.rcParams['axes.color_cycle'])
     ax1.plot(loss_iterations, losses, color=plt.rcParams[
              'axes.color_cycle'][(color_ind * 2 + 0) % modula])
+    ax1.plot(t_loss_iterations, t_losses, color=plt.rcParams[
+             'axes.color_cycle'][(color_ind * 2 + 2) % modula])
+
     ax2.plot(accuracy_iterations, accuracies, plt.rcParams[
              'axes.color_cycle'][(color_ind * 2 + 1) % modula])
     ax2.plot(accuracy_iterations[accuracies_iteration_checkpoints_ind], accuracies[
