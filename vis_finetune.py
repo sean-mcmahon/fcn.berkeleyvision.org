@@ -43,8 +43,8 @@ def parse_log(log_file):
     loss_iterations = np.array(loss_iterations)
     losses = np.array(losses)
 
-    accuracy_pattern = r"Iteration (?P<iter_num>\d+), Testing net \(#0\)\n.* accuracy = (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
-    # accuracy_pattern = r"Iteration (?P<iter_num>\d+) trip accuracy (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
+    # accuracy_pattern = r"Iteration (?P<iter_num>\d+), Testing net \(#0\)\n.* accuracy = (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
+    accuracy_pattern = r"Iteration (?P<iter_num>\d+) trip accuracy (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
     accuracies = []
     accuracy_iterations = []
     accuracies_iteration_checkpoints_ind = []
