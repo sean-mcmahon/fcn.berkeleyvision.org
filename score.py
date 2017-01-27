@@ -98,7 +98,7 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label',
     Fmetrics = np.array((0, 0))
     loss = 0
     # threshold_hists = []
-    forward_times = np.zeros((len(dataset),1))
+    forward_times = np.zeros((len(dataset), 1))
     for count, idx in enumerate(dataset):
         start_time = time.time()
         net.forward()
@@ -164,6 +164,29 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label',
     return hist, loss / len(dataset), Fmetrics, mean_run_time
 
 
+def seg_loss(net, iteration, dataset):
+    print '> Computing Loss'
+    loss = 0
+    # threshold_hists = []
+    forward_times = np.zeros((len(dataset), 1))
+    for count, _ in enumerate(dataset):
+        start_time = time.time()
+        net.forward()
+        forward_times[count] = time.time() - start_time
+
+        try:
+            loss += net.blobs['loss'].data.flat[0]
+        except:
+            print '> compute_hist: error calculating loss, probably no loss layer'
+            loss += 0
+    mean_time = forward_times.sum() / len(forward_times)
+    # mean loss, this prinout is tweaked to match caffe prinout for string
+    # parsing
+    print '>>>', datetime.now(), 'Iteration,', iteration, 'loss =', loss
+    print '>>>', datetime.now(), 'Iteration,', iteration, 'Mean runtime =', \
+        mean_time
+
+
 def seg_tests(solver, save_format, dataset, layer='score', gt='label',
               dataL='data'):
     print '>>>', datetime.now(), 'Begin seg tests'
@@ -183,8 +206,9 @@ def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label',
     hist, loss, Flags, mean_run_time = compute_hist(
         net, save_format, dataset, layer, gt, dataL)
     print '>>> Hist = {}'.format(hist)
-    # mean loss
-    print '>>>', datetime.now(), 'Iteration', iter, 'loss', loss
+    # mean loss, this prinout is tweaked to match caffe prinout for string
+    # parsing
+    print '>>>', datetime.now(), 'Iteration,', iter, 'loss =', loss
     # mean forward pass times
     print '>>>', datetime.now(), 'Iteration', iter, 'mean forward', mean_run_time
     # overall accuracy
