@@ -126,10 +126,10 @@ for count, weight in enumerate(caffemodel_files):
 # This kind of makes sense, and it works!
 sorted_caffemodels = [line for (num,line) in sorted(zip(iteration_list, caffemodel_files))]
 
-print 'caffemodel_files = \n', caffemodel_files, '\n'
-print 'sorted_caffemodels = \n', sorted_caffemodels
+# print 'caffemodel_files = \n', caffemodel_files, '\n'
+# print 'sorted_caffemodels = \n', sorted_caffemodels
 
-for count, weight_file in enumerate(caffemodel_files):
+for count, weight_file in enumerate(sorted_caffemodels):
     iteration = int(find_between_r(weight_file, '_iter_', '.caffemodel'))
     print 'Network weights: {} iter {}'.format(
         os.path.basename(weight_file), iteration)
