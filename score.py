@@ -164,7 +164,7 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label',
     return hist, loss / len(dataset), Fmetrics, mean_run_time
 
 
-def seg_loss(net, iteration, dataset):
+def seg_loss(net, iteration, dataset, test_type='training'):
     print '> Computing Loss'
     loss = 0
     # threshold_hists = []
@@ -182,9 +182,10 @@ def seg_loss(net, iteration, dataset):
     mean_time = forward_times.sum() / len(forward_times)
     # mean loss, this prinout is tweaked to match caffe prinout for string
     # parsing
-    print '>>>', datetime.now(), 'Iteration,', iteration, 'loss =', loss
-    print '>>>', datetime.now(), 'Iteration,', iteration, 'Mean runtime =', \
-        mean_time
+    print '>>>', datetime.now(), 'Iteration', '{}'.format(iteration), \
+        test_type, 'set loss =', loss
+    print '>>>', datetime.now(), 'Iteration', '{}'.format(iteration), \
+        test_type, 'set Mean runtime =', mean_time
 
 
 def seg_tests(solver, save_format, dataset, layer='score', gt='label',
@@ -208,7 +209,7 @@ def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label',
     print '>>> Hist = {}'.format(hist)
     # mean loss, this prinout is tweaked to match caffe prinout for string
     # parsing
-    print '>>>', datetime.now(), 'Iteration', ' {}, '.format(iter), 'loss =', loss
+    print '>>>', datetime.now(), 'Iteration', '{},'.format(iter), 'loss =', loss
     # mean forward pass times
     print '>>>', datetime.now(), 'Iteration', iter, 'mean forward', mean_run_time
     # overall accuracy
