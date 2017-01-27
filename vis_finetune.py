@@ -23,8 +23,10 @@ def main(files):
     ax1.set_ylabel('loss')
     ax2.set_ylabel('accuracy %')
     for i, log_file in enumerate(files):
-        loss_iterations, losses, accuracy_iterations, accuracies, accuracies_iteration_checkpoints_ind = parse_log(log_file)
-        disp_results(fig, ax1, ax2, loss_iterations, losses, accuracy_iterations, accuracies, accuracies_iteration_checkpoints_ind, color_ind=i)
+        loss_iterations, losses, accuracy_iterations, accuracies, accuracies_iteration_checkpoints_ind = parse_log(
+            log_file)
+        disp_results(fig, ax1, ax2, loss_iterations, losses, accuracy_iterations,
+                     accuracies, accuracies_iteration_checkpoints_ind, color_ind=i)
     plt.show()
 
 
@@ -43,7 +45,6 @@ def parse_log(log_file):
     loss_iterations = np.array(loss_iterations)
     losses = np.array(losses)
 
-
     training_loss_pattern = r"Iteration (?P<iter_num>\d+) training set loss = (?P<loss_val>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
     # 8000 training test loss = 947637.789062
     training_losses = []
@@ -56,9 +57,10 @@ def parse_log(log_file):
     training_loss_iterations = np.array(training_loss_iterations)
     training_losses = np.array(training_losses)
     print 'Number of train loss iter {}, Number of train losses {}'.format(
-    np.shape(training_loss_iterations), np.shape(training_losses))
+        np.shape(training_loss_iterations), np.shape(training_losses))
 
-    # accuracy_pattern = r"Iteration (?P<iter_num>\d+), Testing net \(#0\)\n.* accuracy = (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
+    # accuracy_pattern = r"Iteration (?P<iter_num>\d+), Testing net \(#0\)\n.*
+    # accuracy = (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
     accuracy_pattern = r"Iteration (?P<iter_num>\d+) trip accuracy (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
     accuracies = []
     accuracy_iterations = []
@@ -69,7 +71,8 @@ def parse_log(log_file):
         accuracy = float(r[1]) * 100
 
         if iteration % 10000 == 0 and iteration > 0:
-            accuracies_iteration_checkpoints_ind.append(len(accuracy_iterations))
+            accuracies_iteration_checkpoints_ind.append(
+                len(accuracy_iterations))
 
         accuracy_iterations.append(iteration)
         accuracies.append(accuracy)
@@ -82,9 +85,12 @@ def parse_log(log_file):
 
 def disp_results(fig, ax1, ax2, loss_iterations, losses, accuracy_iterations, accuracies, accuracies_iteration_checkpoints_ind, color_ind=0):
     modula = len(plt.rcParams['axes.color_cycle'])
-    ax1.plot(loss_iterations, losses, color=plt.rcParams['axes.color_cycle'][(color_ind * 2 + 0) % modula])
-    ax2.plot(accuracy_iterations, accuracies, plt.rcParams['axes.color_cycle'][(color_ind * 2 + 1) % modula])
-    ax2.plot(accuracy_iterations[accuracies_iteration_checkpoints_ind], accuracies[accuracies_iteration_checkpoints_ind], 'o', color=plt.rcParams['axes.color_cycle'][(color_ind * 2 + 1) % modula])
+    ax1.plot(loss_iterations, losses, color=plt.rcParams[
+             'axes.color_cycle'][(color_ind * 2 + 0) % modula])
+    ax2.plot(accuracy_iterations, accuracies, plt.rcParams[
+             'axes.color_cycle'][(color_ind * 2 + 1) % modula])
+    ax2.plot(accuracy_iterations[accuracies_iteration_checkpoints_ind], accuracies[
+             accuracies_iteration_checkpoints_ind], 'o', color=plt.rcParams['axes.color_cycle'][(color_ind * 2 + 1) % modula])
 
 
 if __name__ == '__main__':
