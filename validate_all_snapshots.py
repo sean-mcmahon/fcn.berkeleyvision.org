@@ -85,7 +85,7 @@ else:
 
 # init
 train_set = None
-if args.test_type == 'val':
+if args.test_type == 'trainval':
     solver = caffe.SGDSolver(file_location + '/' +
                              network_dir + 'solver.prototxt')
     test_set = np.loadtxt(file_location + '/data/cs-trip/val.txt', dtype=str)
@@ -95,6 +95,10 @@ if args.test_type == 'val':
 #     solver = caffe.SGDSolver(file_location + '/' +
 #                              network_dir + 'solver_test.prototxt')
 #     test_set = np.loadtxt(file_location + '/data/cs-trip/test.txt', dtype=str)
+elif args.test_type == 'val':
+    solver = caffe.SGDSolver(file_location + '/' +
+                             network_dir + 'solver.prototxt')
+    test_set = np.loadtxt(file_location + '/data/cs-trip/val.txt', dtype=str)
 else:
     print 'Incorrect test_type given {}; expecting "val" or "test"'.format(args.test_type)
     raise
@@ -114,6 +118,17 @@ if not caffemodel_files:
     print("caffemodel_files list is empty")
     print 'snapshot_dir[0]: {}\nsnapshot_filter {}'.format(snapshot_dir[0],
                                                            snapshot_filter)
+
+iteration_list = []
+for count, weight in enumerate(caffemodel_files):
+    iteration_list.append(int(find_between_r(weight, '_iter_', '.caffemodel')))
+
+# This kind of makes sense, and it works!
+sorted_caffemodels = [line for (num,line) in sorted(zip(iteration_list, caffemodel_files))]
+
+print 'caffemodel_files = \n', caffemodel_files, '\n'
+print 'sorted_caffemodels = \n', sorted_caffemodels
+
 for count, weight_file in enumerate(caffemodel_files):
     iteration = int(find_between_r(weight_file, '_iter_', '.caffemodel'))
     print 'Network weights: {} iter {}'.format(
@@ -123,8 +138,9 @@ for count, weight_file in enumerate(caffemodel_files):
         print '\n>>>> Training Set {} <<<<\n'.format(iteration)
         # solver.net.CopyTrainedLayersFromBinaryProto(new_weight) # this wont
         # work - method not passed to python
-        score.do_seg_tests(solver.net, iteration, None,
-                           train_set, layer='score')
+        # score.do_seg_tests(solver.net, iteration, None,
+        #                    train_set, layer='score')
+        score.seg_loss(solver.net, iteration, train_set)
 
     print '\n>>>> Validation Set {} <<<<\n'.format(iteration)
     save_format = file_location + '/' + network_dir + args.test_type + '_images'
