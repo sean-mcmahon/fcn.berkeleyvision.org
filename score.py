@@ -2,16 +2,14 @@ from __future__ import division
 import imp
 import numpy as np
 import os
-import sys
 from datetime import datetime
 from PIL import Image
 from os.path import expanduser
 import glob
 import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 from scipy.io import savemat, loadmat
-import cv2
+import time
 
 home_dir = expanduser("~")
 if 'n8307628' in home_dir:
@@ -100,8 +98,11 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label',
     Fmetrics = np.array((0, 0))
     loss = 0
     # threshold_hists = []
-    for idx in dataset:
+    forward_times = np.zeros((len(dataset),1))
+    for count, idx in enumerate(dataset):
+        start_time = time.time()
         net.forward()
+        forward_times[count] = time.time() - start_time
         # print '>> Foward pass for {} complete'.format(idx)
         # print '>> shape of score layer should be (2, 540, 960) and is:
         # {}'.format(np.shape(net.blobs[layer].data[0]))
@@ -159,7 +160,8 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label',
             loss += 0
 
     # precision, recall = compute_PR(threshold_hists, thresholds, save_dir)
-    return hist, loss / len(dataset), Fmetrics
+    mean_run_time = forward_times.sum() / len(forward_times)
+    return hist, loss / len(dataset), Fmetrics, mean_run_time
 
 
 def seg_tests(solver, save_format, dataset, layer='score', gt='label',
@@ -178,11 +180,13 @@ def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label',
     print '> Computing Histagram'
     # hist = [No. true Neg , No. false Pos;
     #         No. false Neg, No. true Pos]
-    hist, loss, Flags = compute_hist(
+    hist, loss, Flags, mean_run_time = compute_hist(
         net, save_format, dataset, layer, gt, dataL)
     print '>>> Hist = {}'.format(hist)
     # mean loss
     print '>>>', datetime.now(), 'Iteration', iter, 'loss', loss
+    # mean forward pass times
+    print '>>>', datetime.now(), 'Iteration', iter, 'mean forward', mean_run_time
     # overall accuracy
     acc = np.diag(hist).sum() / hist.sum()
     print '>>>', datetime.now(), 'Iteration', iter, 'overall accuracy', acc
