@@ -164,16 +164,23 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label',
     return hist, loss / len(dataset), Fmetrics, mean_run_time
 
 
-def seg_loss(net, iteration, dataset, test_type='training'):
+def seg_loss(net, iteration, dataset, test_type='training',
+             calc_hist=False, gt='data', layer='score'):
     print '> Computing Loss'
     loss = 0
     # threshold_hists = []
     forward_times = np.zeros((len(dataset), 1))
+    if calc_hist:
+        n_cl = net.blobs[layer].channels
+        hist = np.zeros((n_cl, n_cl))
     for count, _ in enumerate(dataset):
         start_time = time.time()
         net.forward()
         forward_times[count] = time.time() - start_time
-
+        if calc_hist:
+            hist += fast_hist(net.blobs[gt].data[0, 0].flatten(),
+                              net.blobs[layer].data[0].argmax(0).flatten(),
+                              n_cl)
         try:
             loss += net.blobs['loss'].data.flat[0]
         except:
@@ -186,6 +193,10 @@ def seg_loss(net, iteration, dataset, test_type='training'):
         test_type, 'set loss =', loss
     print '>>>', datetime.now(), 'Iteration', '{}'.format(iteration), \
         test_type, 'set Mean runtime =', mean_time
+    if calc_hist:
+        acc = np.diag(hist) / hist.sum(1)
+        print '>>>', datetime.now(), 'Iteration', '{}'.format(iteration), \
+            test_type, 'trip accuracy', acc[1]
 
 
 def seg_tests(solver, save_format, dataset, layer='score', gt='label',
