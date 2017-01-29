@@ -12,3 +12,4 @@ core
 *.npz
 *.h5
 *.mat
+*.pdf
