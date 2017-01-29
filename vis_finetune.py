@@ -11,7 +11,7 @@ import re
 import click
 from matplotlib import pylab as plt
 import matplotlib.pyplot
-import os.path
+import os
 
 
 @click.command()
@@ -22,7 +22,7 @@ def main(files):
     ax2 = ax1.twinx()
     ax1.set_xlabel('iteration')
     ax1.set_ylabel('loss')
-    ax2.set_ylabel('accuracy %')
+    ax2.set_ylabel('trip accuracy %')
     print type(files), 'shape ', np.shape(files)
     print files
     for i, log_file in enumerate(files):
@@ -32,10 +32,18 @@ def main(files):
         disp_results(fig, ax1, ax2, loss_iterations, losses, accuracy_iterations,
                      accuracies, accuracies_iteration_checkpoints_ind,
                      t_loss_iterations, t_losses, color_ind=i)
-    if len(files)==1:
-        fig.suptitle('Logfile ' + os.path.basename(files[0]), fontsize=14, fontweight='bold')
+    if len(files) == 1:
+        log_name = os.path.splitext(os.path.basename(files[0]))[0]
+        save_dir = os.path.dirname(files[0])
+        fig.suptitle('Logfile ' + log_name, fontsize=14, fontweight='bold')
     elif len(files) > 1:
-        fig.suptitle('Mulitple Logfile Plot', fontsize=14, fontweight='bold')
+        log_name = 'Mulitple Log files'
+        # save to scripts directory
+        save_dir = os.path.realpath(os.path.join(
+            os.getcwd(), os.path.dirname(__file__)))
+        fig.suptitle(log_name, fontsize=7, fontweight='bold')
+    print files[0]
+    fig.savefig(save_dir + log_name + '.pdf')
     plt.show()
 
 
