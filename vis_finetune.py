@@ -44,7 +44,11 @@ def main(files):
         fig.suptitle(log_name, fontsize=7, fontweight='bold')
     print files[0]
     fig.savefig(save_dir + log_name + '.pdf')
-    plt.show()
+    print 'PDF saved to', save_dir
+    try:
+        plt.show()
+    except:
+        print '----\nvis_finetune.py (main) plotting has failed\n----'
 
 
 def parse_log(log_file):
