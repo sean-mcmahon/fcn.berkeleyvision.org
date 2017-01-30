@@ -4,7 +4,7 @@
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=4GB
-#PBS -l walltime=4:00:00
+#PBS -l walltime=8:00:00
 #PBS -l gputype=K40
 
 module load python/2.7.11-foss-2016a
@@ -61,9 +61,33 @@ else
   echo "No directory found..."
 fi
 
-network_='cstrip-fcn32s-color'
-snapshot_=''
+# network_='cstrip-fcn32s-color'
+# snapshot_=''
+# log_filename=$working_dir'/'$network_'/logs/trainval_acc_vis.log'
+# python $val_script --test_type 'trainval' --network_dir $network_ >> $log_filename 2>&1
+# # python $vis_script $log_filename
+# echo 'logfilename '$log_filename
+
+network_='cstrip-fcn32s-depth'
+snapshot_='negOneNull_mean_sub'
 log_filename=$working_dir'/'$network_'/logs/trainval_acc_vis.log'
-python $val_script --test_type 'trainval' --network_dir $network_ >> $log_filename 2>&1
-# python $vis_script $log_filename
+python $val_script --test_type 'trainval' --snapshot_filter $snapshot_ --network_dir $network_ >> $log_filename 2>&1
+echo 'logfilename '$log_filename
+
+network_='cstrip-fcn32s-color-d'
+snapshot_='colorInit_5xLR'
+log_filename=$working_dir'/'$network_'/logs/trainval_acc_vis.log'
+python $val_script --test_type 'trainval' --snapshot_filter $snapshot_ --network_dir $network_ >> $log_filename 2>&1
+echo 'logfilename '$log_filename
+
+network_='cstrip-fcn32s-hha'
+snapshot_='secondTrain_lowerLR'
+log_filename=$working_dir'/'$network_'/logs/trainval_hha_vis.log'
+python $val_script --test_type 'trainval' --snapshot_filter $snapshot_ --network_dir $network_ >> $log_filename 2>&1
+echo 'logfilename '$log_filename
+
+network_='cstrip-fcn32s-color-hha-early'
+snapshot_='colorHhaInit_5xLR'
+log_filename=$working_dir'/'$network_'/logs/trainval_rgbhha_vis.log'
+python $val_script --test_type 'trainval' --snapshot_filter $snapshot_ --network_dir $network_ >> $log_filename 2>&1
 echo 'logfilename '$log_filename
