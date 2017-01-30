@@ -108,7 +108,7 @@ def disp_results(fig, ax1, ax2, loss_iterations, losses, accuracy_iterations,
                  t_losses, color_ind=0):
     modula = len(plt.rcParams['axes.color_cycle'])
     val_l_h, = ax1.plot(loss_iterations, losses, color=plt.rcParams[
-        'axes.color_cycle'][(color_ind * 2 + 0) % modula], linestyle='-.',
+        'axes.color_cycle'][(color_ind * 2 + 0) % modula], linestyle='-',
         label='val loss')
     train_l_h, = ax1.plot(t_loss_iterations, t_losses, color=plt.rcParams[
         'axes.color_cycle'][(color_ind * 2 + 2) % modula], linestyle='--',
@@ -120,9 +120,13 @@ def disp_results(fig, ax1, ax2, loss_iterations, losses, accuracy_iterations,
     ax2.plot(accuracy_iterations[accuracies_iteration_checkpoints_ind], accuracies[
              accuracies_iteration_checkpoints_ind], 'o',
              color=plt.rcParams['axes.color_cycle'][(color_ind * 2 + 1) % modula])
-    fig.legend((val_l_h, train_l_h, val_a_h), ('Val loss',
-                                               'Train Loss', 'Val Trip Acc'), loc='upper right')
-
+    if color_ind == 0:
+        fig.legend((val_l_h, train_l_h, val_a_h), ('Val loss',
+                                                   'Train Loss',
+                                                   'Val Trip Acc'),
+                   loc='upper right')
+    # else:
+    #     fig.legend((train_l_h), ('Train Loss'), loc='upper right')
 
 if __name__ == '__main__':
     main()

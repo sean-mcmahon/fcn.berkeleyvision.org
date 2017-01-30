@@ -61,13 +61,13 @@ def fcn(split, tops):
                                       pad=0,
                                       param=[dict(lr_mult=5, decay_mult=1),
                                              dict(lr_mult=10, decay_mult=0)])
-    n.upscore = L.Deconvolution(n.score_fr_trip_d,
+    n.upscore_trip = L.Deconvolution(n.score_fr_trip_d,
                                 convolution_param=dict(num_output=2,
                                                        kernel_size=64,
                                                        stride=32,
                                                        bias_term=False),
                                 param=[dict(lr_mult=0)])
-    n.score = crop(n.upscore, n.data)
+    n.score = crop(n.upscore_trip, n.data)
     n.loss = L.SoftmaxWithLoss(n.score, n.label,
                                loss_param=dict(normalize=False))
 
