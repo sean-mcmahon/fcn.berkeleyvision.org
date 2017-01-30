@@ -53,12 +53,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--mode', default='gpu')
 parser.add_argument('--test_type', default='val')
 parser.add_argument('--network_dir', default='cstrip-fcn32s-hha')
-parser.add_argument('--snapshot_filter', default='secondTrain_lowerLR')
+parser.add_argument('--snapshot_filter', default='')
 args = parser.parse_args()
 network_dir = args.network_dir
 network_dir = add_slash(network_dir)  # ensure slash present
 snapshot_filter = args.snapshot_filter
-print 'This is the general validation script!'
+print 'This is the validation of all network iterations script!'
 
 # import support functions
 if 'n8307628' in home_dir:
@@ -140,10 +140,10 @@ for count, weight_file in enumerate(sorted_caffemodels):
         # work - method not passed to python
         # score.do_seg_tests(solver.net, iteration, None,
         #                    train_set, layer='score')
-        score.seg_loss(solver.net, iteration, train_set)
+        score.seg_loss(solver.net, iteration, train_set, calc_hist=True)
 
     print '\n>>>> Validation Set {} <<<<\n'.format(iteration)
-    save_format = file_location + '/' + network_dir + args.test_type + '_images'
+    save_format = None #file_location + '/' + network_dir + args.test_type + '_images'
     # score.seg_tests(solver, save_format , test_set, layer='score')
     solver.test_nets[0].share_with(solver.net)
     score.do_seg_tests(solver.test_nets[0], iteration,
