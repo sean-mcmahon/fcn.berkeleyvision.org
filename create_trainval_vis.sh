@@ -63,6 +63,7 @@ fi
 
 network_='cstrip-fcn32s-color'
 snapshot_=''
-log_filename=$working_dir'/'network_'/logs/trainval_acc_vis.log'
-python $val_script --test_type trainval --network_dir $network_ --snapshot_filter $snapshot_ 2>&1 | tee $log_filename
-python $vis_script $log_filename
+log_filename=$working_dir'/'$network_'/logs/trainval_acc_vis.log'
+python $val_script --test_type 'trainval' --network_dir $network_ >> $log_filename 2>&1
+# python $vis_script $log_filename
+echo 'logfilename '$log_filename
