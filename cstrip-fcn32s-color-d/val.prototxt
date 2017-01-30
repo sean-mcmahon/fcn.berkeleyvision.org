@@ -500,7 +500,7 @@ layer {
   }
 }
 layer {
-  name: "upscore"
+  name: "upscore_trip" # try upscore_trip or upscore if errors
   type: "Deconvolution"
   bottom: "score_fr_trip_d"
   top: "upscore"
