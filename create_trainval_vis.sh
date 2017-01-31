@@ -68,26 +68,32 @@ fi
 # # python $vis_script $log_filename
 # echo 'logfilename '$log_filename
 
-network_='cstrip-fcn32s-depth'
-snapshot_='negOneNull_mean_sub'
-log_filename=$working_dir'/'$network_'/logs/trainval_Depth_acc_vis_'$snapshot_'.log'
-python $val_script --test_type 'trainval' --snapshot_filter $snapshot_ --network_dir $network_ >> $log_filename 2>&1
-echo 'logfilename '$log_filename
+# network_='cstrip-fcn32s-depth'
+# snapshot_='negOneNull_mean_sub'
+# log_filename=$working_dir'/'$network_'/logs/trainval_Depth_acc_vis_'$snapshot_'.log'
+# python $val_script --test_type 'trainval' --snapshot_filter $snapshot_ --network_dir $network_ >> $log_filename 2>&1
+# echo 'logfilename '$log_filename
+#
+# network_='cstrip-fcn32s-color-d'
+# snapshot_='colorInit_5xLR'
+# log_filename=$working_dir'/'$network_'/logs/trainval_colourD_acc_vis_'$snapshot_'.log'
+# python $val_script --test_type 'trainval' --snapshot_filter $snapshot_ --network_dir $network_ >> $log_filename 2>&1
+# echo 'logfilename '$log_filename
 
 network_='cstrip-fcn32s-color-d'
-snapshot_='colorInit_5xLR'
-log_filename=$working_dir'/'$network_'/logs/trainval_colourD_acc_vis_'$snapshot_'.log'
-python $val_script --test_type 'trainval' --snapshot_filter $snapshot_ --network_dir $network_ >> $log_filename 2>&1
+snapshot_='colorPretrainDepth_init_2nd'
+log_filename=$working_dir'/'$network_'/logs/trainval_rgbd_2_pretrainRGBD_vis_'$snapshot_'.log'
+python $val_script --test_type 'trainval' --snapshot_filter $snapshot_ --network_dir $network_ 2>&1 | tee $log_filename
 echo 'logfilename '$log_filename
-
-network_='cstrip-fcn32s-hha'
-snapshot_='secondTrain_lowerLR'
-log_filename=$working_dir'/'$network_'/logs/trainval_HHA_vis_'$snapshot_'.log'
-python $val_script --test_type 'trainval' --snapshot_filter $snapshot_ --network_dir $network_ >> $log_filename 2>&1
-echo 'logfilename '$log_filename
-
-network_='cstrip-fcn32s-color-hha-early'
-snapshot_='colorHhaInit_5xLR'
-log_filename=$working_dir'/'$network_'/logs/trainval_rgbHHA_vis_'$snapshot_'.log'
-python $val_script --test_type 'trainval' --snapshot_filter $snapshot_ --network_dir $network_ >> $log_filename 2>&1
-echo 'logfilename '$log_filename
+#
+# network_='cstrip-fcn32s-hha'
+# snapshot_='secondTrain_lowerLR'cd
+# log_filename=$working_dir'/'$network_'/logs/trainval_HHA_vis_'$snapshot_'.log'
+# python $val_script --test_type 'trainval' --snapshot_filter $snapshot_ --network_dir $network_ >> $log_filename 2>&1
+# echo 'logfilename '$log_filename
+#
+# network_='cstrip-fcn32s-color-hha-early'
+# snapshot_='colorHhaInit_5xLR'
+# log_filename=$working_dir'/'$network_'/logs/trainval_rgbHHA_vis_'$snapshot_'.log'
+# python $val_script --test_type 'trainval' --snapshot_filter $snapshot_ --network_dir $network_ >> $log_filename 2>&1
+# echo 'logfilename '$log_filename
