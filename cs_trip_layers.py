@@ -178,7 +178,7 @@ class CStripSegDataLayer(caffe.Layer):
             self.cstrip_dir, sub_dir, idx))[0])['binary_labels'].astype(np.uint8)
         # label -= 1  # rotate labels
         label = label[np.newaxis, ...]
-        if 'depth' in self.tops and 'test' not in self.split:
+        if 'depth' in self.tops and 'test' not in self.split and 'color' not in self.tops:
             ignore_label = 255
             print '\n----\nDepth image requested, modified label ',
             '({}) returned\n----\n'.format(ignore_label)
@@ -188,7 +188,7 @@ class CStripSegDataLayer(caffe.Layer):
             # WARNING: This is a potential source of error!
             label[depth_nulls] = ignore_label
         else:
-            # print 'No depth image requested or testing, standard label returned'
+            # print 'Standard label returned. Not running depth only or running test set'
             pass
         # print 'cs_trip_layers: Label loaded, shape {}, has values {} and id
         # {}/{}'.format(np.shape(label), np.unique(label),sub_dir, idx)
