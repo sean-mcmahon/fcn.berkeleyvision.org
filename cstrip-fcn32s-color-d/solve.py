@@ -85,8 +85,8 @@ solver.net.params['conv1_1_bgrd'][1].data[...] = base_net.params[
 
 if (pretrain_depth):
     print 'copying Depth params from conv1_1  ->  conv1_1_bgrd'
-    solver.net.params['conv1_1_bgrd'][0].data[:, 3] = base_net_depth.params[
-        'conv1_1'][0].data
+    depth_filters = base_net_depth.params['conv1_1'][0].data
+    solver.net.params['conv1_1_bgrd'][0].data[:, 3] = np.squeeze(depth_filters)
     # solver.net.params['conv1_1_bgrd'][0].data[:, 3] = np.mean(base_net_depth.params[
     #     'conv1_1'][0].data, axis=1)
 del base_net, base_net_depth
