@@ -14,6 +14,9 @@ fi
 
 color_logpath=$working_dir'/cstrip-fcn32s-color/logs/FCNcolor_train2016-08-22_12-20-47.log'
 colorD_logpath=$working_dir'/cstrip-fcn32s-color-d/logs/FCNcolorDepth_train2016-08-25_10-43-23.log'
+colorD2_rgbPre_logpath=$working_dir'/cstrip-fcn32s-color-d/logs/FCNcolorDepth_color_init_2nd_2017-01-31_12-39-37.log'
+colorD2_rgbdPre_logpath=$working_dir'/cstrip-fcn32s-color-d/logs/FCNcolorDepth_color_pretrainDepth_init_2nd_2017-01-31_12-34-33.log'
+colorD2_rgbdPre_lowerLR_logpath=$working_dir'/cstrip-fcn32s-color-d/logs/FCNcolorDepth_colordepth_init_lower_2e10LR_2nd_2017-01-31_13-00-13.log'
 depth_logpath=$working_dir'/cstrip-fcn32s-depth/logs/FCNdepth_train2017-01-23_13-23-32_negOneNull.log'
 hha_logpath=$working_dir'/cstrip-fcn32s-hha/logs/FCNhha_train2016-08-30_21-50-25.log'
 colorHHA_logpath=$working_dir'/cstrip-fcn32s-color-hha-early/logs/FCNcolorHhaEarly_train2017-01-23_16-31-20_pretrainHha.log'
