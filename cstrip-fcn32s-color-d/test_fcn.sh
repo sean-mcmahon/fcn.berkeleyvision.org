@@ -9,6 +9,7 @@
 module load python/2.7.11-foss-2016a
 module load caffe
 module unload caffe
+module unload cuda
 module load cuda/7.5.18-foss-2016a
 
 USEGPU='true'
@@ -68,11 +69,11 @@ if [[ -z "$split" ]]; then
 fi
 snapshot_iter="$3"
 if [[ -z "$snapshot_iter" ]]; then
-  snapshot_iter='24000'
+  snapshot_iter='6000'
 fi
 snapshot_filter_="$4"
 if [[ -z "$snapshot_filter_" ]]; then
-  snapshot_filter_='colorInit'
+  snapshot_filter_='colorPretrainDepth_init_2nd'
 fi
 
 # current_date=`date +%Y-%m-%d_%H-%M-%S`
