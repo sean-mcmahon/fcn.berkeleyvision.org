@@ -4,7 +4,7 @@
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=8GB
-#PBS -l walltime=12:00:00
+#PBS -l walltime=24:00:00
 #PBS -l gputype=K40
 
 module load python/2.7.11-foss-2016a
@@ -13,9 +13,7 @@ module unload caffe
 module load cuda/7.5.18-foss-2016a
 
 USEGPU='true'
-ON_HPC="true"
-# if [[ $(lsb_release -si) == *"SUSE LINUX"* ]]; then
-if [[ "$ON_HPC" == "true" ]]; then
+if [[ $(lsb_release -si) == *"SUSE LINUX"* ]]; then
     # On HPC (probably)
 
     # Old GPU ID method only works on nodes with 2x GPUs
@@ -70,7 +68,7 @@ if [[ -z "$set_mode" ]]; then
   pretain_depth_='False'
 fi
 current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/logs/FCNcolorDepth_train'$current_date'.log'
+log_filename=$working_dir'/logs/FCNcolorDepth_2ndtrain'$current_date'.log'
 
 python $python_script --mode $set_mode --pretain_depth $pretain_depth_ 2>&1 | tee $log_filename
 echo $log_filename
