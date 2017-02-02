@@ -85,6 +85,18 @@ snapshot_='colorPretrainDepth_init_2nd'
 log_filename=$working_dir'/'$network_'/logs/trainval_rgbd_2_pretrainRGBD_vis_'$snapshot_'.log'
 python $val_script --test_type 'trainval' --snapshot_filter $snapshot_ --network_dir $network_ 2>&1 | tee $log_filename
 echo 'logfilename '$log_filename
+
+network_='cstrip-fcn32s-color-d'
+snapshot_='color_init_2nd'
+log_filename=$working_dir'/'$network_'/logs/trainval_rgbd_2_pretrainRGB_vis_'$snapshot_'.log'
+python $val_script --test_type 'trainval' --snapshot_filter $snapshot_ --network_dir $network_ 2>&1 | tee $log_filename
+echo 'logfilename '$log_filename
+
+network_='cstrip-fcn32s-color-d'
+snapshot_='colordepth_init_lower_2e10LR_2nd'
+log_filename=$working_dir'/'$network_'/logs/trainval_rgbd_2_lowerLR_pretrainRGBD_vis_'$snapshot_'.log'
+python $val_script --test_type 'trainval' --snapshot_filter $snapshot_ --network_dir $network_ 2>&1 | tee $log_filename
+echo 'logfilename '$log_filename
 #
 # network_='cstrip-fcn32s-hha'
 # snapshot_='secondTrain_lowerLR'cd
