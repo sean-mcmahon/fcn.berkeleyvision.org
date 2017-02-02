@@ -1,10 +1,11 @@
 #!/bin/bash -l
 #:
-#PBS -N validate_FCN
+#PBS -N validate_FCN3
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=4GB
 #PBS -l walltime=4:00:00
+#PBS -l gputype=K40
 
 module load python/2.7.11-foss-2016a
 module load caffe
@@ -69,7 +70,7 @@ if [[ -z "$split" ]]; then
 fi
 snapshot_iter="$3"
 if [[ -z "$snapshot_iter" ]]; then
-  snapshot_iter='6000'
+  snapshot_iter='48000'
 fi
 snapshot_filter_="$4"
 if [[ -z "$snapshot_filter_" ]]; then
