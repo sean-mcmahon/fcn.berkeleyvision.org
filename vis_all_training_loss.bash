@@ -21,4 +21,6 @@ depth_logpath=$working_dir'/cstrip-fcn32s-depth/logs/FCNdepth_train2017-01-23_13
 hha_logpath=$working_dir'/cstrip-fcn32s-hha/logs/FCNhha_train2016-08-30_21-50-25.log'
 colorHHA_logpath=$working_dir'/cstrip-fcn32s-color-hha-early/logs/FCNcolorHhaEarly_train2017-01-23_16-31-20_pretrainHha.log'
 
-python $vis_script $color_logpath $colorD_logpath $depth_logpath $hha_logpath $colorHHA_logpath
+# python $vis_script $color_logpath $colorD_logpath $depth_logpath $hha_logpath $colorHHA_logpath
+
+python $vis_script $colorD2_rgbPre_logpath $colorD2_rgbdPre_logpath $colorD2_rgbdPre_lowerLR_logpath $colorHHA_logpath
