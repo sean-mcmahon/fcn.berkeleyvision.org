@@ -10,7 +10,7 @@ lr_policy: "fixed"
 # lr for unnormalized softmax
 base_lr: 5e-11
 # default caffe adam params
-momentum: 0.9
+momentum: 0.99
 momentum2: 0.999
 delta: 10e-8
 # no gradient accumulation

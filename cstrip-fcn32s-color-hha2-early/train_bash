@@ -1,10 +1,10 @@
 #!/bin/bash -l
 #:
-#PBS -N FCN_colHHA_randHha
+#PBS -N colHHA2_adam
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=8GB
-#PBS -l walltime=24:00:00
+#PBS -l walltime=12:00:00
 #PBS -l gputype=K40
 
 module load python/2.7.11-foss-2016a
@@ -72,10 +72,10 @@ if [[ -z "$load_hha" ]]; then
 fi
 use_solver="$3"
 if [[ -z "$use_solver" ]]; then
-  use_solver='standard'
+  use_solver='adam'
 fi
 current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/logs/FCNcolorHha2Early_train'$current_date'_randHha.log'
+log_filename=$working_dir'/logs/FCNcolorHha2Early_adamtrain1_'$current_date'_initHHA2.log'
 
 python $python_script --mode $set_mode --pretrain_hha $load_hha --solver_type $use_solver 2>&1 | tee $log_filename
 echo $log_filename
