@@ -22,7 +22,9 @@ home_dir = expanduser("~")
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', default='CPU')
 parser.add_argument('--pretrain_hha', default='False')
+parser.add_argument('--solver_type', default='standard')
 args = parser.parse_args()
+solver_type = args.solver_type
 pretrain_hha = False
 if args.pretrain_hha == "True" or args.pretrain_hha == "true":
     pretrain_hha = True
@@ -67,7 +69,14 @@ base_net_hha2_arch = file_location[:file_location.rfind(
     '/')] + '/cstrip-fcn32s-hha2/val.prototxt'
 base_net_hha2 = caffe.Net(base_net_hha2_arch, weights_hha2,
                          caffe.TEST)
-solver = caffe.SGDSolver(file_location + '/solver.prototxt')
+# init solver
+if solver_type == 'standard':
+    solver = caffe.SGDSolver(file_location + '/solver.prototxt')
+elif solver_type=='adam' or solver_type=='Adam':
+    print '++++++++++++++++++\n Using Adam Solver \n++++++++++++++++++'
+    solver = caffe.AdamSolver(file_location + '/solver_adam.prototxt')
+else:
+    solver = caffe.SGDSolver(file_location + '/solver.prototxt')
 # copy weights to solver network
 surgery.transplant(solver.net, base_net_color)
 

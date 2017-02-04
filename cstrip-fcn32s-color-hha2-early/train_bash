@@ -51,10 +51,10 @@ fi
 hpc_dir='/home/n8307628'
 local_dir='/home/sean'
 if [[ -d $local_dir ]]; then
-  working_dir=$local_dir'/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha-early'
+  working_dir=$local_dir'/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha2-early'
   python_script=$working_dir'/solve.py'
 elif [[ -d $hpc_dir ]]; then
-  working_dir=$hpc_dir'/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha-early'
+  working_dir=$hpc_dir'/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha2-early'
   python_script=$working_dir'/solve.py'
   # Because using MKL Blas on HPC
   export MKL_CBWR=AUTO
@@ -68,10 +68,14 @@ if [[ -z "$set_mode" ]]; then
 fi
 load_hha="$2"
 if [[ -z "$load_hha" ]]; then
-  load_hha='false'
+  load_hha='True'
+fi
+use_solver="$3"
+if [[ -z "$use_solver" ]]; then
+  use_solver='standard'
 fi
 current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/logs/FCNcolorHhaEarly_train'$current_date'_randHha.log'
+log_filename=$working_dir'/logs/FCNcolorHha2Early_train'$current_date'_randHha.log'
 
-python $python_script --mode $set_mode --pretrain_hha $load_hha 2>&1 | tee $log_filename
+python $python_script --mode $set_mode --pretrain_hha $load_hha --solver_type $use_solver 2>&1 | tee $log_filename
 echo $log_filename
