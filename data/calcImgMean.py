@@ -36,6 +36,9 @@ depth_pixel_sum = 0
 num_depth_pixels = 0
 hha_pixel_sum = 0
 num_hha_pixels = 0
+hha2_pixel_sum = 0
+num_hha2_pixels = 0
+print 'looping over images using txt file', file_location + txt_dir + '/' + data_split + '.txt'
 for idx in dataset_indecies:
     colourimg = Image.open(glob.glob(
         '{}/{}/colour/colourimg_{}_*'.format(data_dir, idx[0], idx[1]))[0])
@@ -48,7 +51,8 @@ for idx in dataset_indecies:
         '{}/{}/depth/depthimg_{}_*'.format(data_dir, idx[0], idx[1]))[0])
     npDepthImg = np.array(depthimg, dtype=np.float32)
     npDepthImg = np.log(npDepthImg)
-    npDepthImg[np.isneginf(npDepthImg)] = 0
+    npDepthImg[np.isinf(npDepthImg)] = 0
+    npDepthImg[np.isnan(npDepthImg)] = 0
     depth_pixel_sum += np.sum(np.sum(npDepthImg, axis=0), axis=0)
     num_depth_pixels += npDepthImg.sum()
 
@@ -58,9 +62,18 @@ for idx in dataset_indecies:
     hha_pixel_sum += np.sum(np.sum(npHHAImg, axis=0), axis=0)
     num_hha_pixels += npHHAImg.sum()
 
+    HHA2img = Image.open(glob.glob(
+        '{}/{}/HHA_2/HHAimg_{}_*'.format(data_dir, idx[0], idx[1]))[0])
+    npHHA2Img = np.array(HHA2img, dtype=np.float32)
+    hha2_pixel_sum += np.sum(np.sum(npHHA2Img, axis=0), axis=0)
+    num_hha2_pixels += npHHA2Img.sum()
+
 colour_mean = colour_pixel_sum / num_colour_pixels
 depth_mean = depth_pixel_sum / num_depth_pixels
 hha_mean = hha_pixel_sum / num_hha_pixels
+hha2_mean = hha2_pixel_sum / num_hha2_pixels
+print 'Means for data split', data_split
 print 'colour mean: ', colour_mean
 print 'log(depth) mean: ', depth_mean, ' null = 0'
 print 'hha mean: ', hha_mean
+print 'hha2 mean: ', hha2_mean

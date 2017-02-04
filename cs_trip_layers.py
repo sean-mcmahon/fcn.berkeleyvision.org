@@ -32,7 +32,7 @@ class CStripSegDataLayer(caffe.Layer):
 
         - cstrip_dir: path to CS_trip dir
         - split: train / val / test
-        - tops: list of tops to output from {color, depth, hha, label}
+        - tops: list of tops to output from {color, depth, hha, hha2, label}
         - randomize: load in random order (default: True)
         - seed: seed for randomization (default: None / current time)
 
@@ -70,6 +70,8 @@ class CStripSegDataLayer(caffe.Layer):
         self.mean_bgr = np.array((0, 0, 0), dtype=np.float32)
         self.mean_hha = np.array(
             (0.28977805, 0.44051939, 0.26969752), dtype=np.float32)
+        self.mean_hha2 = np.array(
+            (0.35352319, 0.31114414, 0.33533117), dtype=np.float32)
         self.mean_logd = np.array((0.999999947113,), dtype=np.float32)
 
         # tops: check configuration
@@ -139,6 +141,8 @@ class CStripSegDataLayer(caffe.Layer):
             return self.load_depth(idx, sub_dir)
         elif top == 'hha':
             return self.load_hha(idx, sub_dir)
+        elif top == 'hha2':
+            return self.load_hha2(idx, sub_dir)
         else:
             raise Exception("Unknown output type: {}".format(top))
 
@@ -232,3 +236,20 @@ class CStripSegDataLayer(caffe.Layer):
         if self.split is not 'train':
             print 'loading image from {} with index {}'.format(sub_dir, idx)
         return hha
+
+    def load_hha2(self, idx, sub_dir):
+        """
+        Load HHA features from Gupta et al. ECCV14. The height above ground
+        estimation has been edited, now the lowest point is 190cm,
+        just above my head when I recorded this dataset
+        See https://github.com/s-gupta/rcnn-depth/blob/master/rcnn/saveHHA.m
+        """
+        im = Image.open(
+            glob.glob('{}/{}/HHA_2/HHAimg_{}_*'.format(
+                self.cstrip_dir, sub_dir, idx))[0])
+        hha2 = np.array(im, dtype=np.float32)
+        hha2 -= self.mean_hha2
+        hha2 = hha2.transpose((2, 0, 1))
+        if self.split is not 'train':
+            print 'loading hha2 image from {} with index {}'.format(sub_dir, idx)
+        return hha2
