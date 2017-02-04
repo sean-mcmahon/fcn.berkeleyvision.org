@@ -7,10 +7,10 @@ display: 20
 average_loss: 20
 # lr_policy: "fixed"
 lr_policy: "step"
-gamma: 0.1
+gamma: 0.33
 stepsize: 2000
 # lr for unnormalized softmax
-base_lr: 2e-11
+base_lr: 1e-11
 # high momentum
 momentum: 0.99
 # no gradient accumulation
@@ -18,5 +18,5 @@ iter_size: 1
 max_iter: 300000
 weight_decay: 0.0005
 snapshot: 2000
-snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-depth/DepthSnapshot/stepLR_negOneNull_mean_sub"
+snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-depth/DepthSnapshot/stepLR2_lowerLR_neg1N_Msub"
 test_initialization: false

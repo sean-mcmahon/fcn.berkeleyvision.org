@@ -1,11 +1,11 @@
 #!/bin/bash -l
 #:
-#PBS -N depth_stepLR
+#PBS -N depth_stepLR2
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=8GB
 #PBS -l walltime=5:00:00
-#PBS -l gputype=K40
+#PBS -l gputype=K80
 
 module load python/2.7.11-foss-2016a
 module load caffe
@@ -64,7 +64,7 @@ if [[ -z "$set_mode" ]]; then
   set_mode='gpu'
 fi
 current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/logs/FCNdepth_stepLR'$current_date'.log'
+log_filename=$working_dir'/logs/FCNdepth_stepLR2_lowerLR'$current_date'.log'
 
 python $python_script --mode $set_mode 2>&1 | tee $log_filename
 echo $log_filename
