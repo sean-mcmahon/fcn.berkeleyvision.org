@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #:
-#PBS -N hha2_init
+#PBS -N hha2_stepLR
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=8GB
@@ -10,6 +10,7 @@
 module load python/2.7.11-foss-2016a
 module load caffe
 module unload caffe
+# module unload cuda # sometimes cuda is already loaded and throws error
 module load cuda/7.5.18-foss-2016a
 
 USEGPU='true'
@@ -63,8 +64,12 @@ set_mode="$1"
 if [[ -z "$set_mode" ]]; then
   set_mode='gpu'
 fi
+use_solver="$1"
+if [[ -z "$use_solver" ]]; then
+  use_solver='standard'
+fi
 current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/logs/FCNhha2_basetrain'$current_date'.log'
+log_filename=$working_dir'/logs/FCNhha2_stepLR_'$current_date'.log'
 
-python $python_script --mode $set_mode 2>&1 | tee $log_filename
+python $python_script --mode $set_mode --solver_type $use_solver 2>&1 | tee $log_filename
 echo $log_filename

@@ -21,7 +21,9 @@ home_dir = expanduser("~")
 # User Input
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', default='gpu')
+parser.add_argument('--solver_type', default='standard')
 args = parser.parse_args()
+solver_type = args.solver_type
 print 'This is the HHA2 only solver!'
 
 # import support functions
@@ -51,7 +53,13 @@ import surgery
 import score
 
 # init
-solver = caffe.SGDSolver(file_location + '/solver.prototxt')
+if solver_type == 'standard':
+    solver = caffe.SGDSolver(file_location + '/solver.prototxt')
+elif solver_type=='adam' or solver_type=='Adam':
+    print '++++++++++++++++++\n Using Adam Solver \n++++++++++++++++++'
+    solver = caffe.SGDSolver(file_location + '/solver_adam.prototxt')
+else:
+    solver = caffe.SGDSolver(file_location + '/solver.prototxt')
 solver.net.copy_from(weights)
 
 # surgeries

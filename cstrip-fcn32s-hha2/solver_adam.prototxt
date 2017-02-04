@@ -18,7 +18,7 @@ iter_size: 1
 max_iter: 300000
 # weight_decay: 0.0005
 snapshot: 2000
-snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-hha2/HHA2snapshot/hh2_adamTrain"
+snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-hha2/HHA2snapshot/hh2_adamTrain1"
 test_initialization: false
 # solver mode: CPU or GPU
 type: "Adam"
