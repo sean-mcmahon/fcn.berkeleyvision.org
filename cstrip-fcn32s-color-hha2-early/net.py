@@ -18,18 +18,18 @@ def max_pool(bottom, ks=2, stride=2):
 
 def fcn(split, tops):
     n = caffe.NetSpec()
-    n.color, n.hha, n.label = L.Python(module='cs_trip_layers',
+    n.color, n.hha2, n.label = L.Python(module='cs_trip_layers',
                                        layer='CStripSegDataLayer', ntop=3,
                                        param_str=str(dict(
                                              cstrip_dir='/Construction_Site/' +
                                              'Springfield/12Aug16/K2',
                                              split=split, tops=tops,
                                              seed=1337)))
-    n.data = L.Concat(n.color, n.hha)
+    n.data = L.Concat(n.color, n.hha2)
 
     # the base net
-    n.conv1_1_bgrhha, n.relu1_1 = conv_relu(n.data, 64, pad=100, lr=4)
-    n.conv1_2, n.relu1_2 = conv_relu(n.relu1_1, 64, lr=4)
+    n.conv1_1_bgrhha2, n.relu1_1 = conv_relu(n.data, 64, pad=100, lr=3)
+    n.conv1_2, n.relu1_2 = conv_relu(n.relu1_1, 64, lr=3)
     n.pool1 = max_pool(n.relu1_2)
 
     n.conv2_1, n.relu2_1 = conv_relu(n.pool1, 128)
@@ -58,8 +58,8 @@ def fcn(split, tops):
     n.drop7 = L.Dropout(n.relu7, dropout_ratio=0.5, in_place=True)
 
     n.score_fr = L.Convolution(n.drop7, num_output=2, kernel_size=1, pad=0,
-                               param=[dict(lr_mult=5, decay_mult=1),
-                                      dict(lr_mult=10, decay_mult=0)])
+                               param=[dict(lr_mult=4, decay_mult=1),
+                                      dict(lr_mult=8, decay_mult=0)])
     n.upscore = L.Deconvolution(n.score_fr,
                                 convolution_param=dict(num_output=2,
                                                        kernel_size=64,
@@ -74,7 +74,7 @@ def fcn(split, tops):
 
 
 def make_net():
-    tops = ['color', 'hha', 'label']
+    tops = ['color', 'hha2', 'label']
     with open('trainval.prototxt', 'w') as f:
         f.write(str(fcn('train', tops)))
 

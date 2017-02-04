@@ -2,32 +2,32 @@ layer {
   name: "color"
   type: "Python"
   top: "color"
-  top: "hha"
+  top: "hha2"
   top: "label"
   python_param {
     module: "cs_trip_layers"
     layer: "CStripSegDataLayer"
-    param_str: "{\'seed\': 1337, \'tops\': [\'color\', \'hha\', \'label\'], \'split\': \'test\', \'cstrip_dir\': \'/Construction_Site/Springfield/12Aug16/K2\'}"
+    param_str: "{\'seed\': 1337, \'tops\': [\'color\', \'hha2\', \'label\'], \'split\': \'test\', \'cstrip_dir\': \'/Construction_Site/Springfield/12Aug16/K2\'}"
   }
 }
 layer {
   name: "data"
   type: "Concat"
   bottom: "color"
-  bottom: "hha"
+  bottom: "hha2"
   top: "data"
 }
 layer {
-  name: "conv1_1_bgrhha"
+  name: "conv1_1_bgrhha2"
   type: "Convolution"
   bottom: "data"
-  top: "conv1_1_bgrhha"
+  top: "conv1_1_bgrhha2"
   param {
-    lr_mult: 4
+    lr_mult: 3
     decay_mult: 1
   }
   param {
-    lr_mult: 8
+    lr_mult: 6
     decay_mult: 0
   }
   convolution_param {
@@ -40,20 +40,20 @@ layer {
 layer {
   name: "relu1_1"
   type: "ReLU"
-  bottom: "conv1_1_bgrhha"
-  top: "conv1_1_bgrhha"
+  bottom: "conv1_1_bgrhha2"
+  top: "conv1_1_bgrhha2"
 }
 layer {
   name: "conv1_2"
   type: "Convolution"
-  bottom: "conv1_1_bgrhha"
+  bottom: "conv1_1_bgrhha2"
   top: "conv1_2"
   param {
-    lr_mult: 4
+    lr_mult: 3
     decay_mult: 1
   }
   param {
-    lr_mult: 8
+    lr_mult: 6
     decay_mult: 0
   }
   convolution_param {
@@ -486,11 +486,11 @@ layer {
   bottom: "fc7"
   top: "score_fr"
   param {
-    lr_mult: 5
+    lr_mult: 4
     decay_mult: 1
   }
   param {
-    lr_mult: 10
+    lr_mult: 8
     decay_mult: 0
   }
   convolution_param {
