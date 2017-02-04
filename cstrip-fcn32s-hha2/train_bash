@@ -64,7 +64,7 @@ set_mode="$1"
 if [[ -z "$set_mode" ]]; then
   set_mode='gpu'
 fi
-use_solver="$1"
+use_solver="$2"
 if [[ -z "$use_solver" ]]; then
   use_solver='standard'
 fi
