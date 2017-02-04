@@ -183,9 +183,9 @@ class CStripSegDataLayer(caffe.Layer):
         # label -= 1  # rotate labels
         label = label[np.newaxis, ...]
         if 'depth' in self.tops and 'test' not in self.split and 'color' not in self.tops:
-            ignore_label = 255
-            print '\n----\nDepth image requested, modified label ',
-            '({}) returned\n----\n'.format(ignore_label)
+            ignore_label = 0
+            print '--> Depth image requested, modified label ',
+            '({}) returned'.format(ignore_label)
             depth = self.load_depth(idx, sub_dir)
             depth_nulls = np.where(np.logical_or(
                 np.isinf(depth), np.isnan(depth)))

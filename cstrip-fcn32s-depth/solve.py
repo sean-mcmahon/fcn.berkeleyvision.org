@@ -53,6 +53,7 @@ import score
 # init
 print 'initialising depth only from Depth network, using weights' + \
     ' {}'.format(weights)
+# no pre-trained depth network, hha pretrain is closest thing
 hha_net_arch = file_location[:file_location.rfind(
     '/')] + '/cstrip-fcn32s-hha/test.prototxt'
 hha_net = caffe.Net(hha_net_arch, weights,
