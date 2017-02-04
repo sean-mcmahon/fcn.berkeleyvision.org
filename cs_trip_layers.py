@@ -167,7 +167,7 @@ class CStripSegDataLayer(caffe.Layer):
         # print 'cs_trip_layers: colour image loaded
         # shape={}'.format(np.shape(in_))
         # if self.split is not 'train':
-        # print 'loading image from {} with index {}'.format(sub_dir, idx)
+        print 'loading image from {} with index {}'.format(sub_dir, idx)
         return in_
 
     def load_label(self, idx, sub_dir):
@@ -250,6 +250,7 @@ class CStripSegDataLayer(caffe.Layer):
         hha2 = np.array(im, dtype=np.float32)
         hha2 -= self.mean_hha2
         hha2 = hha2.transpose((2, 0, 1))
+        print 'HHA 2 image returned'
         if self.split is not 'train':
             print 'loading hha2 image from {} with index {}'.format(sub_dir, idx)
         return hha2
