@@ -1,6 +1,6 @@
 #! /usr/bin/python
 """
-cstrip color HHA Early Fusion
+cstrip color HHA2 Early Fusion
 
 """
 # import caffe
@@ -26,19 +26,19 @@ args = parser.parse_args()
 pretrain_hha = False
 if args.pretrain_hha == "True" or args.pretrain_hha == "true":
     pretrain_hha = True
-print 'This is the colour-HHA Early Fusion solver!'
+print 'This is the colour-HHA2 Early Fusion solver!'
 
 # import support functions
 if 'n8307628' in home_dir:
     caffe_root = home_dir + '/Fully-Conv-Network/Resources/caffe'
     weights = home_dir + \
         '/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel'
-    weights_hha = home_dir + \
-        '/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-hha/HHAsnapshot/secondTrain_lowerLR_iter_2000.caffemodel'
+    weights_hha2 = home_dir + \
+        '/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-hha2/HHA2snapshot/secondTrain_lowerLR_iter_2000.caffemodel'
 elif 'sean' in home_dir:
     caffe_root = home_dir + '/src/caffe'
     weights = home_dir + '/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel'
-    weights_hha = home_dir + '/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-hha/HHAsnapshot/secondTrain_lowerLR_iter_2000.caffemodel'
+    weights_hha2 = home_dir + '/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-hha2/HHA2snapshot/secondTrain_lowerLR_iter_2000.caffemodel'
 filename, path, desc = imp.find_module('caffe', [caffe_root + '/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
 if 'g' in args.mode or 'G' in args.mode:
@@ -62,10 +62,10 @@ base_net_color_arch = file_location[:file_location.rfind(
     '/')] + '/cstrip-fcn32s-color/test.prototxt'
 base_net_color = caffe.Net(base_net_color_arch, weights,
                            caffe.TEST)
-print 'Using HHA weights from {}'.format(weights_hha)
-base_net_hha_arch = file_location[:file_location.rfind(
-    '/')] + '/cstrip-fcn32s-hha/val.prototxt'
-base_net_hha = caffe.Net(base_net_hha_arch, weights_hha,
+print 'Using HHA weights from {}'.format(weights_hha2)
+base_net_hha2_arch = file_location[:file_location.rfind(
+    '/')] + '/cstrip-fcn32s-hha2/val.prototxt'
+base_net_hha2 = caffe.Net(base_net_hha2_arch, weights_hha2,
                          caffe.TEST)
 solver = caffe.SGDSolver(file_location + '/solver.prototxt')
 # copy weights to solver network
@@ -76,42 +76,42 @@ interp_layers = [k for k in solver.net.params.keys() if 'up' in k]
 print 'performing surgery on {}'.format(interp_layers)
 surgery.interp(solver.net, interp_layers)  # calc deconv filter weights
 # Copy weights from color network into color-depth network (I think)
-# Array sizes (for colour-hha early fusion only):
-# conv1_1_bgrhha[0] shape (64, 6, 3, 3)
+# Array sizes (for colour-hha2 early fusion only):
+# conv1_1_bgrhha2[0] shape (64, 6, 3, 3)
 #  conv1_1_bgr[0] shape (64, 3, 3, 3)
-# conv1_1_bgrhha[1] shape (64,)
+# conv1_1_bgrhha2[1] shape (64,)
 #  conv1_1_bgr[1] shape (64,)
 
-print 'copying color params from conv1_1  ->  conv1_1_bgrhha'
-solver.net.params['conv1_1_bgrhha'][0].data[:, :3] = base_net_color.params[
+print 'copying color params from conv1_1  ->  conv1_1_bgrhha2'
+solver.net.params['conv1_1_bgrhha2'][0].data[:, :3] = base_net_color.params[
     'conv1_1'][0].data
-solver.net.params['conv1_1_bgrhha'][0].data[:, 3] = np.mean(base_net_color.params[
+solver.net.params['conv1_1_bgrhha2'][0].data[:, 3] = np.mean(base_net_color.params[
     'conv1_1'][0].data, axis=1)
-solver.net.params['conv1_1_bgrhha'][1].data[...] = base_net_color.params[
+solver.net.params['conv1_1_bgrhha2'][1].data[...] = base_net_color.params[
     'conv1_1'][1].data  # copies the bias's
 
 if (pretrain_hha):
-    print 'copying HHA params from conv1_1  ->  conv1_1_bgrhha'
-    solver.net.params['conv1_1_bgrhha'][0].data[:, 3:6] = base_net_hha.params[
+    print 'copying HHA params from conv1_1  ->  conv1_1_bgrhha2'
+    solver.net.params['conv1_1_bgrhha2'][0].data[:, 3:6] = base_net_hha2.params[
         'conv1_1'][0].data
         # I'm pretty sure the line above was originally used as a
         # way to initialise the depth part of conv1_1
-    # solver.net.params['conv1_1_bgrhha'][0].data[:, 5] = np.mean(base_net_hha.params[
+    # solver.net.params['conv1_1_bgrhha2'][0].data[:, 5] = np.mean(base_net_hha2.params[
     #     'conv1_1'][0].data, axis=1)
-# solver.net.params['conv1_1_bgrhha'][1].data[...] = base_net_hha.params[
+# solver.net.params['conv1_1_bgrhha2'][1].data[...] = base_net_hha2.params[
 #     'conv1_1'][1].data # copies the bias's
 
 # print '\n----'  # to determine conv1 blob dimensions
-# print 'conv1_1_bgrhha[0] shape {} \n conv1_1_bgr[0] shape {}'.format(
-#     np.shape(solver.net.params['conv1_1_bgrhha'][0].data),
+# print 'conv1_1_bgrhha2[0] shape {} \n conv1_1_bgr[0] shape {}'.format(
+#     np.shape(solver.net.params['conv1_1_bgrhha2'][0].data),
 #     np.shape(base_net_color.params['conv1_1'][0].data))
-# print 'conv1_1_bgrhha[1] shape {} \n conv1_1_bgr[1] shape {}'.format(
-#     np.shape(solver.net.params['conv1_1_bgrhha'][1].data),
+# print 'conv1_1_bgrhha2[1] shape {} \n conv1_1_bgr[1] shape {}'.format(
+#     np.shape(solver.net.params['conv1_1_bgrhha2'][1].data),
 #     np.shape(base_net_color.params['conv1_1'][1].data))
 # print '\n----'
 
 
-del base_net_color, base_net_hha
+del base_net_color, base_net_hha2
 
 # scoring
 val = np.loadtxt(file_location[:file_location.rfind('/')] +
