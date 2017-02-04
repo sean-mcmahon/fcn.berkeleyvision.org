@@ -1,6 +1,6 @@
 #! /usr/bin/python
 """
-cstrip HHA only
+cstrip HHA2 only
 
 """
 # import caffe
@@ -22,7 +22,7 @@ home_dir = expanduser("~")
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', default='gpu')
 args = parser.parse_args()
-print 'This is the HHA only solver!'
+print 'This is the HHA2 only solver!'
 
 # import support functions
 if 'n8307628' in home_dir:

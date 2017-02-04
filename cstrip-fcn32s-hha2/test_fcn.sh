@@ -75,7 +75,7 @@ if [[ -z "$snapshot_filter_" ]]; then
 fi
 network_dir="$5"
 if [[ -z "$network_dir" ]]; then
-  network_dir='cstrip-fcn32s-hha'
+  network_dir='cstrip-fcn32s-hha2'
 fi
 
 # current_date=`date +%Y-%m-%d_%H-%M-%S`

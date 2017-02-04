@@ -1,5 +1,5 @@
-train_net: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-hha/trainval.prototxt"
-test_net: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-hha/trainval.prototxt"
+train_net: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-hha2/trainval.prototxt"
+test_net: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-hha2/trainval.prototxt"
 test_iter: 654
 # make test net, but don't invoke it from the solver itself
 test_interval: 999999999
@@ -15,5 +15,5 @@ iter_size: 1
 max_iter: 300000
 weight_decay: 0.0005
 snapshot: 999999999
-snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-hha/HHAsnapshot/train"
+snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-hha2/HHA2snapshot/train"
 test_initialization: false
