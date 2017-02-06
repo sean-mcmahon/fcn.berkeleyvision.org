@@ -97,6 +97,9 @@ def make_net():
     with open('trainval.prototxt', 'w') as f:
         f.write(str(fcn('train', tops)))
 
+    with open('val.prototxt', 'w') as f:
+        f.write(str(fcn('val', tops)))
+
     with open('test.prototxt', 'w') as f:
         f.write(str(fcn('test', tops)))
 
