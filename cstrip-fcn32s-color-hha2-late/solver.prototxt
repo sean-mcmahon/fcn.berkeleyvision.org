@@ -1,5 +1,5 @@
-train_net: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha/trainval.prototxt"
-test_net: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha/val.prototxt"
+train_net: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha2-late/trainval.prototxt"
+test_net: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha2-late/val.prototxt"
 test_iter: 654
 # make test net, but don't invoke it from the solver itself
 test_interval: 999999999
@@ -11,9 +11,9 @@ base_lr: 1e-12
 # high momentum
 momentum: 0.99
 # no gradient accumulation
-iter_size: 1
-max_iter: 300000
+# iter_size: 1
+max_iter: 5000
 weight_decay: 0.0005
-snapshot: 2000
-snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha/colourHHAsnapshot/train_cpu"
+snapshot: 200
+snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha2-late/colourHHA2snapshot/basetrain"
 test_initialization: false
