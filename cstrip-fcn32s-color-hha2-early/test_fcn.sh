@@ -50,16 +50,16 @@ fi
 hpc_dir='/home/n8307628'
 local_dir='/home/sean'
 if [[ -d $local_dir ]]; then
-  working_dir=$local_dir'/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha2-early'
-  python_script=$working_dir'/validate.py'
+  working_dir=$local_dir'/hpc-home/Fully-Conv-Network/Resources/FCN_models'
 elif [[ -d $hpc_dir ]]; then
-  working_dir=$hpc_dir'/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha2-early'
-  python_script=$working_dir'/validate.py'
+  working_dir=$hpc_dir'/Fully-Conv-Network/Resources/FCN_models'
+
   # Because using MKL Blas on HPC
   export MKL_CBWR=AUTO
 else
   echo "No directory found..."
 fi
+python_script=$working_dir'/validate.py'
 
 set_mode="$1"
 if [[ -z "$set_mode" ]]; then
@@ -71,15 +71,19 @@ if [[ -z "$split" ]]; then
 fi
 snapshot_iter="$3"
 if [[ -z "$snapshot_iter" ]]; then
-  snapshot_iter='6000'
+  snapshot_iter='4000'
 fi
 snapshot_filter_="$4"
 if [[ -z "$snapshot_filter_" ]]; then
-  snapshot_filter_='colorInit_randHha'
+  snapshot_filter_='stepLROne'
+fi
+network_dir="$5"
+if [[ -z "$network_dir" ]]; then
+  network_dir='cstrip-fcn32s-color-hha2-early'
 fi
 
 # current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/logs/'$split'_dataset_snapshot_'$snapshot_filter_'_'$snapshot_iter'_results.log'
+log_filename=$working_dir'/'$network_dir'/logs/'$split'_dataset_snapshot_'$snapshot_filter_'_'$snapshot_iter'_results.log'
 
-python $python_script --mode $set_mode --test_type $split --iteration $snapshot_iter --snapshot_filter $snapshot_filter_ 2>&1 | tee $log_filename
+python $python_script --mode $set_mode --test_type $split --iteration $snapshot_iter --snapshot_filter $snapshot_filter_ --network_dir $network_dir 2>&1 | tee $log_filename
 echo 'network: color-hha-early '$snapshot_filter_
