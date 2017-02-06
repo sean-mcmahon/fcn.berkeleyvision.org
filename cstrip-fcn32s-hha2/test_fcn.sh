@@ -5,6 +5,7 @@
 #PBS -l ncpus=1
 #PBS -l mem=4GB
 #PBS -l walltime=4:00:00
+#PBS -l gputype=K40
 
 module load python/2.7.11-foss-2016a
 module load caffe
@@ -67,7 +68,7 @@ if [[ -z "$split" ]]; then
 fi
 snapshot_iter="$3"
 if [[ -z "$snapshot_iter" ]]; then
-  snapshot_iter='8000'
+  snapshot_iter='10000'
 fi
 snapshot_filter_="$4"
 if [[ -z "$snapshot_filter_" ]]; then
@@ -79,7 +80,7 @@ if [[ -z "$network_dir" ]]; then
 fi
 
 # current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/'$network_dir'/logs/'$split'_dataset_snapshot_'$snapshot_filter_'_'$snapshot_iter'_results2.log'
+log_filename=$working_dir'/'$network_dir'/logs/'$split'_dataset_snapshot_'$snapshot_filter_'_'$snapshot_iter'_results.log'
 
-python $python_script --mode $set_mode --test_type $split --iteration $snapshot_iter --snapshot_filter $snapshot_filter_ 2>&1 | tee $log_filename
+python $python_script --mode $set_mode --test_type $split --iteration $snapshot_iter --snapshot_filter $snapshot_filter_ --network_dir $network_dir 2>&1 | tee $log_filename
 echo "Tested on network: $network_dir"
