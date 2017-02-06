@@ -11,6 +11,29 @@ from os.path import expanduser
 import imp
 import argparse
 
+def fusion_solver(train_net_path, test_net_path, file_location):
+    s = caffe_pb2.SolverParameter()
+    s.train_net = train_net_path
+    s.test_net.append(test_net_path)
+    s.test_interval = 999999999  # do not invoke tests here
+    s.test_iter.append(654)
+    s.max_iter = 300000
+    s.base_lr = 5e-13
+    s.lr_policy = 'fixed'
+    s.gamma = 0.1
+    s.average_loss = 20
+    s.momentum = 0.99
+    s.iter_size = 1
+    s.weight_decay = 0.0005
+    s.display = 20
+    s.snapshot = 1000
+
+    snapshot_dir = file_location + '/fusionSnapshot/secondTrain'
+    if not os.path.isdir(snapshot_dir):
+        os.mkdir(snapshot_dir)
+    s.snapshot_prefix = snapshot_dir
+    s.test_initialization = False
+    return s
 # add '../' directory to path for importing score.py, surgery.py and
 # pycaffe layer
 file_location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
