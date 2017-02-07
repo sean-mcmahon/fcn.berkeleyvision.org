@@ -11,6 +11,7 @@ from os.path import expanduser
 import imp
 import argparse
 
+
 def fusion_solver(train_net_path, test_net_path, file_location):
     s = caffe_pb2.SolverParameter()
     s.train_net = train_net_path
@@ -37,7 +38,8 @@ def fusion_solver(train_net_path, test_net_path, file_location):
 
 # add '../' directory to path for importing score.py, surgery.py and
 # pycaffe layer
-file_location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+file_location = os.path.realpath(os.path.join(
+    os.getcwd(), os.path.dirname(__file__)))
 sys.path.append(file_location[:file_location.rfind('/')])
 file_parent_dir = file_location[:file_location.rfind('/')]
 home_dir = expanduser("~")
@@ -45,15 +47,17 @@ home_dir = expanduser("~")
 # User Input
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', default='GPU')
+parser.add_argument('--fusion_type', default='mixDCNN')
 args = parser.parse_args()
 print 'This is the colour-HHA2 summation solver!'
+fusion_type = args.fusion_type
 
 # import support functions
 if 'n8307628' in home_dir:
-    caffe_root = home_dir+'/Fully-Conv-Network/Resources/caffe'
+    caffe_root = home_dir + '/Fully-Conv-Network/Resources/caffe'
 elif 'sean' in home_dir:
-    caffe_root = home_dir+'/src/caffe'
-filename, path, desc =  imp.find_module('caffe', [caffe_root+'/python/'])
+    caffe_root = home_dir + '/src/caffe'
+filename, path, desc = imp.find_module('caffe', [caffe_root + '/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
 if 'g' in args.mode or 'G' in args.mode:
     caffe.set_mode_gpu()
@@ -68,7 +72,8 @@ else:
     print '-- GPU Mode Chosen --'
     print '==============='
 # caffe.set_device(1)
-import surgery, score
+import surgery
+import score
 
 
 color_weights = file_parent_dir + \
@@ -77,7 +82,16 @@ color_proto = file_parent_dir + '/cstrip-fcn32s-color/test.prototxt'
 hha2_weights = file_parent_dir + \
     '/cstrip-fcn32s-hha2/HHA2snapshot/secondTrain_lowerLR_iter_2000.caffemodel'
 hha2_proto = file_parent_dir + '/cstrip-fcn32s-hha2/test.prototxt'
-solver = caffe.SGDSolver(file_location + '/solver.prototxt')
+if fusion_type == 'sum':
+    print '------\n Loading sum fusion approach \n------'
+    solver = caffe.SGDSolver(file_location + '/solver.prototxt')
+elif 'mix' in fusion_type or fusion_type == 'mixDCNN':
+    print '------\n Loading mixDCNN fusion approach \n------'
+    solver = caffe.SGDSolver(file_location + '/solver_mix.prototxt')
+else:
+    print 'unrecognised/no fusion approach specified,',
+    'loading standard summation approach'
+    solver = caffe.SGDSolver(file_location + '/solver.prototxt')
 
 # surgeries
 color_net = caffe.Net(color_proto, color_weights, caffe.TEST)
@@ -87,7 +101,7 @@ del color_net
 hha2_net = caffe.Net(hha2_proto, hha2_weights, caffe.TEST)
 surgery.transplant(solver.net, hha2_net, suffix='hha2')
 del hha2_net
-
+\
 interp_layers = [k for k in solver.net.params.keys() if 'up' in k]
 print 'performing surgery on {}'.format(interp_layers)
 surgery.interp(solver.net, interp_layers)
@@ -96,11 +110,12 @@ surgery.interp(solver.net, interp_layers)
 val = np.loadtxt(
     file_location[:file_location.rfind('/')] + '/data/cs-trip/val.txt',
     dtype=str)
-score.seg_tests(solver, False, val, layer='score')
+# score.seg_tests(solver, False, val, layer='score')
 
-for _ in range(50):
+for _ in range(25):
     print '------------------------------'
     print 'Running solver.step iter {}'.format(_)
     print '------------------------------'
     solver.step(200)
-    score.seg_tests(solver, False, val, layer='score')
+    score.seg_loss_tests(solver, val, layer='score')
+print '(python) color-hha2 fusion, fusion_type', fusion_type

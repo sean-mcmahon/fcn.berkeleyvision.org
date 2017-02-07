@@ -163,6 +163,12 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label',
     mean_run_time = forward_times.sum() / len(forward_times)
     return hist, loss / len(dataset), Fmetrics, mean_run_time
 
+def seg_loss_tests(solver, dataset, layer='score', gt='data',
+              dataL='data', test_type='val'):
+    print '>>>', datetime.now(), 'Begin seg tests'
+    solver.test_nets[0].share_with(solver.net)
+    seg_loss(solver.test_nets[0], solver.iter,
+                 dataset,test_type, True, gt, layer)
 
 def seg_loss(net, iteration, dataset, test_type='training',
              calc_hist=False, gt='data', layer='score'):
