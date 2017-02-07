@@ -109,8 +109,8 @@ def mixfcn(split, tops):
     n.maxConcat = L.Concat(n.maxcolor, n.maxhha2, concat_param=dict(axis=1))
     n.maxSoft = L.Softmax(n.maxConcat)
     # separate color and hha using slice layer
-    n.probColor, n.probHHA2 = L.Slice(n.maxSoft)
-    # using concat layer to duplicate probabilies over dim1 for mulitplication
+    n.probColor, n.probHHA2 = L.Slice(n.maxSoft, ntop=2,  slice_param=dict(axis=1))
+    # duplicate probabilies using concat layer over dim1 for mulitplication
     n.repProbColor = L.Concat(n.probColor, n.probColor)
     n.repProbHHA2 = L.Concat(n.probHHA2, n.probHHA2)
     # multiply the 'probabilies' with the color and hha scores
@@ -143,6 +143,15 @@ def make_net():
 
     with open('test.prototxt', 'w') as f:
         f.write(str(fcn('test', tops)))
+
+    with open('trainval_mix.prototxt', 'w') as f:
+        f.write(str(mixfcn('train', tops)))
+
+    with open('val_mix.prototxt', 'w') as f:
+        f.write(str(mixfcn('val', tops)))
+
+    with open('test_mix.prototxt', 'w') as f:
+        f.write(str(mixfcn('test', tops)))
 
 if __name__ == '__main__':
     make_net()
