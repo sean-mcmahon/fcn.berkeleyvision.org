@@ -101,7 +101,7 @@ del color_net
 hha2_net = caffe.Net(hha2_proto, hha2_weights, caffe.TEST)
 surgery.transplant(solver.net, hha2_net, suffix='hha2')
 del hha2_net
-\
+
 interp_layers = [k for k in solver.net.params.keys() if 'up' in k]
 print 'performing surgery on {}'.format(interp_layers)
 surgery.interp(solver.net, interp_layers)
@@ -110,12 +110,13 @@ surgery.interp(solver.net, interp_layers)
 val = np.loadtxt(
     file_location[:file_location.rfind('/')] + '/data/cs-trip/val.txt',
     dtype=str)
-# score.seg_tests(solver, False, val, layer='score')
+score.seg_tests(solver, False, val, layer='score')
 
-for _ in range(25):
+for _ in range(20):
+    score.seg_loss_tests(solver, val, layer='score')
     print '------------------------------'
     print 'Running solver.step iter {}'.format(_)
     print '------------------------------'
-    solver.step(200)
-    score.seg_loss_tests(solver, val, layer='score')
+    solver.step(250)
+score.seg_loss_tests(solver, val, layer='score')
 print '(python) color-hha2 fusion, fusion_type', fusion_type
