@@ -63,7 +63,7 @@ def modality_fcn(net_spec, data, modality):
     n['drop7' + modality] = L.Dropout(
         n['relu7' + modality], dropout_ratio=0.5, in_place=True)
     n['score_fr' + modality] = L.Convolution(
-        n['drop7' + modality], num_output=40, kernel_size=1, pad=0,
+        n['drop7' + modality], num_output=2, kernel_size=1, pad=0,
         param=[dict(lr_mult=2, decay_mult=1), dict(lr_mult=2, decay_mult=0)])
     return n
 
