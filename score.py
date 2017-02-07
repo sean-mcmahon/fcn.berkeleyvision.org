@@ -69,6 +69,18 @@ def compute_flagMetric(score, folder, index, gt=False):
     return np.array((flagTp, flagFn))
 
 
+def checkDataMatch(gt_blob, folder, index):
+    matfilename = glob.glob('{}/{}/labels/colourimg_{}_*'.format(
+        cstrip_dir, folder, index))[0]
+    matfile = loadmat(matfilename)
+    bin_mask = matfile['binary_labels']
+    if np.array_equal(gt_blob, bin_mask):
+            # print 'arrays are identical'
+        pass
+    else:
+        print 'WARNING: arrays are NOT equal. (score.py - checkDataMatch) '
+
+
 def fast_hist(a, b, n):
     # a is GT pixel values
     # b is binary class image of max predictions
@@ -163,12 +175,13 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label',
     mean_run_time = forward_times.sum() / len(forward_times)
     return hist, loss / len(dataset), Fmetrics, mean_run_time
 
-def seg_loss_tests(solver, dataset, layer='score', gt='data',
-              dataL='data', test_type='val'):
-    print '>>>', datetime.now(), 'Begin seg tests'
+
+def seg_loss_tests(solver, dataset, layer='score', gt='label', test_type='val'):
+    print '>>>', datetime.now(), 'Begin seg loss tests'
     solver.test_nets[0].share_with(solver.net)
     seg_loss(solver.test_nets[0], solver.iter,
-                 dataset,test_type, True, gt, layer)
+             dataset, test_type, True, gt, layer)
+
 
 def seg_loss(net, iteration, dataset, test_type='training',
              calc_hist=False, gt='data', layer='score'):
@@ -179,9 +192,10 @@ def seg_loss(net, iteration, dataset, test_type='training',
     if calc_hist:
         n_cl = net.blobs[layer].channels
         hist = np.zeros((n_cl, n_cl))
-    for count, _ in enumerate(dataset):
+    for count, idx in enumerate(dataset):
         start_time = time.time()
         net.forward()
+        checkDataMatch(net.blobs[gt].data[0, 0], idx[0], idx[1])
         forward_times[count] = time.time() - start_time
         if calc_hist:
             hist += fast_hist(net.blobs[gt].data[0, 0].flatten(),
@@ -248,7 +262,8 @@ def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label',
     print '>>>', datetime.now(), 'Iteration', iter, 'trip accuracy', acc[1], \
         'non-trip accuracy', acc[0]
 
-    precision = hist[1, 1] / hist.sum(0)[1]  # hist[1,1] / (hist[1,0] + hist[1,1])
+    # hist[1,1] / (hist[1,0] + hist[1,1])
+    precision = hist[1, 1] / hist.sum(0)[1]
     # hist[1,1] / (hist[0,1] + hist[1,1])
     recall = hist[1, 1] / hist.sum(1)[1]
     Fone = ((recall * precision) / (recall + precision)) * 2
