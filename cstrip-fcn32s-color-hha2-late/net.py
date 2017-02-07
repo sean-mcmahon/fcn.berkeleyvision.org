@@ -71,11 +71,11 @@ def modality_fcn(net_spec, data, modality):
 def fcn(split, tops):
     n = caffe.NetSpec()
     n.color, n.hha2, n.label = L.Python(module='cs_trip_layers',
-                                       layer='CStripSegDataLayer', ntop=3,
-                                       param_str=str(dict(
-                                           cstrip_dir='/Construction_Site/' +
-                                           'Springfield/12Aug16/K2', split=split,
-                                           tops=tops, seed=1337)))
+                                        layer='CStripSegDataLayer', ntop=3,
+                                        param_str=str(dict(
+                                            cstrip_dir='/Construction_Site/' +
+                                            'Springfield/12Aug16/K2', split=split,
+                                            tops=tops, seed=1337)))
     n = modality_fcn(n, 'color', 'color')
     n = modality_fcn(n, 'hha2', 'hha2')
     n.score_fused = L.Eltwise(n.score_fr_tripcolor, n.score_fr_triphha2,
@@ -91,14 +91,15 @@ def fcn(split, tops):
                                loss_param=dict(normalize=False))
     return n.to_proto()
 
+
 def mixfcn(split, tops):
     n = caffe.NetSpec()
     n.color, n.hha2, n.label = L.Python(module='cs_trip_layers',
-                                       layer='CStripSegDataLayer', ntop=3,
-                                       param_str=str(dict(
-                                           cstrip_dir='/Construction_Site/' +
-                                           'Springfield/12Aug16/K2', split=split,
-                                           tops=tops, seed=1337)))
+                                        layer='CStripSegDataLayer', ntop=3,
+                                        param_str=str(dict(
+                                            cstrip_dir='/Construction_Site/' +
+                                            'Springfield/12Aug16/K2', split=split,
+                                            tops=tops, seed=1337)))
     n = modality_fcn(n, 'color', 'color')
     n = modality_fcn(n, 'hha2', 'hha2')
     n.maxcolor = L.ArgMax(n.score_fr_tripcolor, axis=1)
@@ -106,7 +107,14 @@ def mixfcn(split, tops):
     n.maxConcat = L.Concat(n.maxcolor, n.maxhha2, concat_param=dict(axis=1))
     n.maxSoft = L.Softmax(n.maxConcat)
     n.probColor, n.probHHA2 = L.Slice(n.maxSoft)
-    # n.repProbColor = L.InnerProduct()
+    n.repProbColor = L.InnerProduct(n.probColor,
+                                    param=[dict(lr_mult=0, decay_mult=0),
+                                           dict(lr_mult=0, decay_mult=0)],
+                                    inner_prodict_param=dict(
+                                        num_output=2,
+                                        weight_filler=dict(
+                                            type='constant', value=1),
+                                        bias_filler=dict(type='constant', value=0)))
     n.score_fused = L.Eltwise(n.score_fr_tripcolor, n.score_fr_triphha2,
                               operation=P.Eltwise.SUM, coeff=[0.5, 0.5])
     n.upscore = L.Deconvolution(n.score_fused,
@@ -119,6 +127,7 @@ def mixfcn(split, tops):
     n.loss = L.SoftmaxWithLoss(n.score, n.label,
                                loss_param=dict(normalize=False))
     return n.to_proto()
+
 
 def make_net():
     tops = ['color', 'hha2', 'label']
