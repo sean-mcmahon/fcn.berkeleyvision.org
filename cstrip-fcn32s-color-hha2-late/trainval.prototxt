@@ -474,10 +474,10 @@ layer {
   }
 }
 layer {
-  name: "score_frcolor"
+  name: "score_fr_tripcolor"
   type: "Convolution"
   bottom: "fc7color"
-  top: "score_frcolor"
+  top: "score_fr_tripcolor"
   param {
     lr_mult: 2
     decay_mult: 1
@@ -956,10 +956,10 @@ layer {
   }
 }
 layer {
-  name: "score_frhha2"
+  name: "score_fr_triphha2"
   type: "Convolution"
   bottom: "fc7hha2"
-  top: "score_frhha2"
+  top: "score_fr_triphha2"
   param {
     lr_mult: 2
     decay_mult: 1
@@ -977,8 +977,8 @@ layer {
 layer {
   name: "score_fused"
   type: "Eltwise"
-  bottom: "score_frcolor"
-  bottom: "score_frhha2"
+  bottom: "score_fr_tripcolor"
+  bottom: "score_fr_triphha2"
   top: "score_fused"
   eltwise_param {
     operation: SUM

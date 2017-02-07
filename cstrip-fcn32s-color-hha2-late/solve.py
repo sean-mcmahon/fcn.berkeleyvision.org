@@ -98,9 +98,9 @@ val = np.loadtxt(
     dtype=str)
 score.seg_tests(solver, False, val, layer='score')
 
-# for _ in range(50):
-#     print '------------------------------'
-#     print 'Running solver.step iter {}'.format(_)
-#     print '------------------------------'
-#     solver.step(2000)
-# score.seg_tests(solver, False, val, layer='score')
+for _ in range(50):
+    print '------------------------------'
+    print 'Running solver.step iter {}'.format(_)
+    print '------------------------------'
+    solver.step(200)
+    score.seg_tests(solver, False, val, layer='score')
