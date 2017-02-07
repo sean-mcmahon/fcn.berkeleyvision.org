@@ -34,6 +34,7 @@ def fusion_solver(train_net_path, test_net_path, file_location):
     s.snapshot_prefix = snapshot_dir
     s.test_initialization = False
     return s
+
 # add '../' directory to path for importing score.py, surgery.py and
 # pycaffe layer
 file_location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
