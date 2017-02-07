@@ -102,21 +102,25 @@ def mixfcn(split, tops):
                                             tops=tops, seed=1337)))
     n = modality_fcn(n, 'color', 'color')
     n = modality_fcn(n, 'hha2', 'hha2')
+    # find max trip or non trip confidences
     n.maxcolor = L.ArgMax(n.score_fr_tripcolor, axis=1)
     n.maxhha2 = L.ArgMax(n.score_fr_triphha2, axis=1)
+    # concatinate together and softmax for 'probabilites'
     n.maxConcat = L.Concat(n.maxcolor, n.maxhha2, concat_param=dict(axis=1))
     n.maxSoft = L.Softmax(n.maxConcat)
+    # separate color and hha using slice layer
     n.probColor, n.probHHA2 = L.Slice(n.maxSoft)
-    n.repProbColor = L.InnerProduct(n.probColor,
-                                    param=[dict(lr_mult=0, decay_mult=0),
-                                           dict(lr_mult=0, decay_mult=0)],
-                                    inner_prodict_param=dict(
-                                        num_output=2,
-                                        weight_filler=dict(
-                                            type='constant', value=1),
-                                        bias_filler=dict(type='constant', value=0)))
-    n.score_fused = L.Eltwise(n.score_fr_tripcolor, n.score_fr_triphha2,
-                              operation=P.Eltwise.SUM, coeff=[0.5, 0.5])
+    # using concat layer to duplicate probabilies over dim1 for mulitplication
+    n.repProbColor = L.Concat(n.probColor, n.probColor)
+    n.repProbHHA2 = L.Concat(n.probHHA2, n.probHHA2)
+    # multiply the 'probabilies' with the color and hha scores
+    n.weightedColor = L.Eltwise(n.score_fr_tripcolor, n.repProbColor,
+                                operation=P.Eltwise.PROD)
+    n.weightedHHA2 = L.Eltwise(n.score_fr_triphha2, n.repProbHHA2,
+                                operation=P.Eltwise.PROD)
+    # combine the prob scores with eltwise summation
+    n.score_fused = L.Eltwise(n.weightedColor, n.weightedHHA2,
+                              operation=P.Eltwise.SUM, coeff=[1, 1])
     n.upscore = L.Deconvolution(n.score_fused,
                                 convolution_param=dict(num_output=2,
                                                        kernel_size=64,
