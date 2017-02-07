@@ -102,9 +102,12 @@ def mixfcn(split, tops):
                                             tops=tops, seed=1337)))
     n = modality_fcn(n, 'color', 'color')
     n = modality_fcn(n, 'hha2', 'hha2')
-    # find max trip or non trip confidences
-    n.maxcolor = L.ArgMax(n.score_fr_tripcolor, axis=1)
-    n.maxhha2 = L.ArgMax(n.score_fr_triphha2, axis=1)
+    # find max trip or non trip confidences, cannot use Argmax (no backprop)
+    # using eltwise max with split instead
+    n.score_colora, n.score_colorb = L.Slice(n.score_fr_tripcolor, ntop=2,  slice_param=dict(axis=1))
+    n.maxcolor = L.Eltwise(n.score_colora, n.score_colorb, operation=P.Eltwise.MAX)
+    n.score_HHA2a, n.score_HHA2b = L.Slice(n.score_fr_triphha2, ntop=2,  slice_param=dict(axis=1))
+    n.maxhha2 = L.Eltwise(n.score_HHA2a, n.score_HHA2b, operation=P.Eltwise.MAX)
     # concatinate together and softmax for 'probabilites'
     n.maxConcat = L.Concat(n.maxcolor, n.maxhha2, concat_param=dict(axis=1))
     n.maxSoft = L.Softmax(n.maxConcat)

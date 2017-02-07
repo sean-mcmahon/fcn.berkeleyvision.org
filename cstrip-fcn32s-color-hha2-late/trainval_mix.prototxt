@@ -975,21 +975,43 @@ layer {
   }
 }
 layer {
-  name: "maxcolor"
-  type: "ArgMax"
+  name: "score_colora"
+  type: "Slice"
   bottom: "score_fr_tripcolor"
+  top: "score_colora"
+  top: "score_colorb"
+  slice_param {
+    axis: 1
+  }
+}
+layer {
+  name: "maxcolor"
+  type: "Eltwise"
+  bottom: "score_colora"
+  bottom: "score_colorb"
   top: "maxcolor"
-  argmax_param {
+  eltwise_param {
+    operation: MAX
+  }
+}
+layer {
+  name: "score_HHA2a"
+  type: "Slice"
+  bottom: "score_fr_triphha2"
+  top: "score_HHA2a"
+  top: "score_HHA2b"
+  slice_param {
     axis: 1
   }
 }
 layer {
   name: "maxhha2"
-  type: "ArgMax"
-  bottom: "score_fr_triphha2"
+  type: "Eltwise"
+  bottom: "score_HHA2a"
+  bottom: "score_HHA2b"
   top: "maxhha2"
-  argmax_param {
-    axis: 1
+  eltwise_param {
+    operation: MAX
   }
 }
 layer {
