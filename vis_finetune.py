@@ -66,7 +66,7 @@ def parse_log(log_file):
     loss_iterations = np.array(loss_iterations)
     losses = np.array(losses)
 
-    training_loss_pattern = r"Iteration (?P<iter_num>\d+) training set loss = (?P<loss_val>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
+    training_loss_pattern = r"Iteration (?P<iter_num>\d+) val set loss = (?P<loss_val>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
     t_losses = []
     t_loss_iterations = []
 
@@ -81,7 +81,7 @@ def parse_log(log_file):
 
     # accuracy_pattern = r"Iteration (?P<iter_num>\d+), Testing net \(#0\)\n.*
     # accuracy = (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
-    accuracy_pattern = r"Iteration (?P<iter_num>\d+) trip accuracy (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
+    accuracy_pattern = r"Iteration (?P<iter_num>\d+) val trip accuracy (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
     accuracies = []
     accuracy_iterations = []
     accuracies_iteration_checkpoints_ind = []
@@ -121,8 +121,8 @@ def disp_results(fig, ax1, ax2, loss_iterations, losses, accuracy_iterations,
              accuracies_iteration_checkpoints_ind], 'o',
              color=plt.rcParams['axes.color_cycle'][(color_ind * 2 + 1) % modula])
     if color_ind == 0:
-        fig.legend((val_l_h, train_l_h, val_a_h), ('Val loss',
-                                                   'Train Loss',
+        fig.legend((val_l_h, train_l_h, val_a_h), ('Train loss',
+                                                   'Val Loss',
                                                    'Val Trip Acc'),
                    loc='upper right')
     # else:
