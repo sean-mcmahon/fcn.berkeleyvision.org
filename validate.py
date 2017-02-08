@@ -70,6 +70,7 @@ weights = snapshot_dir[0] + '/' + snapshot_filter + \
 
 
 # init
+score_layer = 'score'
 logFilenames = glob.glob(file_location + '/' + network_dir + 'logs/*_train*')
 if args.test_type == 'val':
     solver = caffe.SGDSolver(file_location + '/' +
@@ -82,7 +83,13 @@ elif args.test_type == 'test':
 elif args.test_type == 'testMix' or args.test_type == 'mixTest' or args.test_type == 'mixtest':
     solver = caffe.SGDSolver(file_location + '/' +
                              network_dir + 'solver_test_mix.prototxt')
+elif args.test_type == 'testLateMix' or args.test_type == 'latemixTest' \
+        or args.test_type == 'latemixtest' or args.test_type == 'lateMixTest':
+    solver = caffe.SGDSolver(os.path.join(file_location,
+                                          network_dir,
+                                          'solver_test_latemix.prototxt'))
     test_set = np.loadtxt(file_location + '/data/cs-trip/test.txt', dtype=str)
+    score_layer = 'score_fused'
 elif args.test_type == 'train':
     solver = caffe.SGDSolver(file_location + '/' +
                              network_dir + 'solver_test-trainingSet.prototxt')
@@ -113,6 +120,6 @@ if not match_found:
 print '\n>>>> Validation <<<<\n'
 score.seg_tests(solver, os.path.join(file_location, network_dir,
                                      args.test_type + '_images'),
-                test_set, layer='score')
+                test_set, layer=score_layer)
 
 print '\n(python) Test Network: {}, snapshot: {} \n'.format(network_dir, snapshot_filter)
