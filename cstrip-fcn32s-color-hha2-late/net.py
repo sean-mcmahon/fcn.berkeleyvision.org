@@ -165,7 +165,7 @@ def lateMixfcn(split, tops):
     # using eltwise max with split instead
     n.score_colora, n.score_colorb = L.Slice(n.score_color, ntop=2,  slice_param=dict(axis=1))
     n.maxcolor = L.Eltwise(n.score_colora, n.score_colorb, operation=P.Eltwise.MAX)
-    n.score_HHA2a, n.score_HHA2b = L.Slice(n.upscore_hha2, ntop=2,  slice_param=dict(axis=1))
+    n.score_HHA2a, n.score_HHA2b = L.Slice(n.score_hha2, ntop=2,  slice_param=dict(axis=1))
     n.maxhha2 = L.Eltwise(n.score_HHA2a, n.score_HHA2b, operation=P.Eltwise.MAX)
     # concatinate together and softmax for 'probabilites'
     n.maxConcat = L.Concat(n.maxcolor, n.maxhha2, concat_param=dict(axis=1))
@@ -178,7 +178,7 @@ def lateMixfcn(split, tops):
     # multiply the 'probabilies' with the color and hha scores
     n.weightedColor = L.Eltwise(n.score_color, n.repProbColor,
                                 operation=P.Eltwise.PROD)
-    n.weightedHHA2 = L.Eltwise(n.upscore_hha2, n.repProbHHA2,
+    n.weightedHHA2 = L.Eltwise(n.score_hha2, n.repProbHHA2,
                                 operation=P.Eltwise.PROD)
     # combine the prob scores with eltwise summation
     n.score_fused = L.Eltwise(n.weightedColor, n.weightedHHA2,

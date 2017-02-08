@@ -1049,7 +1049,7 @@ layer {
 layer {
   name: "score_HHA2a"
   type: "Slice"
-  bottom: "upscore_hha2"
+  bottom: "score_hha2"
   top: "score_HHA2a"
   top: "score_HHA2b"
   slice_param {
@@ -1119,7 +1119,7 @@ layer {
 layer {
   name: "weightedHHA2"
   type: "Eltwise"
-  bottom: "upscore_hha2"
+  bottom: "score_hha2"
   bottom: "repProbHHA2"
   top: "weightedHHA2"
   eltwise_param {

@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #:
-#PBS -N rgbhha_mixStep
+#PBS -N latemix_step
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=8GB
@@ -65,7 +65,7 @@ if [[ -z "$set_mode" ]]; then
 fi
 fusion_type_="$2"
 if [[ -z "$fusion_type_" ]]; then
-  fusion_type_='mixDCNN'
+  fusion_type_='lateMixDCNN'
 fi
 current_date=`date +%Y-%m-%d_%H-%M-%S`
 log_filename=$working_dir'/logs/FCNcolorHHA_steptrain_'$fusion_type_'Fusion_'$current_date'.log'
