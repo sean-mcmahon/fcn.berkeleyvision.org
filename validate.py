@@ -111,7 +111,8 @@ if not match_found:
     print 'Error, no logfile found for {}'.format(weight_name)
 
 print '\n>>>> Validation <<<<\n'
-score.seg_tests(solver, file_location + '/' + network_dir +
-                args.test_type + '_images', test_set, layer='score')
+score.seg_tests(solver, os.path.join(file_location, network_dir,
+                                     args.test_type + '_images'),
+                test_set, layer='score')
 
 print '\n(python) Test Network: {}, snapshot: {} \n'.format(network_dir, snapshot_filter)
