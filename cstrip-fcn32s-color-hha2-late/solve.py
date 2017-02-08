@@ -75,7 +75,6 @@ else:
 import surgery
 import score
 
-
 color_weights = file_parent_dir + \
     '/cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel'
 color_proto = file_parent_dir + '/cstrip-fcn32s-color/test.prototxt'
@@ -110,13 +109,39 @@ surgery.interp(solver.net, interp_layers)
 val = np.loadtxt(
     file_location[:file_location.rfind('/')] + '/data/cs-trip/val.txt',
     dtype=str)
-# score.seg_tests(solver, False, val, layer='score')
+solver.test_nets[0].share_with(solver.net)
+net = solver.test_nets[0]
+net.forward()
+print 'score_fr_triphha2 data:\n', np.shape(net.blobs['score_fr_triphha2'].data[0])
+hha2Trips = net.blobs['score_fr_triphha2'].data[0][0,:,:]
+hha2NonTrips = net.blobs['score_fr_triphha2'].data[0][1,:,:]
+hha2max = net.blobs['maxhha2'].data[0]
+hha2npmax = np.amax(net.blobs['score_fr_triphha2'].data[0], axis=0)
+print 'max compare', np.array_equiv(hha2max, hha2npmax)
+print '\nslice: score_HHA2a', np.shape(net.blobs['score_HHA2a'].data[0])
+print '\nmaxhha2:\n', np.shape(net.blobs['maxhha2'].data[0])
+repProbHHA2 = net.blobs['repProbHHA2'].data[0]
+print 'rep working', np.array_equal(repProbHHA2[0,:,:], repProbHHA2[1,:,:])
 
-for _ in range(20):
-    score.seg_loss_tests(solver, val, layer='score')
-    print '------------------------------'
-    print 'Running solver.step iter {}'.format(_)
-    print '------------------------------'
-    solver.step(250)
-score.seg_loss_tests(solver, val, layer='score')
-print '\n(python) color-hha2 fusion, fusion_type', fusion_type
+print '\n----------------- \n color predictions \n-----------------\n'
+print '\nscore_fr_tripcolor data:\n', np.shape(net.blobs['score_fr_tripcolor'].data[0])
+colorTrips = net.blobs['score_fr_tripcolor'].data[0][0,:,:]
+colorNonTrips = net.blobs['score_fr_tripcolor'].data[0][1,:,:]
+colormax = net.blobs['maxcolor'].data[0]
+colornpmax = np.amax(net.blobs['score_fr_tripcolor'].data[0], axis=0)
+print 'max compare', np.array_equiv(colormax, colornpmax)
+print '\nslice: score_colora', np.shape(net.blobs['score_colora'].data[0])
+print '\nmaxcolor:\n', np.shape(net.blobs['maxcolor'].data[0])
+
+
+
+# score.seg_tests(solver, False, val, layer='score')
+#
+# for _ in range(20):
+#     score.seg_loss_tests(solver, val, layer='score')
+#     print '------------------------------'
+#     print 'Running solver.step iter {}'.format(_)
+#     print '------------------------------'
+#     solver.step(250)
+# score.seg_loss_tests(solver, val, layer='score')
+# print '\n(python) color-hha2 fusion, fusion_type', fusion_type
