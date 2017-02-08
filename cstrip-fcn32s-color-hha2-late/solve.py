@@ -118,23 +118,29 @@ hha2NonTrips = net.blobs['score_fr_triphha2'].data[0][1,:,:]
 hha2max = net.blobs['maxhha2'].data[0]
 hha2npmax = np.amax(net.blobs['score_fr_triphha2'].data[0], axis=0)
 print 'max compare', np.array_equiv(hha2max, hha2npmax)
-print '\nslice: score_HHA2a', np.shape(net.blobs['score_HHA2a'].data[0])
+print 'slice: score_HHA2a', np.shape(net.blobs['score_HHA2a'].data[0])
 print '\nmaxhha2:\n', np.shape(net.blobs['maxhha2'].data[0])
 repProbHHA2 = net.blobs['repProbHHA2'].data[0]
 print 'rep working', np.array_equal(repProbHHA2[0,:,:], repProbHHA2[1,:,:])
 
-print '\n----------------- \n color predictions \n-----------------\n'
+print '----------------- \n color predictions \n-----------------'
 print '\nscore_fr_tripcolor data:\n', np.shape(net.blobs['score_fr_tripcolor'].data[0])
 colorTrips = net.blobs['score_fr_tripcolor'].data[0][0,:,:]
 colorNonTrips = net.blobs['score_fr_tripcolor'].data[0][1,:,:]
 colormax = net.blobs['maxcolor'].data[0]
 colornpmax = np.amax(net.blobs['score_fr_tripcolor'].data[0], axis=0)
+repProbColor = net.blobs['repProbColor'].data[0]
 print 'max compare', np.array_equiv(colormax, colornpmax)
-print '\nslice: score_colora', np.shape(net.blobs['score_colora'].data[0])
+print 'slice: score_colora', np.shape(net.blobs['score_colora'].data[0])
 print '\nmaxcolor:\n', np.shape(net.blobs['maxcolor'].data[0])
 
-
-
+score_fused = net.blobs['score_fused'].data[0]
+weightedColor = net.blobs['weightedColor'].data[0]
+weightedHHA2 = net.blobs['weightedHHA2'].data[0]
+npscore = weightedColor + weightedHHA2
+print 'fusion correct', np.array_equiv(npscore,score_fused)
+npweightedColor = np.multiply(net.blobs['score_fr_tripcolor'].data[0],repProbColor )
+print 'weighting correct', np.array_equiv(npweightedColor, weightedColor)
 # score.seg_tests(solver, False, val, layer='score')
 #
 # for _ in range(20):
