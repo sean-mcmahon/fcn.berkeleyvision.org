@@ -82,7 +82,7 @@ color_proto = file_parent_dir + '/cstrip-fcn32s-color/test.prototxt'
 hha2_weights = file_parent_dir + \
     '/cstrip-fcn32s-hha2/HHA2snapshot/secondTrain_lowerLR_iter_2000.caffemodel'
 hha2_proto = file_parent_dir + '/cstrip-fcn32s-hha2/test.prototxt'
-if fusion_type == 'sum':
+if fusion_type == 'sum' or fusion_type == 'Sum' or fusion_type == 'SUM':
     print '------\n Loading sum fusion approach \n------'
     solver = caffe.SGDSolver(file_location + '/solver.prototxt')
 elif 'mix' in fusion_type or fusion_type == 'mixDCNN':
@@ -110,7 +110,7 @@ surgery.interp(solver.net, interp_layers)
 val = np.loadtxt(
     file_location[:file_location.rfind('/')] + '/data/cs-trip/val.txt',
     dtype=str)
-score.seg_tests(solver, False, val, layer='score')
+# score.seg_tests(solver, False, val, layer='score')
 
 for _ in range(20):
     score.seg_loss_tests(solver, val, layer='score')
@@ -119,4 +119,4 @@ for _ in range(20):
     print '------------------------------'
     solver.step(250)
 score.seg_loss_tests(solver, val, layer='score')
-print '(python) color-hha2 fusion, fusion_type', fusion_type
+print '\n(python) color-hha2 fusion, fusion_type', fusion_type
