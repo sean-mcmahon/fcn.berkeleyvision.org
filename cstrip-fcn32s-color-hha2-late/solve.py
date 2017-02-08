@@ -84,13 +84,17 @@ hha2_proto = file_parent_dir + '/cstrip-fcn32s-hha2/test.prototxt'
 if fusion_type == 'sum' or fusion_type == 'Sum' or fusion_type == 'SUM':
     print '------\n Loading sum fusion approach \n------'
     solver = caffe.SGDSolver(file_location + '/solver.prototxt')
-elif 'mix' in fusion_type or fusion_type == 'mixDCNN':
+elif fusion_type == 'mixDCNN' or fusion_type == 'mixdcnn':
     print '------\n Loading mixDCNN fusion approach \n------'
     solver = caffe.SGDSolver(file_location + '/solver_mix.prototxt')
+elif fusion_type == 'latemixDCNN' or fusion_type == 'latemixdcnn'  \
+        or fusion_type == 'lateMixDCNN' or fusion_type == 'latemix'  \
+        or fusion_type == 'lateMix':
+    print '------\n Loading lateMixDCNN fusion approach \n------'
+    solver = caffe.SGDSolver(file_location + '/solver_latemix.prototxt')
 else:
-    print 'unrecognised/no fusion approach specified,',
-    'loading standard summation approach'
-    solver = caffe.SGDSolver(file_location + '/solver.prototxt')
+    print 'unrecognised or no fusion approach specified,'
+    raise
 
 # surgeries
 color_net = caffe.Net(color_proto, color_weights, caffe.TEST)
@@ -109,13 +113,12 @@ surgery.interp(solver.net, interp_layers)
 val = np.loadtxt(
     file_location[:file_location.rfind('/')] + '/data/cs-trip/val.txt',
     dtype=str)
-score.seg_tests(solver, False, val, layer='score')
+score.seg_loss_tests(solver, val, layer='score')
 
-for _ in range(20):
-    score.seg_loss_tests(solver, val, layer='score')
+for _ in range(25):
     print '------------------------------'
     print 'Running solver.step iter {}'.format(_)
     print '------------------------------'
     solver.step(250)
-score.seg_loss_tests(solver, val, layer='score')
+    score.seg_loss_tests(solver, val, layer='score')
 print '\n(python) color-hha2 fusion, fusion_type', fusion_type
