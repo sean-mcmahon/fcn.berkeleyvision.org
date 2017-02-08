@@ -67,15 +67,15 @@ if [[ -z "$set_mode" ]]; then
 fi
 split="$2"
 if [[ -z "$split" ]]; then
-  split='test'
+  split='testMix'
 fi
 snapshot_iter="$3"
 if [[ -z "$snapshot_iter" ]]; then
-  snapshot_iter='600'
+  snapshot_iter='750'
 fi
 snapshot_filter_="$4"
 if [[ -z "$snapshot_filter_" ]]; then
-  snapshot_filter_='basetrain2'
+  snapshot_filter_='Mix_steptrain'
 fi
 network_dir="$5"
 if [[ -z "$network_dir" ]]; then
