@@ -5,7 +5,10 @@ test_iter: 654
 test_interval: 999999999
 display: 20
 average_loss: 20
-lr_policy: "fixed"
+# lr_policy: "fixed"
+lr_policy: "step"
+gamma: 0.1
+stepsize: 500
 # lr for unnormalized softmax
 base_lr: 1e-12
 # high momentum
@@ -15,5 +18,5 @@ momentum: 0.99
 max_iter: 5000
 weight_decay: 0.0005
 snapshot: 250
-snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha2-late/colourHHA2snapshot/Mix_basetrain2"
+snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha2-late/colourHHA2snapshot/Mix_steptrain"
 test_initialization: false
