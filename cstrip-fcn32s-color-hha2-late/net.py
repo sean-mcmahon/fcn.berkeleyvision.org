@@ -62,9 +62,10 @@ def modality_fcn(net_spec, data, modality):
         n['drop6' + modality], 4096, ks=1, pad=0)
     n['drop7' + modality] = L.Dropout(
         n['relu7' + modality], dropout_ratio=0.5, in_place=True)
-    n['score_fr_trip' + modality] = L.Convolution(
+    n['score_fr_tripNEW' + modality] = L.Convolution(
         n['drop7' + modality], num_output=2, kernel_size=1, pad=0,
-        param=[dict(lr_mult=2, decay_mult=1), dict(lr_mult=2, decay_mult=0)])
+        param=[dict(lr_mult=4, decay_mult=1), dict(lr_mult=8, decay_mult=0)],
+        weight_filler=dict(type='msra'))
     return n
 
 
@@ -104,15 +105,20 @@ def mixfcn(split, tops):
     n = modality_fcn(n, 'hha2', 'hha2')
     # find max trip or non trip confidences, cannot use Argmax (no backprop)
     # using eltwise max with split instead
-    n.score_colora, n.score_colorb = L.Slice(n.score_fr_tripcolor, ntop=2,  slice_param=dict(axis=1))
-    n.maxcolor = L.Eltwise(n.score_colora, n.score_colorb, operation=P.Eltwise.MAX)
-    n.score_HHA2a, n.score_HHA2b = L.Slice(n.score_fr_triphha2, ntop=2,  slice_param=dict(axis=1))
-    n.maxhha2 = L.Eltwise(n.score_HHA2a, n.score_HHA2b, operation=P.Eltwise.MAX)
+    n.score_colora, n.score_colorb = L.Slice(
+        n.score_fr_tripcolor, ntop=2,  slice_param=dict(axis=1))
+    n.maxcolor = L.Eltwise(n.score_colora, n.score_colorb,
+                           operation=P.Eltwise.MAX)
+    n.score_HHA2a, n.score_HHA2b = L.Slice(
+        n.score_fr_triphha2, ntop=2,  slice_param=dict(axis=1))
+    n.maxhha2 = L.Eltwise(n.score_HHA2a, n.score_HHA2b,
+                          operation=P.Eltwise.MAX)
     # concatinate together and softmax for 'probabilites'
     n.maxConcat = L.Concat(n.maxcolor, n.maxhha2, concat_param=dict(axis=1))
     n.maxSoft = L.Softmax(n.maxConcat)
     # separate color and hha using slice layer
-    n.probColor, n.probHHA2 = L.Slice(n.maxSoft, ntop=2,  slice_param=dict(axis=1))
+    n.probColor, n.probHHA2 = L.Slice(
+        n.maxSoft, ntop=2,  slice_param=dict(axis=1))
     # duplicate probabilies using concat layer over dim1 for mulitplication
     n.repProbColor = L.Concat(n.probColor, n.probColor)
     n.repProbHHA2 = L.Concat(n.probHHA2, n.probHHA2)
@@ -120,7 +126,7 @@ def mixfcn(split, tops):
     n.weightedColor = L.Eltwise(n.score_fr_tripcolor, n.repProbColor,
                                 operation=P.Eltwise.PROD)
     n.weightedHHA2 = L.Eltwise(n.score_fr_triphha2, n.repProbHHA2,
-                                operation=P.Eltwise.PROD)
+                               operation=P.Eltwise.PROD)
     # combine the prob scores with eltwise summation
     n.score_fused = L.Eltwise(n.weightedColor, n.weightedHHA2,
                               operation=P.Eltwise.SUM, coeff=[1, 1])
@@ -135,6 +141,7 @@ def mixfcn(split, tops):
                                loss_param=dict(normalize=False))
     return n.to_proto()
 
+
 def lateMixfcn(split, tops):
     n = caffe.NetSpec()
     n.color, n.hha2, n.label = L.Python(module='cs_trip_layers',
@@ -146,32 +153,37 @@ def lateMixfcn(split, tops):
     n = modality_fcn(n, 'color', 'color')
     n = modality_fcn(n, 'hha2', 'hha2')
 
-    n.upscore_color = L.Deconvolution(n.score_fr_tripcolor,
-                                convolution_param=dict(num_output=2,
-                                                       kernel_size=64,
-                                                       stride=32,
-                                                       bias_term=False),
-                                param=[dict(lr_mult=0)])
+    n.upscore_color = L.Deconvolution(n.score_fr_tripNEWcolor,
+                                      convolution_param=dict(num_output=2,
+                                                             kernel_size=64,
+                                                             stride=32,
+                                                             bias_term=False),
+                                      param=[dict(lr_mult=0)])
     n.score_color = crop(n.upscore_color, n.color)
-    n.upscore_hha2 = L.Deconvolution(n.score_fr_triphha2,
-                                convolution_param=dict(num_output=2,
-                                                       kernel_size=64,
-                                                       stride=32,
-                                                       bias_term=False),
-                                param=[dict(lr_mult=0)])
+    n.upscore_hha2 = L.Deconvolution(n.score_fr_tripNEWhha2,
+                                     convolution_param=dict(num_output=2,
+                                                            kernel_size=64,
+                                                            stride=32,
+                                                            bias_term=False),
+                                     param=[dict(lr_mult=0)])
     n.score_hha2 = crop(n.upscore_hha2, n.hha2)
 
     # find max trip or non trip confidences, cannot use Argmax (no backprop)
     # using eltwise max with split instead
-    n.score_colora, n.score_colorb = L.Slice(n.score_color, ntop=2,  slice_param=dict(axis=1))
-    n.maxcolor = L.Eltwise(n.score_colora, n.score_colorb, operation=P.Eltwise.MAX)
-    n.score_HHA2a, n.score_HHA2b = L.Slice(n.score_hha2, ntop=2,  slice_param=dict(axis=1))
-    n.maxhha2 = L.Eltwise(n.score_HHA2a, n.score_HHA2b, operation=P.Eltwise.MAX)
+    n.score_colora, n.score_colorb = L.Slice(
+        n.score_color, ntop=2,  slice_param=dict(axis=1))
+    n.maxcolor = L.Eltwise(n.score_colora, n.score_colorb,
+                           operation=P.Eltwise.MAX)
+    n.score_HHA2a, n.score_HHA2b = L.Slice(
+        n.score_hha2, ntop=2,  slice_param=dict(axis=1))
+    n.maxhha2 = L.Eltwise(n.score_HHA2a, n.score_HHA2b,
+                          operation=P.Eltwise.MAX)
     # concatinate together and softmax for 'probabilites'
     n.maxConcat = L.Concat(n.maxcolor, n.maxhha2, concat_param=dict(axis=1))
     n.maxSoft = L.Softmax(n.maxConcat)
     # separate color and hha using slice layer
-    n.probColor, n.probHHA2 = L.Slice(n.maxSoft, ntop=2,  slice_param=dict(axis=1))
+    n.probColor, n.probHHA2 = L.Slice(
+        n.maxSoft, ntop=2,  slice_param=dict(axis=1))
     # duplicate probabilies using concat layer over dim1 for mulitplication
     n.repProbColor = L.Concat(n.probColor, n.probColor)
     n.repProbHHA2 = L.Concat(n.probHHA2, n.probHHA2)
@@ -179,7 +191,7 @@ def lateMixfcn(split, tops):
     n.weightedColor = L.Eltwise(n.score_color, n.repProbColor,
                                 operation=P.Eltwise.PROD)
     n.weightedHHA2 = L.Eltwise(n.score_hha2, n.repProbHHA2,
-                                operation=P.Eltwise.PROD)
+                               operation=P.Eltwise.PROD)
     # combine the prob scores with eltwise summation
     n.score_fused = L.Eltwise(n.weightedColor, n.weightedHHA2,
                               operation=P.Eltwise.SUM, coeff=[1, 1])
@@ -187,27 +199,28 @@ def lateMixfcn(split, tops):
                                loss_param=dict(normalize=False))
     return n.to_proto()
 
+
 def make_net():
     tops = ['color', 'hha2', 'label']
-    with open('trainval.prototxt', 'w') as f:
-        f.write(str(fcn('train', tops)))
-    with open('val.prototxt', 'w') as f:
-        f.write(str(fcn('val', tops)))
-    with open('test.prototxt', 'w') as f:
-        f.write(str(fcn('test', tops)))
+    # with open('trainval.prototxt', 'w') as f:
+    #     f.write(str(fcn('train', tops)))
+    # with open('val.prototxt', 'w') as f:
+    #     f.write(str(fcn('val', tops)))
+    # with open('test.prototxt', 'w') as f:
+    #     f.write(str(fcn('test', tops)))
+    #
+    # with open('trainval_mix.prototxt', 'w') as f:
+    #     f.write(str(mixfcn('train', tops)))
+    # with open('val_mix.prototxt', 'w') as f:
+    #     f.write(str(mixfcn('val', tops)))
+    # with open('test_mix.prototxt', 'w') as f:
+    #     f.write(str(mixfcn('test', tops)))
 
-    with open('trainval_mix.prototxt', 'w') as f:
-        f.write(str(mixfcn('train', tops)))
-    with open('val_mix.prototxt', 'w') as f:
-        f.write(str(mixfcn('val', tops)))
-    with open('test_mix.prototxt', 'w') as f:
-        f.write(str(mixfcn('test', tops)))
-
-    with open('trainval_latemix.prototxt', 'w') as f:
+    with open('trainval_latemix2.prototxt', 'w') as f:
         f.write(str(lateMixfcn('train', tops)))
-    with open('val_latemix.prototxt', 'w') as f:
+    with open('val_latemix2.prototxt', 'w') as f:
         f.write(str(lateMixfcn('val', tops)))
-    with open('test_latemix.prototxt', 'w') as f:
+    with open('test_latemix2.prototxt', 'w') as f:
         f.write(str(lateMixfcn('test', tops)))
 
 if __name__ == '__main__':
