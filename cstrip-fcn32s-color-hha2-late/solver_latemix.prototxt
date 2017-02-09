@@ -1,5 +1,5 @@
-train_net: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha2-late/trainval_latemix.prototxt"
-test_net: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha2-late/val_latemix.prototxt"
+train_net: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha2-late/trainval_latemix2.prototxt"
+test_net: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha2-late/val_latemix2.prototxt"
 test_iter: 654
 # make test net, but don't invoke it from the solver itself
 test_interval: 999999999
@@ -18,5 +18,5 @@ momentum: 0.99
 max_iter: 5000
 weight_decay: 0.0005
 snapshot: 250
-snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha2-late/colourHHA2snapshot/lateMix_steptrain"
+snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha2-late/colourHHA2snapshot/lateMix2_steptrain"
 test_initialization: false
