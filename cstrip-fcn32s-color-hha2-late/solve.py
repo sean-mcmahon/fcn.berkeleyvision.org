@@ -95,6 +95,11 @@ elif fusion_type == 'latemixDCNN' or fusion_type == 'latemixdcnn'  \
     score_layer = 'score_fused'
     print '------\n Loading lateMixDCNN fusion approach \n------'
     solver = caffe.SGDSolver(file_location + '/solver_latemix.prototxt')
+elif fusion_type == 'conv' or fusion_type == 'Conv'  \
+    or fusion_type == 'ConvFusion' or fusion_type == 'convFusion':
+    score_layer = 'score_fused'
+    print '------\n Loading convolutional layer fusion approach \n------'
+    solver = caffe.SGDSolver(file_location + '/solver_conv.prototxt')
 else:
     print 'unrecognised or no fusion approach specified,'
     raise

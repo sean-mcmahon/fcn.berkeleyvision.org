@@ -97,6 +97,13 @@ elif args.test_type == 'testLateMix2' or args.test_type == 'latemix2Test' \
                                           'solver_test_latemix2.prototxt'))
     test_set = np.loadtxt(file_location + '/data/cs-trip/test.txt', dtype=str)
     score_layer = 'score_fused'
+elif args.test_type == 'testConv' or args.test_type == 'convtest' \
+        or args.test_type == 'convTest' or args.test_type == 'TestConv':
+    solver = caffe.SGDSolver(os.path.join(file_location,
+                                          network_dir,
+                                          'solver_test_conv.prototxt'))
+    test_set = np.loadtxt(file_location + '/data/cs-trip/test.txt', dtype=str)
+    score_layer = 'score_fused'
 elif args.test_type == 'train':
     solver = caffe.SGDSolver(file_location + '/' +
                              network_dir + 'solver_test-trainingSet.prototxt')
