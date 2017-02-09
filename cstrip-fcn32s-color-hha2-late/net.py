@@ -62,10 +62,10 @@ def modality_fcn(net_spec, data, modality):
         n['drop6' + modality], 4096, ks=1, pad=0)
     n['drop7' + modality] = L.Dropout(
         n['relu7' + modality], dropout_ratio=0.5, in_place=True)
-    n['score_fr_tripNEW' + modality] = L.Convolution(
-        n['drop7' + modality], num_output=2, kernel_size=1, pad=0,
-        param=[dict(lr_mult=4, decay_mult=1), dict(lr_mult=8, decay_mult=0)],
-        weight_filler=dict(type='msra'))
+    # n['score_fr_trip' + modality] = L.Convolution(
+    #     n['drop7' + modality], num_output=2, kernel_size=1, pad=0,
+    #     param=[dict(lr_mult=1, decay_mult=1), dict(lr_mult=2, decay_mult=0)],
+    #     weight_filler=dict(type='msra'))
     return n
 
 
@@ -102,30 +102,25 @@ def convFusionfcn(split, tops):
                                             tops=tops, seed=1337)))
     n = modality_fcn(n, 'color', 'color')
     n = modality_fcn(n, 'hha2', 'hha2')
-    n.upscorecolor = L.Deconvolution(n.score_fr_tripcolor,
-                                convolution_param=dict(num_output=2,
-                                                       kernel_size=64,
-                                                       stride=32,
-                                                       bias_term=False),
-                                param=[dict(lr_mult=0)])
-    n.scorecolor = crop(n.upscore, n.color)
-    n.upscorehha2 = L.Deconvolution(n.score_fr_triphha2,
-                                convolution_param=dict(num_output=2,
-                                                       kernel_size=64,
-                                                       stride=32,
-                                                       bias_term=False),
-                                param=[dict(lr_mult=0)])
-    n.scorehha2 = crop(n.upscore, n.color)
-    n.score_concat = L.Concat(n.scorecolor, n.scorehha2)
+
+    n.score_concat = L.Concat(n.fc7color, n.fc7hha2)
     n.conv_fusion1 = L.Convolution(
-        n.score_concat, num_output=2, kernel_size=1, pad=0,
+        n.score_concat, num_output=4096, kernel_size=1, pad=0,
         param=[dict(lr_mult=4, decay_mult=1), dict(lr_mult=8, decay_mult=0)],
         weight_filler=dict(type='msra'))
+    n.relu_fusion1 = L.ReLU(n.conv_fusion1, in_place=True)
     n.conv_fusion2 = L.Convolution(
         n.conv_fusion1, num_output=2, kernel_size=1, pad=0,
         param=[dict(lr_mult=4, decay_mult=1), dict(lr_mult=8, decay_mult=0)],
         weight_filler=dict(type='msra'))
-    n.loss = L.SoftmaxWithLoss(n.score, n.label,
+    n.upscore_fused = L.Deconvolution(n.conv_fusion2,
+                                convolution_param=dict(num_output=2,
+                                                       kernel_size=64,
+                                                       stride=32,
+                                                       bias_term=False),
+                                param=[dict(lr_mult=0)])
+    n.score_fused = crop(n.upscore_fused, n.color)
+    n.loss = L.SoftmaxWithLoss(n.score_fused, n.label,
                                loss_param=dict(normalize=False))
     return n.to_proto()
 
@@ -252,12 +247,18 @@ def make_net():
     # with open('test_mix.prototxt', 'w') as f:
     #     f.write(str(mixfcn('test', tops)))
 
-    with open('trainval_latemix2.prototxt', 'w') as f:
-        f.write(str(lateMixfcn('train', tops)))
-    with open('val_latemix2.prototxt', 'w') as f:
-        f.write(str(lateMixfcn('val', tops)))
-    with open('test_latemix2.prototxt', 'w') as f:
-        f.write(str(lateMixfcn('test', tops)))
+    # with open('trainval_latemix2.prototxt', 'w') as f:
+    #     f.write(str(lateMixfcn('train', tops)))
+    # with open('val_latemix2.prototxt', 'w') as f:
+    #     f.write(str(lateMixfcn('val', tops)))
+    # with open('test_latemix2.prototxt', 'w') as f:
+    #     f.write(str(lateMixfcn('test', tops)))
 
+    with open('trainval_conv.prototxt', 'w') as f:
+        f.write(str(convFusionfcn('train', tops)))
+    with open('val_conv.prototxt', 'w') as f:
+        f.write(str(convFusionfcn('val', tops)))
+    with open('test_conv.prototxt', 'w') as f:
+        f.write(str(convFusionfcn('test', tops)))
 if __name__ == '__main__':
     make_net()
