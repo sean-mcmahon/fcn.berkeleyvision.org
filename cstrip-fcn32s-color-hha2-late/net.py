@@ -92,6 +92,42 @@ def fcn(split, tops):
                                loss_param=dict(normalize=False))
     return n.to_proto()
 
+def convFusionfcn(split, tops):
+    n = caffe.NetSpec()
+    n.color, n.hha2, n.label = L.Python(module='cs_trip_layers',
+                                        layer='CStripSegDataLayer', ntop=3,
+                                        param_str=str(dict(
+                                            cstrip_dir='/Construction_Site/' +
+                                            'Springfield/12Aug16/K2', split=split,
+                                            tops=tops, seed=1337)))
+    n = modality_fcn(n, 'color', 'color')
+    n = modality_fcn(n, 'hha2', 'hha2')
+    n.upscorecolor = L.Deconvolution(n.score_fr_tripcolor,
+                                convolution_param=dict(num_output=2,
+                                                       kernel_size=64,
+                                                       stride=32,
+                                                       bias_term=False),
+                                param=[dict(lr_mult=0)])
+    n.scorecolor = crop(n.upscore, n.color)
+    n.upscorehha2 = L.Deconvolution(n.score_fr_triphha2,
+                                convolution_param=dict(num_output=2,
+                                                       kernel_size=64,
+                                                       stride=32,
+                                                       bias_term=False),
+                                param=[dict(lr_mult=0)])
+    n.scorehha2 = crop(n.upscore, n.color)
+    n.score_concat = L.Concat(n.scorecolor, n.scorehha2)
+    n.conv_fusion1 = L.Convolution(
+        n.score_concat, num_output=2, kernel_size=1, pad=0,
+        param=[dict(lr_mult=4, decay_mult=1), dict(lr_mult=8, decay_mult=0)],
+        weight_filler=dict(type='msra'))
+    n.conv_fusion2 = L.Convolution(
+        n.conv_fusion1, num_output=2, kernel_size=1, pad=0,
+        param=[dict(lr_mult=4, decay_mult=1), dict(lr_mult=8, decay_mult=0)],
+        weight_filler=dict(type='msra'))
+    n.loss = L.SoftmaxWithLoss(n.score, n.label,
+                               loss_param=dict(normalize=False))
+    return n.to_proto()
 
 def mixfcn(split, tops):
     n = caffe.NetSpec()
