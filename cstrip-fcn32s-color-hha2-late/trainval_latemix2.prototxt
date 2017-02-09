@@ -479,11 +479,11 @@ layer {
   bottom: "fc7color"
   top: "score_fr_tripNEWcolor"
   param {
-    lr_mult: 4
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 8
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -964,11 +964,11 @@ layer {
   bottom: "fc7hha2"
   top: "score_fr_tripNEWhha2"
   param {
-    lr_mult: 4
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 8
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
