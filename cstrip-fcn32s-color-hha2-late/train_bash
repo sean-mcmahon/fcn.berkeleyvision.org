@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #:
-#PBS -N convFus_trian
+#PBS -N lateMix_HighLR
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=8GB
@@ -65,10 +65,10 @@ if [[ -z "$set_mode" ]]; then
 fi
 fusion_type_="$2"
 if [[ -z "$fusion_type_" ]]; then
-  fusion_type_='Conv'
+  fusion_type_='lateMixDCNN'
 fi
 current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/logs/FCNcolorHHA_steptrain_'$fusion_type_'Fusion_'$current_date'.log'
+log_filename=$working_dir'/logs/FCNcolorHHA_steptrain_'$fusion_type_'Fusion_highLR'$current_date'.log'
 
 python $python_script --mode $set_mode --fusion_type=$fusion_type_ 2>&1 | tee $log_filename
 echo $log_filename
