@@ -184,7 +184,7 @@ def seg_loss_tests(solver, dataset, layer='score', gt='label', test_type='val'):
 
 
 def seg_loss(net, iteration, dataset, test_type='training',
-             calc_hist=False, gt='data', layer='score'):
+             calc_hist=False, gt='label', layer='score'):
     print '> Computing Loss'
     loss = 0
     # threshold_hists = []
