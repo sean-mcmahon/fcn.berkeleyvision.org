@@ -13,8 +13,7 @@ def conv_relu(bottom, nout, ks=3, stride=1, pad=1):
 def max_pool(bottom, ks=2, stride=2):
     return L.Pooling(bottom, pool=P.Pooling.MAX, kernel_size=ks, stride=stride)
 
-
-def modality_fcn(net_spec, data, modality):
+def base_modality_fcn(net_spec, data, modality):
     n = net_spec
     # the base net
     n['conv1_1' + modality], n['relu1_1' + modality] = conv_relu(n[data], 64,
@@ -62,24 +61,42 @@ def modality_fcn(net_spec, data, modality):
         n['drop6' + modality], 4096, ks=1, pad=0)
     n['drop7' + modality] = L.Dropout(
         n['relu7' + modality], dropout_ratio=0.5, in_place=True)
+    return n
+
+def modality_fcn(net_spec, data, modality):
+    n = net_spec
+    n = base_modality_fcn(n, data, modality)
     n['score_fr_trip' + modality] = L.Convolution(
         n['drop7' + modality], num_output=2, kernel_size=1, pad=0,
         param=[dict(lr_mult=1, decay_mult=1), dict(lr_mult=2, decay_mult=0)],
         weight_filler=dict(type='msra'))
     return n
 
+def modality_fcn_newfr(net_spec, data, modality):
+    n = net_spec
+    n = base_modality_fcn(n, data, modality)
+    n['score_fr_tripNEW' + modality] = L.Convolution(
+        n['drop7' + modality], num_output=2, kernel_size=1, pad=0,
+        param=[dict(lr_mult=4, decay_mult=1), dict(lr_mult=8, decay_mult=0)],
+        weight_filler=dict(type='msra'))
+    return n
+
+def modality_fcn_Nofr(net_spec, data, modality):
+    n = net_spec
+    n = base_modality_fcn(n, data, modality)
+    return n
 
 def fcn(split, tops):
     n = caffe.NetSpec()
-    n.color, n.hha2, n.label = L.Python(module='cs_trip_layers',
+    n.color, n.depth, n.label = L.Python(module='cs_trip_layers',
                                         layer='CStripSegDataLayer', ntop=3,
                                         param_str=str(dict(
                                             cstrip_dir='/Construction_Site/' +
                                             'Springfield/12Aug16/K2', split=split,
                                             tops=tops, seed=1337)))
     n = modality_fcn(n, 'color', 'color')
-    n = modality_fcn(n, 'hha2', 'hha2')
-    n.score_fused = L.Eltwise(n.score_fr_tripcolor, n.score_fr_triphha2,
+    n = modality_fcn(n, 'depth', 'depth')
+    n.score_fused = L.Eltwise(n.score_fr_tripcolor, n.score_fr_tripdepth,
                               operation=P.Eltwise.SUM, coeff=[0.5, 0.5])
     n.upscore = L.Deconvolution(n.score_fused,
                                 convolution_param=dict(num_output=2,
@@ -94,19 +111,19 @@ def fcn(split, tops):
 
 def convFusionfcn(split, tops):
     n = caffe.NetSpec()
-    n.color, n.hha2, n.label = L.Python(module='cs_trip_layers',
+    n.color, n.depth, n.label = L.Python(module='cs_trip_layers',
                                         layer='CStripSegDataLayer', ntop=3,
                                         param_str=str(dict(
                                             cstrip_dir='/Construction_Site/' +
                                             'Springfield/12Aug16/K2', split=split,
                                             tops=tops, seed=1337)))
-    n = modality_fcn(n, 'color', 'color')
-    n = modality_fcn(n, 'hha2', 'hha2')
+    n = modality_fcn_Nofr(n, 'color', 'color')
+    n = modality_fcn_Nofr(n, 'depth', 'depth')
 
-    n.score_concat = L.Concat(n.fc7color, n.fc7hha2)
+    n.score_concat = L.Concat(n.fc7color, n.fc7depth)
     n.conv_fusion1 = L.Convolution(
         n.score_concat, num_output=4096, kernel_size=1, pad=0,
-        param=[dict(lr_mult=4, decay_mult=1), dict(lr_mult=8, decay_mult=0)],
+        param=[dict(lr_mult=5, decay_mult=1), dict(lr_mult=10, decay_mult=0)],
         weight_filler=dict(type='msra'))
     n.relu_fusion1 = L.ReLU(n.conv_fusion1, in_place=True)
     n.conv_fusion2 = L.Convolution(
@@ -126,14 +143,14 @@ def convFusionfcn(split, tops):
 
 def mixfcn(split, tops):
     n = caffe.NetSpec()
-    n.color, n.hha2, n.label = L.Python(module='cs_trip_layers',
+    n.color, n.depth, n.label = L.Python(module='cs_trip_layers',
                                         layer='CStripSegDataLayer', ntop=3,
                                         param_str=str(dict(
                                             cstrip_dir='/Construction_Site/' +
                                             'Springfield/12Aug16/K2', split=split,
                                             tops=tops, seed=1337)))
     n = modality_fcn(n, 'color', 'color')
-    n = modality_fcn(n, 'hha2', 'hha2')
+    n = modality_fcn(n, 'depth', 'depth')
     # find max trip or non trip confidences, cannot use Argmax (no backprop)
     # using eltwise max with split instead
     n.score_colora, n.score_colorb = L.Slice(
@@ -141,11 +158,11 @@ def mixfcn(split, tops):
     n.maxcolor = L.Eltwise(n.score_colora, n.score_colorb,
                            operation=P.Eltwise.MAX)
     n.score_HHA2a, n.score_HHA2b = L.Slice(
-        n.score_fr_triphha2, ntop=2,  slice_param=dict(axis=1))
-    n.maxhha2 = L.Eltwise(n.score_HHA2a, n.score_HHA2b,
+        n.score_fr_tripdepth, ntop=2,  slice_param=dict(axis=1))
+    n.maxdepth = L.Eltwise(n.score_HHA2a, n.score_HHA2b,
                           operation=P.Eltwise.MAX)
     # concatinate together and softmax for 'probabilites'
-    n.maxConcat = L.Concat(n.maxcolor, n.maxhha2, concat_param=dict(axis=1))
+    n.maxConcat = L.Concat(n.maxcolor, n.maxdepth, concat_param=dict(axis=1))
     n.maxSoft = L.Softmax(n.maxConcat)
     # separate color and hha using slice layer
     n.probColor, n.probHHA2 = L.Slice(
@@ -156,7 +173,7 @@ def mixfcn(split, tops):
     # multiply the 'probabilies' with the color and hha scores
     n.weightedColor = L.Eltwise(n.score_fr_tripcolor, n.repProbColor,
                                 operation=P.Eltwise.PROD)
-    n.weightedHHA2 = L.Eltwise(n.score_fr_triphha2, n.repProbHHA2,
+    n.weightedHHA2 = L.Eltwise(n.score_fr_tripdepth, n.repProbHHA2,
                                operation=P.Eltwise.PROD)
     # combine the prob scores with eltwise summation
     n.score_fused = L.Eltwise(n.weightedColor, n.weightedHHA2,
@@ -175,14 +192,14 @@ def mixfcn(split, tops):
 
 def lateMixfcn(split, tops):
     n = caffe.NetSpec()
-    n.color, n.hha2, n.label = L.Python(module='cs_trip_layers',
+    n.color, n.depth, n.label = L.Python(module='cs_trip_layers',
                                         layer='CStripSegDataLayer', ntop=3,
                                         param_str=str(dict(
                                             cstrip_dir='/Construction_Site/' +
                                             'Springfield/12Aug16/K2', split=split,
                                             tops=tops, seed=1337)))
-    n = modality_fcn(n, 'color', 'color')
-    n = modality_fcn(n, 'hha2', 'hha2')
+    n = modality_fcn_newfr(n, 'color', 'color')
+    n = modality_fcn_newfr(n, 'depth', 'depth')
 
     n.upscore_color = L.Deconvolution(n.score_fr_tripNEWcolor,
                                       convolution_param=dict(num_output=2,
@@ -191,13 +208,13 @@ def lateMixfcn(split, tops):
                                                              bias_term=False),
                                       param=[dict(lr_mult=0)])
     n.score_color = crop(n.upscore_color, n.color)
-    n.upscore_hha2 = L.Deconvolution(n.score_fr_tripNEWhha2,
+    n.upscore_depth = L.Deconvolution(n.score_fr_tripNEWdepth,
                                      convolution_param=dict(num_output=2,
                                                             kernel_size=64,
                                                             stride=32,
                                                             bias_term=False),
                                      param=[dict(lr_mult=0)])
-    n.score_hha2 = crop(n.upscore_hha2, n.hha2)
+    n.score_depth = crop(n.upscore_depth, n.depth)
 
     # find max trip or non trip confidences, cannot use Argmax (no backprop)
     # using eltwise max with split instead
@@ -206,11 +223,11 @@ def lateMixfcn(split, tops):
     n.maxcolor = L.Eltwise(n.score_colora, n.score_colorb,
                            operation=P.Eltwise.MAX)
     n.score_HHA2a, n.score_HHA2b = L.Slice(
-        n.score_hha2, ntop=2,  slice_param=dict(axis=1))
-    n.maxhha2 = L.Eltwise(n.score_HHA2a, n.score_HHA2b,
+        n.score_depth, ntop=2,  slice_param=dict(axis=1))
+    n.maxdepth = L.Eltwise(n.score_HHA2a, n.score_HHA2b,
                           operation=P.Eltwise.MAX)
     # concatinate together and softmax for 'probabilites'
-    n.maxConcat = L.Concat(n.maxcolor, n.maxhha2, concat_param=dict(axis=1))
+    n.maxConcat = L.Concat(n.maxcolor, n.maxdepth, concat_param=dict(axis=1))
     n.maxSoft = L.Softmax(n.maxConcat)
     # separate color and hha using slice layer
     n.probColor, n.probHHA2 = L.Slice(
@@ -221,7 +238,7 @@ def lateMixfcn(split, tops):
     # multiply the 'probabilies' with the color and hha scores
     n.weightedColor = L.Eltwise(n.score_color, n.repProbColor,
                                 operation=P.Eltwise.PROD)
-    n.weightedHHA2 = L.Eltwise(n.score_hha2, n.repProbHHA2,
+    n.weightedHHA2 = L.Eltwise(n.score_depth, n.repProbHHA2,
                                operation=P.Eltwise.PROD)
     # combine the prob scores with eltwise summation
     n.score_fused = L.Eltwise(n.weightedColor, n.weightedHHA2,
@@ -232,14 +249,14 @@ def lateMixfcn(split, tops):
 
 
 def make_net():
-    tops = ['color', 'hha2', 'label']
-    # with open('trainval.prototxt', 'w') as f:
-    #     f.write(str(fcn('train', tops)))
-    # with open('val.prototxt', 'w') as f:
-    #     f.write(str(fcn('val', tops)))
-    # with open('test.prototxt', 'w') as f:
-    #     f.write(str(fcn('test', tops)))
-    #
+    tops = ['color', 'depth', 'label']
+    with open('trainval_sum.prototxt', 'w') as f:
+        f.write(str(fcn('train', tops)))
+    with open('val_sum.prototxt', 'w') as f:
+        f.write(str(fcn('val', tops)))
+    with open('test_sum.prototxt', 'w') as f:
+        f.write(str(fcn('test', tops)))
+
     # with open('trainval_mix.prototxt', 'w') as f:
     #     f.write(str(mixfcn('train', tops)))
     # with open('val_mix.prototxt', 'w') as f:
@@ -247,12 +264,12 @@ def make_net():
     # with open('test_mix.prototxt', 'w') as f:
     #     f.write(str(mixfcn('test', tops)))
 
-    # with open('trainval_latemix2.prototxt', 'w') as f:
-    #     f.write(str(lateMixfcn('train', tops)))
-    # with open('val_latemix2.prototxt', 'w') as f:
-    #     f.write(str(lateMixfcn('val', tops)))
-    # with open('test_latemix2.prototxt', 'w') as f:
-    #     f.write(str(lateMixfcn('test', tops)))
+    with open('trainval_latemix2.prototxt', 'w') as f:
+        f.write(str(lateMixfcn('train', tops)))
+    with open('val_latemix2.prototxt', 'w') as f:
+        f.write(str(lateMixfcn('val', tops)))
+    with open('test_latemix2.prototxt', 'w') as f:
+        f.write(str(lateMixfcn('test', tops)))
 
     with open('trainval_conv.prototxt', 'w') as f:
         f.write(str(convFusionfcn('train', tops)))
