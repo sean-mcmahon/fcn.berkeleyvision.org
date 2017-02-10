@@ -96,7 +96,7 @@ elif fusion_type == 'latemixDCNN' or fusion_type == 'latemixdcnn'  \
     print '------\n Loading lateMixDCNN fusion approach \n------'
     solver = caffe.SGDSolver(file_location + '/solver_latemix.prototxt')
 elif fusion_type == 'conv' or fusion_type == 'Conv'  \
-    or fusion_type == 'ConvFusion' or fusion_type == 'convFusion':
+        or fusion_type == 'ConvFusion' or fusion_type == 'convFusion':
     score_layer = 'score_fused'
     print '------\n Loading convolutional layer fusion approach \n------'
     solver = caffe.SGDSolver(file_location + '/solver_conv.prototxt')
@@ -121,7 +121,9 @@ surgery.interp(solver.net, interp_layers)
 val = np.loadtxt(
     file_location[:file_location.rfind('/')] + '/data/cs-trip/val.txt',
     dtype=str)
-
+# train = np.loadtxt(
+#     file_location[:file_location.rfind('/')] + '/data/cs-trip/train.txt',
+#     dtype=str)
 score.seg_loss_tests(solver, val, layer=score_layer)
 
 for _ in range(25):
@@ -129,5 +131,9 @@ for _ in range(25):
     print 'Running solver.step iter {}'.format(_)
     print '------------------------------'
     solver.step(250)
+    # test on validation
     score.seg_loss_tests(solver, val, layer=score_layer)
+    # test on training set
+    # score.seg_loss(solver.net, solver.iter, train, test_type='training',
+    #                calc_hist=True, layer=score_layer)
 print '\n(python) color-hha2 fusion, fusion_type', fusion_type
