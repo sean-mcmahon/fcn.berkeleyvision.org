@@ -949,11 +949,11 @@ layer {
   bottom: "score_concat"
   top: "conv_fusion1"
   param {
-    lr_mult: 4
+    lr_mult: 5
     decay_mult: 1
   }
   param {
-    lr_mult: 8
+    lr_mult: 10
     decay_mult: 0
   }
   convolution_param {
