@@ -66,62 +66,62 @@ def parse_log(log_file):
     loss_iterations = np.array(loss_iterations)
     losses = np.array(losses)
 
-    training_loss_pattern = r"Iteration (?P<iter_num>\d+) val set loss = (?P<loss_val>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
-    t_losses = []
-    t_loss_iterations = []
+    val_loss_pattern = r"Iteration (?P<iter_num>\d+) val set loss = (?P<loss_val>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
+    val_losses = []
+    val_loss_iterations = []
 
-    for r in re.findall(training_loss_pattern, log):
-        t_loss_iterations.append(int(r[0]))
-        t_losses.append(float(r[1]))
+    for r in re.findall(val_loss_pattern, log):
+        val_loss_iterations.append(int(r[0]))
+        val_losses.append(float(r[1]))
 
-    t_loss_iterations = np.array(t_loss_iterations)
-    t_losses = np.array(t_losses)
+    val_loss_iterations = np.array(val_loss_iterations)
+    val_losses = np.array(val_losses)
     print 'Number of train loss iter {}, Number of train losses {}'.format(
-        np.shape(t_loss_iterations), np.shape(t_losses))
+        np.shape(val_loss_iterations), np.shape(val_losses))
 
     # accuracy_pattern = r"Iteration (?P<iter_num>\d+), Testing net \(#0\)\n.*
     # accuracy = (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
-    accuracy_pattern = r"Iteration (?P<iter_num>\d+) val trip accuracy (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
-    accuracies = []
+    val_acc_pattern = r"Iteration (?P<iter_num>\d+) val trip accuracy (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
+    val_acc = []
     accuracy_iterations = []
-    accuracies_iteration_checkpoints_ind = []
+    val_acc_iteration_checkpoints_ind = []
 
-    for r in re.findall(accuracy_pattern, log):
+    for r in re.findall(val_acc_pattern, log):
         iteration = int(r[0])
         accuracy = float(r[1]) * 100
 
         if iteration % 10000 == 0 and iteration > 0:
-            accuracies_iteration_checkpoints_ind.append(
+            val_acc_iteration_checkpoints_ind.append(
                 len(accuracy_iterations))
 
         accuracy_iterations.append(iteration)
-        accuracies.append(accuracy)
+        val_acc.append(accuracy)
 
     accuracy_iterations = np.array(accuracy_iterations)
-    accuracies = np.array(accuracies)
+    val_acc = np.array(val_acc)
 
-    return loss_iterations, losses, accuracy_iterations, accuracies, accuracies_iteration_checkpoints_ind, t_loss_iterations, t_losses
+    return loss_iterations, losses, accuracy_iterations, val_acc, val_acc_iteration_checkpoints_ind, val_loss_iterations, val_losses
 
 
-def disp_results(fig, ax1, ax2, loss_iterations, losses, accuracy_iterations,
-                 accuracies, accuracies_iteration_checkpoints_ind, t_loss_iterations,
+def disp_results(fig, ax1, ax2, loss_iterations, losses, val_acc_iterations,
+                 val_accuracies, val_acc_iteration_checkpoints_ind, val_loss_iterations,
                  t_losses, color_ind=0):
     modula = len(plt.rcParams['axes.color_cycle'])
-    val_l_h, = ax1.plot(loss_iterations, losses, color=plt.rcParams[
+    train_l_h, = ax1.plot(loss_iterations, losses, color=plt.rcParams[
         'axes.color_cycle'][(color_ind * 2 + 0) % modula], linestyle='-',
         label='val loss')
-    train_l_h, = ax1.plot(t_loss_iterations, t_losses, color=plt.rcParams[
+    val_l_h, = ax1.plot(val_loss_iterations, t_losses, color=plt.rcParams[
         'axes.color_cycle'][(color_ind * 2 + 2) % modula], linestyle='--',
         label='training loss')
 
-    val_a_h, = ax2.plot(accuracy_iterations, accuracies, plt.rcParams[
+    val_a_h, = ax2.plot(val_acc_iterations, val_accuracies, plt.rcParams[
         'axes.color_cycle'][(color_ind * 2 + 1) % modula],
         label='val accuracy')
-    ax2.plot(accuracy_iterations[accuracies_iteration_checkpoints_ind], accuracies[
-             accuracies_iteration_checkpoints_ind], 'o',
+    ax2.plot(val_acc_iterations[val_acc_iteration_checkpoints_ind], val_accuracies[
+             val_acc_iteration_checkpoints_ind], 'o',
              color=plt.rcParams['axes.color_cycle'][(color_ind * 2 + 1) % modula])
     if color_ind == 0:
-        fig.legend((val_l_h, train_l_h, val_a_h), ('Train loss',
+        fig.legend((train_l_h, val_l_h, val_a_h), ('Train loss',
                                                    'Val Loss',
                                                    'Val Trip Acc'),
                    loc='upper right')
