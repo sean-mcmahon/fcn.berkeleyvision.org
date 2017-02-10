@@ -26,12 +26,15 @@ def main(files):
     print type(files), 'shape ', np.shape(files)
     print files
     for i, log_file in enumerate(files):
-        loss_iterations, losses, accuracy_iterations, accuracies, \
-            accuracies_iteration_checkpoints_ind, t_loss_iterations, \
-            t_losses = parse_log(log_file)
-        disp_results(fig, ax1, ax2, loss_iterations, losses, accuracy_iterations,
-                     accuracies, accuracies_iteration_checkpoints_ind,
-                     t_loss_iterations, t_losses, color_ind=i)
+        loss_iterations, losses, val_acc_iterations, val_accuracies, \
+            val_acc_iteration_checkpoints_ind, val_loss_iterations, val_losses,  \
+            train_acc_iterations, train_acc, train_acc_iteration_checkpoints_ind = parse_log(
+                log_file)
+        disp_results(fig, ax1, ax2, loss_iterations, losses, val_acc_iterations,
+                     val_accuracies, val_acc_iteration_checkpoints_ind,
+                     val_loss_iterations, val_losses,
+                     train_acc_iterations, train_acc,
+                     train_acc_iteration_checkpoints_ind, color_ind=i)
     if len(files) == 1:
         log_name = os.path.splitext(os.path.basename(files[0]))[0]
         save_dir = os.path.dirname(files[0])
@@ -83,7 +86,7 @@ def parse_log(log_file):
     # accuracy = (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
     val_acc_pattern = r"Iteration (?P<iter_num>\d+) val trip accuracy (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
     val_acc = []
-    accuracy_iterations = []
+    val_acc_iterations = []
     val_acc_iteration_checkpoints_ind = []
 
     for r in re.findall(val_acc_pattern, log):
@@ -92,20 +95,43 @@ def parse_log(log_file):
 
         if iteration % 10000 == 0 and iteration > 0:
             val_acc_iteration_checkpoints_ind.append(
-                len(accuracy_iterations))
+                len(val_acc_iterations))
 
-        accuracy_iterations.append(iteration)
+        val_acc_iterations.append(iteration)
         val_acc.append(accuracy)
 
-    accuracy_iterations = np.array(accuracy_iterations)
+    val_acc_iterations = np.array(val_acc_iterations)
     val_acc = np.array(val_acc)
 
-    return loss_iterations, losses, accuracy_iterations, val_acc, val_acc_iteration_checkpoints_ind, val_loss_iterations, val_losses
+    train_acc_pattern = r"Iteration (?P<iter_num>\d+) training trip accuracy (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
+    train_acc = []
+    train_acc_iterations = []
+    train_acc_iteration_checkpoints_ind = []
+
+    for r in re.findall(train_acc_pattern, log):
+        iteration = int(r[0])
+        accuracy = float(r[1]) * 100
+
+        if iteration % 10000 == 0 and iteration > 0:
+            train_acc_iteration_checkpoints_ind.append(
+                len(train_acc_iterations))
+
+        train_acc_iterations.append(iteration)
+        train_acc.append(accuracy)
+
+    train_acc_iterations = np.array(train_acc_iterations)
+    train_acc = np.array(train_acc)
+
+    return loss_iterations, losses, val_acc_iterations, val_acc, val_acc_iteration_checkpoints_ind,  \
+        val_loss_iterations, val_losses,  \
+        train_acc_iterations, train_acc, train_acc_iteration_checkpoints_ind
 
 
 def disp_results(fig, ax1, ax2, loss_iterations, losses, val_acc_iterations,
                  val_accuracies, val_acc_iteration_checkpoints_ind, val_loss_iterations,
-                 t_losses, color_ind=0):
+                 t_losses,
+                 train_acc_iterations, train_acc, train_acc_iteration_checkpoints_ind,
+                 color_ind=0):
     modula = len(plt.rcParams['axes.color_cycle'])
     train_l_h, = ax1.plot(loss_iterations, losses, color=plt.rcParams[
         'axes.color_cycle'][(color_ind * 2 + 0) % modula], linestyle='-',
@@ -120,10 +146,19 @@ def disp_results(fig, ax1, ax2, loss_iterations, losses, val_acc_iterations,
     ax2.plot(val_acc_iterations[val_acc_iteration_checkpoints_ind], val_accuracies[
              val_acc_iteration_checkpoints_ind], 'o',
              color=plt.rcParams['axes.color_cycle'][(color_ind * 2 + 1) % modula])
+
+    train_a_h, = ax2.plot(train_acc_iterations, train_acc, plt.rcParams[
+        'axes.color_cycle'][(color_ind * 2 + 1) % modula],linestyle=':',
+        label='val accuracy')
+    ax2.plot(train_acc_iterations[train_acc_iteration_checkpoints_ind], train_acc[
+             train_acc_iteration_checkpoints_ind], 'o',
+             color=plt.rcParams['axes.color_cycle'][(color_ind * 2 + 3) % modula])
     if color_ind == 0:
-        fig.legend((train_l_h, val_l_h, val_a_h), ('Train loss',
-                                                   'Val Loss',
-                                                   'Val Trip Acc'),
+        fig.legend((train_l_h, val_l_h,
+                    val_a_h, train_a_h), ('Train loss',
+                                          'Val Loss',
+                                          'Val Trip Acc',
+                                          'Train Trip Acc'),
                    loc='upper right')
     # else:
     #     fig.legend((train_l_h), ('Train Loss'), loc='upper right')
