@@ -84,14 +84,14 @@ depth_proto = file_parent_dir + '/cstrip-fcn32s-depth/test.prototxt'
 if fusion_type == 'sum' or fusion_type == 'Sum' or fusion_type == 'SUM':
     print '------\n Loading sum fusion approach \n------'
     score_layer = 'score'
-    solver = caffe.SGDSolver(file_location + '/solver.prototxt')
+    solver = caffe.SGDSolver(file_location + '/solver_sum.prototxt')
 elif fusion_type == 'mixDCNN' or fusion_type == 'mixdcnn':
     print '------\n Loading mixDCNN fusion approach \n------'
     score_layer = 'score'
     solver = caffe.SGDSolver(file_location + '/solver_mix.prototxt')
-elif fusion_type == 'latemixDCNN' or fusion_type == 'latemixdcnn'  \
-        or fusion_type == 'lateMixDCNN' or fusion_type == 'latemix'  \
-        or fusion_type == 'lateMix':
+elif fusion_type == 'latemixDCNN2' or fusion_type == 'latemixdcnn2'  \
+        or fusion_type == 'lateMixDCNN2' or fusion_type == 'latemix2'  \
+        or fusion_type == 'latemix2':
     score_layer = 'score_fused'
     print '------\n Loading lateMixDCNN fusion approach \n------'
     solver = caffe.SGDSolver(file_location + '/solver_latemix.prototxt')

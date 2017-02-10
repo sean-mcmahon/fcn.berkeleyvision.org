@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #:
-#PBS -N rgbd_conv_step3
+#PBS -N rgbd_Conv_step
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=8GB
@@ -65,7 +65,7 @@ if [[ -z "$set_mode" ]]; then
 fi
 fusion_type_="$2"
 if [[ -z "$fusion_type_" ]]; then
-  fusion_type_='Conv'
+  fusion_type_='ConvFusion'
 fi
 current_date=`date +%Y-%m-%d_%H-%M-%S`
 log_filename=$working_dir'/logs/FCNcolorD_steptrain_'$fusion_type_'Fusion_'$current_date'.log'

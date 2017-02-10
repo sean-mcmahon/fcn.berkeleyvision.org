@@ -18,7 +18,7 @@ momentum: 0.99
 max_iter: 5000
 weight_decay: 0.0005
 snapshot: 250
-snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-d-late/colourDLatesnapshot/conv_fusion/Conv_steptrain"
+snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-d-late/colourDLatesnapshot/Conv_steptrain"
 test_initialization: false
 #type: "Adam"
 ## default caffe adam params
