@@ -49,7 +49,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--mode', default='GPU')
 parser.add_argument('--fusion_type', default='mixDCNN')
 args = parser.parse_args()
-print 'This is the colour-HHA2 summation solver!'
+print 'This is the colour-Depth summation solver!'
 fusion_type = args.fusion_type
 
 # import support functions
@@ -78,9 +78,9 @@ import score
 color_weights = file_parent_dir + \
     '/cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel'
 color_proto = file_parent_dir + '/cstrip-fcn32s-color/test.prototxt'
-hha2_weights = file_parent_dir + \
-    '/cstrip-fcn32s-hha2/HHA2snapshot/secondTrain_lowerLR_iter_2000.caffemodel'
-hha2_proto = file_parent_dir + '/cstrip-fcn32s-hha2/test.prototxt'
+depth_weights = file_parent_dir + \
+    '/cstrip-fcn32s-depth/DepthSnapshot/stepLR2_lowerLR_neg1N_Msub_iter_6000.caffemodel'
+depth_proto = file_parent_dir + '/cstrip-fcn32s-depth/test.prototxt'
 if fusion_type == 'sum' or fusion_type == 'Sum' or fusion_type == 'SUM':
     print '------\n Loading sum fusion approach \n------'
     score_layer = 'score'
@@ -101,7 +101,7 @@ elif fusion_type == 'conv' or fusion_type == 'Conv'  \
     print '------\n Loading convolutional layer fusion approach \n------'
     solver = caffe.SGDSolver(file_location + '/solver_conv.prototxt')
 else:
-    print 'unrecognised or no fusion approach specified,'
+    print 'unrecognised or no fusion approach specified: {}'.format(fusion_type)
     raise
 
 # surgeries
@@ -109,9 +109,9 @@ color_net = caffe.Net(color_proto, color_weights, caffe.TEST)
 surgery.transplant(solver.net, color_net, suffix='color')
 del color_net
 
-hha2_net = caffe.Net(hha2_proto, hha2_weights, caffe.TEST)
-surgery.transplant(solver.net, hha2_net, suffix='hha2')
-del hha2_net
+depth_net = caffe.Net(depth_proto, depth_weights, caffe.TEST)
+surgery.transplant(solver.net, depth_net, suffix='depth')
+del depth_net
 
 interp_layers = [k for k in solver.net.params.keys() if 'up' in k]
 print 'performing surgery on {}'.format(interp_layers)
@@ -136,4 +136,4 @@ for _ in range(25):
     # test on training set
     # score.seg_loss(solver.net, solver.iter, train, test_type='training',
     #                calc_hist=True, layer=score_layer)
-print '\n(python) color-hha2 fusion, fusion_type', fusion_type
+print '\n(python) color-depth fusion, fusion_type', fusion_type

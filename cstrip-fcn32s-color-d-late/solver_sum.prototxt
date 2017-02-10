@@ -1,5 +1,5 @@
-train_net: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha2-late/trainval.prototxt"
-test_net: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha2-late/val.prototxt"
+train_net: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-d-late/trainval.prototxt"
+test_net: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-d-late/val.prototxt"
 test_iter: 654
 # make test net, but don't invoke it from the solver itself
 test_interval: 999999999
@@ -17,7 +17,7 @@ momentum: 0.99
 max_iter: 5000
 weight_decay: 0.0005
 snapshot: 250
-snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha2-late/colourHHA2snapshot/sum_steptrain2"
+snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-d-late/colourDLatesnapshot/sum_steptrain"
 test_initialization: false
 #type: "Adam"
 ## default caffe adam params

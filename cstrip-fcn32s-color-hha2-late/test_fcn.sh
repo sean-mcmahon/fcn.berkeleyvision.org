@@ -71,11 +71,11 @@ if [[ -z "$split" ]]; then
 fi
 snapshot_iter="$3"
 if [[ -z "$snapshot_iter" ]]; then
-  snapshot_iter='1000'
+  snapshot_iter='1250'
 fi
 snapshot_filter_="$4"
 if [[ -z "$snapshot_filter_" ]]; then
-  snapshot_filter_='Conv_steptrain2'
+  snapshot_filter_='Conv_steptrain3'
 fi
 network_dir="$5"
 if [[ -z "$network_dir" ]]; then

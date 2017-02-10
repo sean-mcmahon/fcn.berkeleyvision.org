@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #:
-#PBS -N conv_step3
+#PBS -N rgbd_conv_step3
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=8GB
@@ -48,10 +48,10 @@ fi
 hpc_dir='/home/n8307628'
 local_dir='/home/sean'
 if [[ -d $local_dir ]]; then
-  working_dir=$local_dir'/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha2-late'
+  working_dir=$local_dir'/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-d-late'
   python_script=$working_dir'/solve.py'
 elif [[ -d $hpc_dir ]]; then
-  working_dir=$hpc_dir'/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-hha2-late'
+  working_dir=$hpc_dir'/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-d-late'
   python_script=$working_dir'/solve.py'
   # Because using MKL Blas on HPC
   export MKL_CBWR=AUTO
@@ -68,7 +68,7 @@ if [[ -z "$fusion_type_" ]]; then
   fusion_type_='Conv'
 fi
 current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/logs/FCNcolorHHA_steptrain3_'$fusion_type_'Fusion_'$current_date'.log'
+log_filename=$working_dir'/logs/FCNcolorD_steptrain_'$fusion_type_'Fusion_'$current_date'.log'
 
 python $python_script --mode $set_mode --fusion_type=$fusion_type_ 2>&1 | tee $log_filename
 echo $log_filename

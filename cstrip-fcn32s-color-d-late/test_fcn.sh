@@ -79,11 +79,11 @@ if [[ -z "$snapshot_filter_" ]]; then
 fi
 network_dir="$5"
 if [[ -z "$network_dir" ]]; then
-  network_dir='cstrip-fcn32s-color-hha2-late'
+  network_dir='cstrip-fcn32s-color-d-late'
 fi
 
 # current_date=`date +%Y-%m-%d_%H-%M-%S`
 log_filename=$working_dir'/'$network_dir'/logs/'$split'_dataset_snapshot_'$snapshot_filter_'_'$snapshot_iter'_results.log'
 
 python $python_script --mode $set_mode --test_type $split --iteration $snapshot_iter --snapshot_filter $snapshot_filter_ --network_dir $network_dir 2>&1 | tee $log_filename
-echo 'network: color-hha-early '$snapshot_filter_
+echo 'network: color-d-late '$snapshot_filter_
