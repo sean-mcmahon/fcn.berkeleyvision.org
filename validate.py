@@ -103,6 +103,8 @@ elif args.test_type == 'testConv' or args.test_type == 'convtest' \
                                           network_dir,
                                           'solver_test_conv.prototxt'))
     test_set = np.loadtxt(file_location + '/data/cs-trip/test.txt', dtype=str)
+    weights = os.path.join(snapshot_dir[0], 'conv_fusion', snapshot_filter +
+                           '_iter_' + str(iteration) + '.caffemodel')
     score_layer = 'score_fused'
 elif args.test_type == 'train':
     solver = caffe.SGDSolver(file_location + '/' +
@@ -125,9 +127,14 @@ print '-- network (colorDepth) weights used: {}'.format(weight_name)
 print 'For more details on taining view log file(s):'
 match_found = False
 for filename in logFilenames:
-    if weight_name in open(filename).read():
-        print os.path.basename(filename)
-        match_found = True
+    try:
+        if weight_name in open(filename).read():
+            print os.path.basename(filename)
+            match_found = True
+    except IOError:
+        print 'Could not read {}, assuming no match found'.format(
+            os.path.basename(filename))
+        match_found = False
 if not match_found:
     print 'Error, no logfile found for {}'.format(weight_name)
 
