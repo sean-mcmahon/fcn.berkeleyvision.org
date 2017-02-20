@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #:
-#PBS -N val_late_rgbhha2
+#PBS -N val_late_rgbd
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=4GB
@@ -67,15 +67,15 @@ if [[ -z "$set_mode" ]]; then
 fi
 split="$2"
 if [[ -z "$split" ]]; then
-  split='testConv'
+  split='testLateMix2'
 fi
 snapshot_iter="$3"
 if [[ -z "$snapshot_iter" ]]; then
-  snapshot_iter='1000'
+  snapshot_iter='1250'
 fi
 snapshot_filter_="$4"
 if [[ -z "$snapshot_filter_" ]]; then
-  snapshot_filter_='Conv_steptrain2'
+  snapshot_filter_='lateMix2_steptrain'
 fi
 network_dir="$5"
 if [[ -z "$network_dir" ]]; then
