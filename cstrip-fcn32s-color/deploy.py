@@ -1,12 +1,14 @@
 
 # This import might casuse trouble, my network requires a custom version
 # of caffe
+import sys
 import numpy as np
 from PIL import Image
 import os
 import glob
 import imp
 import time
+import scipy
 try:
     import cv2
 except:
@@ -18,12 +20,16 @@ home_dir = os.path.expanduser("~")
 if 'n8307628' in home_dir:
     caffe_root = os.path.join(home_dir, 'Fully-Conv-Network/Resources/caffe')
     base_dir = '/home/n8307628/'
+    sys.path.append(os.path.join(base_dir, 'Dropbox/Uni/Code/FCN_models'))
 elif 'sean' in home_dir:
     caffe_root = os.path.join(home_dir, 'src/caffe')
     base_dir = '/home/sean/hpc-home/'
+    sys.path.append(os.path.join(base_dir,
+                                 'Fully-Conv-Network/Resources/FCN_models'))
 else:
     print 'unknown directory'
     raise
+from score import fast_hist, compute_flagMetric
 print 'loading caffe from ', caffe_root
 filename, path, desc = imp.find_module('caffe', [caffe_root + '/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
@@ -43,6 +49,10 @@ def prepImage(img):
     n_img = n_img.transpose((2, 0, 1))
 
     return n_img
+
+
+def load_label(label_name):
+    return scipy.io.loadmat(label_name)['binary_labels'].astype(np.uint8)
 
 
 def deploy(net, data, visualise=True, image_name='overlay_image'):
@@ -91,39 +101,42 @@ def deploy(net, data, visualise=True, image_name='overlay_image'):
     return net
 
 if __name__ == '__main__':
-    phase = 'test'
     file_location = os.path.realpath(
         os.path.join(os.getcwd(), os.path.dirname(__file__)))
     # load image
     test_dir = os.path.join(
-        base_dir, 'Construction_Site/Springfield/12Aug16/K2/2016-08-12-10-09-26_groundfloorCarPark/labelled_colour/')
-    img_names = glob.glob(os.path.join(test_dir, '*.png'))
+        base_dir, 'Construction_Site/Springfield/12Aug16/K2/2016-08-12-10-09-26_groundfloorCarPark/')
+    img_names = glob.glob(os.path.join(
+        test_dir, 'labelled_colour', '*.png')).sort()
+    label_names = glob.glob(os.path.join(test_dir, 'labels', '*.mat')).sort()
     # initialise network
     arch = os.path.join(file_location, 'deploy_col.prototxt')
     weights = os.path.join(
         base_dir, 'Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/_iter_6000.caffemodel')
     caffe.set_mode_gpu()
-    if phase == 'test':
-        net = caffe.Net(arch, weights, caffe.TEST)
-    elif phase == 'train':
-        net = caffe.Net(arch, weights, caffe.TRAIN)
-    else:
-        print 'incorrect phase given quitting'
-        raise
+    test_net = caffe.Net(arch, weights, caffe.TEST)
+    train_net = caffe.Net(arch, weights, caffe.TRAIN)
+
     num_images = len(img_names)
-    for count, name in enumerate(img_names):
-        image = Image.open(name)
-        # print 'loaded image ', os.path.basename(name), ' has shape ', np.shape(image)
+    train_hist = np.zeros((2, 2))
+    test_hist = np.zeros((2, 2))
+    for count, (img_name, label_name) in enumerate(zip(img_names, label_names)):
+        image = Image.open(img_name)
+        label = load_label(label_name)
+        # print 'loaded image ', os.path.basename(img_name), ' has shape ', np.shape(image)
         # forward pass
-        print '--- foward pass', count + 1, 'of', num_images,'---'
-        if phase == 'train':
-            score_blobs = np.zeros((960,540,20))
-            basename = os.path.splitext(os.path.basename(name))[0]
-            for i in range(20):
-                out_name = basename + '_' + str(i) +'th_repeat'
-                net = deploy(net, image, visualise=False, image_name=out_name)
-                score_blobs[:,:,i] = net.blobs['softmax_score'].data[0]
-            mean_scores = np.mean(score_blobs,axis=2)
-        else:
-            net = deploy(net, image, visualise=True, image_name=name)
+        print '\n--- foward pass', count + 1, 'of', num_images, '---'
+        num_loops = 20
+        score_blobs = np.zeros((960, 540, 2, num_loops))
+        basename = os.path.splitext(os.path.basename(img_name))[0]
+        for i in range(num_loops):
+            out_name = basename + '_' + str(i) + 'th_repeat'
+            train_net = deploy(train_net, image, visualise=False, image_name=out_name)
+            score_blobs[:, :, :, i] = train_net.blobs['softmax_score'].data[0]
+        mean_scores = np.mean(score_blobs, axis=3)
+        train_hist += fast_hist(label.flatten(),
+                                mean_scores.argmax(0).flatten())
+
+        test_net = deploy(test_net, image, visualise=True, image_name=img_name)
+        test_hist += fast_hist()
         # break
