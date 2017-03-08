@@ -75,12 +75,13 @@ def deploy(net, data, visualise=True):
     return net
 
 if __name__ == '__main__':
-
+    file_location = os.path.realpath(
+        os.path.join(os.getcwd(), os.path.dirname(__file__)))
     # load image
     test_dir = os.path.join(base_dir, 'Construction_Site/Springfield/12Aug16/K2/2016-08-12-10-09-26_groundfloorCarPark/labelled_colour/')
     img_names = glob.glob(os.path.join(test_dir, '*.png'))
     # initialise network
-    arch = "/home/sean/Dropbox/Uni/Code/my_rep/cloudvis_worker/example/deploy_col.prototxt"
+    arch = os.path.join(file_location,'deploy_col.prototxt')
     weights = os.path.join(
         base_dir, 'Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/_iter_6000.caffemodel')
     caffe.set_mode_gpu()
