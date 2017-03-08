@@ -57,19 +57,19 @@ def deploy(net, data, visualise=True, image_name='overlay_image'):
     print 'foward pass took {} seconds'.format(time.time() - start_time)
 
     if visualise:
-        # out = net.blobs[score_layer].data[0].argmax(axis=0)
-        out = net.blobs[score_layer].data[0][1]
+        out = net.blobs[score_layer].data[0].argmax(axis=0)
+        # out = net.blobs[score_layer].data[0][1]
         sums = np.sum(net.blobs[score_layer].data[0], axis=0)
         # print 'out[0] shape ', np.shape(net.blobs[score_layer].data[0][1])
-        print 'out[0][0] unique', np.unique(out)
-        print 'softmax sum (should be all 1 ) shape', np.shape(
-            sums), 'unique=', np.unique(sums)
+        # print 'out[0][0] unique', np.unique(out)
+        # print 'softmax sum (should be all 1 ) shape', np.shape(
+        #     sums), 'unique=', np.unique(sums)
         # give array img values, do i need to convert to BGR?
         out_img = out.astype(np.uint8) * 255
 
         # load img as PIL
         img = np.array(data, dtype=np.uint8)
-        print 'img[0][0] unique', np.unique(img)
+        # print 'img[0][0] unique', np.unique(img)
         colorIm = Image.fromarray(img)
         # Network prediction as PIL image
         im = Image.fromarray(out_img, mode='P')
@@ -91,6 +91,7 @@ def deploy(net, data, visualise=True, image_name='overlay_image'):
     return net
 
 if __name__ == '__main__':
+    phase = 'test'
     file_location = os.path.realpath(
         os.path.join(os.getcwd(), os.path.dirname(__file__)))
     # load image
@@ -102,12 +103,27 @@ if __name__ == '__main__':
     weights = os.path.join(
         base_dir, 'Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/_iter_6000.caffemodel')
     caffe.set_mode_gpu()
-    net = caffe.Net(arch, weights, caffe.TRAIN)
+    if phase == 'test':
+        net = caffe.Net(arch, weights, caffe.TEST)
+    elif phase == 'train':
+        net = caffe.Net(arch, weights, caffe.TRAIN)
+    else:
+        print 'incorrect phase given quitting'
+        raise
     num_images = len(img_names)
     for count, name in enumerate(img_names):
         image = Image.open(name)
         # print 'loaded image ', os.path.basename(name), ' has shape ', np.shape(image)
         # forward pass
-        print 'foward pass', count + 1, 'of', num_images
-        net = deploy(net, image, visualise=True, image_name=name)
-        break
+        print '--- foward pass', count + 1, 'of', num_images,'---'
+        if phase == 'train':
+            score_blobs = np.zeros((960,540,20))
+            basename = os.path.splitext(os.path.basename(name))[0]
+            for i in range(20):
+                out_name = basename + '_' + str(i) +'th_repeat'
+                net = deploy(net, image, visualise=False, image_name=out_name)
+                score_blobs[:,:,i] = net.blobs['softmax_score'].data[0]
+            mean_scores = np.mean(score_blobs,axis=2)
+        else:
+            net = deploy(net, image, visualise=True, image_name=name)
+        # break
