@@ -20,12 +20,12 @@ home_dir = os.path.expanduser("~")
 if 'n8307628' in home_dir:
     caffe_root = os.path.join(home_dir, 'Fully-Conv-Network/Resources/caffe')
     base_dir = '/home/n8307628/'
-    sys.path.append(os.path.join(base_dir, 'Dropbox/Uni/Code/FCN_models'))
+    sys.path.append(os.path.join(base_dir,
+                                 'Fully-Conv-Network/Resources/FCN_models'))
 elif 'sean' in home_dir:
     caffe_root = os.path.join(home_dir, 'src/caffe')
     base_dir = '/home/sean/hpc-home/'
-    sys.path.append(os.path.join(base_dir,
-                                 'Fully-Conv-Network/Resources/FCN_models'))
+    sys.path.append(os.path.join(base_dir, 'Dropbox/Uni/Code/FCN_models'))
 else:
     print 'unknown directory'
     raise
@@ -105,7 +105,8 @@ if __name__ == '__main__':
         os.path.join(os.getcwd(), os.path.dirname(__file__)))
     # load data and label names
     test_dir = os.path.join(
-        base_dir, 'Construction_Site/Springfield/12Aug16/K2/2016-08-12-10-09-26_groundfloorCarPark/')
+        base_dir, 'Construction_Site/Springfield/12Aug16/K2/' +
+        '2016-08-12-10-09-26_groundfloorCarPark/')
     img_names = glob.glob(os.path.join(
         test_dir, 'labelled_colour', '*.png'))
     img_names.sort()
@@ -114,10 +115,11 @@ if __name__ == '__main__':
     # initialise network
     arch = os.path.join(file_location, 'deploy_col.prototxt')
     weights = os.path.join(
-        base_dir, 'Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/_iter_6000.caffemodel')
+        base_dir, 'Fully-Conv-Network/Resources/FCN_models/' +
+        'cstrip-fcn32s-color/colorSnapshot/_iter_6000.caffemodel')
 
     # Initialise networks
-    caffe.set_mode_cpu()
+    caffe.set_mode_gpu()
     test_net = caffe.Net(arch, weights, caffe.TEST)
     train_net = caffe.Net(arch, weights, caffe.TRAIN)
 
@@ -125,14 +127,15 @@ if __name__ == '__main__':
     num_images = len(img_names)
     train_hist = np.zeros((2, 2))
     test_hist = np.zeros((2, 2))
+    num_loops = 25
     for count, (img_name, label_name) in enumerate(zip(img_names, label_names)):
         image = Image.open(img_name)
         label = load_label(label_name).flatten()
-        # print 'loaded image ', os.path.basename(img_name), ' has shape ', np.shape(image)
+        # print 'loaded image ', os.path.basename(img_name),
+        #' has shape ', np.shape(image)
         # forward pass
         print '\n--- foward pass', count + 1, 'of', num_images, '---'
-        num_loops = 2
-        score_blobs = np.zeros((960, 540, 2, num_loops))
+        score_blobs = np.zeros((2, 540, 960, num_loops))
         basename = os.path.splitext(os.path.basename(img_name))[0]
         for i in range(num_loops):
             out_name = basename + '_' + str(i) + 'th_repeat'
@@ -145,23 +148,29 @@ if __name__ == '__main__':
 
         test_net = deploy(test_net, image, visualise=True, image_name=img_name)
         test_hist += fast_hist(label,
-                               test_net.blobs['softmax_score'].data[0], 2)
-        break
+                               test_net.blobs['softmax_score'].data[
+                                   0].argmax(0).flatten(), 2)
+        # break
+    del test_net
+    del train_net
+    print '\n---- Test Metrics (no dropout) ----------------'
     test_acc = np.diag(test_hist).sum() / test_hist.sum()
     print '>>> Test acc ', test_acc
-    train_acc = np.diag(train_hist).sum() / train_hist.sum()
-    print '>>> Train acc'
-
     test_precision = test_hist[1, 1] / test_hist.sum(0)[1]
     test_recall = test_hist[1, 1] / test_hist.sum(1)[1]
-    test_Fone = ((test_recall * test_precision) / (test_recall + test_precision)) * 2
+    test_Fone = ((test_recall * test_precision) /
+                 (test_recall + test_precision)) * 2
     print '>>> test_recall (swapped)', test_recall
     print '>>> test_precision ', test_precision
     print '>>> test F1-score', test_Fone
 
+    print '\n---- Train Metrics (averaged with dropout) ----'
     train_precision = train_hist[1, 1] / train_hist.sum(0)[1]
     train_recall = train_hist[1, 1] / train_hist.sum(1)[1]
-    train_Fone = ((train_recall * train_precision) / (train_recall + train_precision)) * 2
+    train_Fone = ((train_recall * train_precision) /
+                  (train_recall + train_precision)) * 2
+    train_acc = np.diag(train_hist).sum() / train_hist.sum()
+    print '>>> Train acc', train_acc
     print '>>> train_recall (swapped)', train_recall
     print '>>> train_precision ', train_precision
     print '>>> test F1-score', train_Fone

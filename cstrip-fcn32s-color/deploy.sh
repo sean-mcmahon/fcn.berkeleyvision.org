@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #:
-#PBS -N validate_FCN
+#PBS -N baysian_cnn
 #PBS -l ngpus=1
 #PBS -l gputype=M40
 #PBS -l ncpus=1
