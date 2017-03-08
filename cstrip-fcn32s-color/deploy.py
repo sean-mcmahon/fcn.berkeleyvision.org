@@ -103,20 +103,25 @@ def deploy(net, data, visualise=True, image_name='overlay_image'):
 if __name__ == '__main__':
     file_location = os.path.realpath(
         os.path.join(os.getcwd(), os.path.dirname(__file__)))
-    # load image
+    # load data and label names
     test_dir = os.path.join(
         base_dir, 'Construction_Site/Springfield/12Aug16/K2/2016-08-12-10-09-26_groundfloorCarPark/')
     img_names = glob.glob(os.path.join(
-        test_dir, 'labelled_colour', '*.png')).sort()
-    label_names = glob.glob(os.path.join(test_dir, 'labels', '*.mat')).sort()
+        test_dir, 'labelled_colour', '*.png'))
+    img_names.sort()
+    label_names = glob.glob(os.path.join(test_dir, 'labels', '*.mat'))
+    label_names.sort()
     # initialise network
     arch = os.path.join(file_location, 'deploy_col.prototxt')
     weights = os.path.join(
         base_dir, 'Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/_iter_6000.caffemodel')
-    caffe.set_mode_gpu()
+
+    # Initialise networks
+    caffe.set_mode_cpu()
     test_net = caffe.Net(arch, weights, caffe.TEST)
     train_net = caffe.Net(arch, weights, caffe.TRAIN)
 
+    # allocate memory for loop
     num_images = len(img_names)
     train_hist = np.zeros((2, 2))
     test_hist = np.zeros((2, 2))
@@ -126,7 +131,7 @@ if __name__ == '__main__':
         # print 'loaded image ', os.path.basename(img_name), ' has shape ', np.shape(image)
         # forward pass
         print '\n--- foward pass', count + 1, 'of', num_images, '---'
-        num_loops = 20
+        num_loops = 2
         score_blobs = np.zeros((960, 540, 2, num_loops))
         basename = os.path.splitext(os.path.basename(img_name))[0]
         for i in range(num_loops):
@@ -141,7 +146,7 @@ if __name__ == '__main__':
         test_net = deploy(test_net, image, visualise=True, image_name=img_name)
         test_hist += fast_hist(label,
                                test_net.blobs['softmax_score'].data[0], 2)
-        # break
+        break
     test_acc = np.diag(test_hist).sum() / test_hist.sum()
     print '>>> Test acc ', test_acc
     train_acc = np.diag(train_hist).sum() / train_hist.sum()
