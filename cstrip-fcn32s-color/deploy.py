@@ -122,7 +122,7 @@ if __name__ == '__main__':
     test_hist = np.zeros((2, 2))
     for count, (img_name, label_name) in enumerate(zip(img_names, label_names)):
         image = Image.open(img_name)
-        label = load_label(label_name)
+        label = load_label(label_name).flatten()
         # print 'loaded image ', os.path.basename(img_name), ' has shape ', np.shape(image)
         # forward pass
         print '\n--- foward pass', count + 1, 'of', num_images, '---'
@@ -131,12 +131,32 @@ if __name__ == '__main__':
         basename = os.path.splitext(os.path.basename(img_name))[0]
         for i in range(num_loops):
             out_name = basename + '_' + str(i) + 'th_repeat'
-            train_net = deploy(train_net, image, visualise=False, image_name=out_name)
+            train_net = deploy(
+                train_net, image, visualise=False, image_name=out_name)
             score_blobs[:, :, :, i] = train_net.blobs['softmax_score'].data[0]
         mean_scores = np.mean(score_blobs, axis=3)
-        train_hist += fast_hist(label.flatten(),
-                                mean_scores.argmax(0).flatten())
+        train_hist += fast_hist(label,
+                                mean_scores.argmax(0).flatten(), 2)
 
         test_net = deploy(test_net, image, visualise=True, image_name=img_name)
-        test_hist += fast_hist()
+        test_hist += fast_hist(label,
+                               test_net.blobs['softmax_score'].data[0], 2)
         # break
+    test_acc = np.diag(test_hist).sum() / test_hist.sum()
+    print '>>> Test acc ', test_acc
+    train_acc = np.diag(train_hist).sum() / train_hist.sum()
+    print '>>> Train acc'
+
+    test_precision = test_hist[1, 1] / test_hist.sum(0)[1]
+    test_recall = test_hist[1, 1] / test_hist.sum(1)[1]
+    test_Fone = ((test_recall * test_precision) / (test_recall + test_precision)) * 2
+    print '>>> test_recall (swapped)', test_recall
+    print '>>> test_precision ', test_precision
+    print '>>> test F1-score', test_Fone
+
+    train_precision = train_hist[1, 1] / train_hist.sum(0)[1]
+    train_recall = train_hist[1, 1] / train_hist.sum(1)[1]
+    train_Fone = ((train_recall * train_precision) / (train_recall + train_precision)) * 2
+    print '>>> train_recall (swapped)', train_recall
+    print '>>> train_precision ', train_precision
+    print '>>> test F1-score', train_Fone
