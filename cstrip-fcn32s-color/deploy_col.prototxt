@@ -5,7 +5,7 @@ layer {
   input_param {
     # These dimensions are purely for sake of example;
     # see infer.py for how to reshape the net to the given input size.
-    shape { dim: 1 dim: 3 dim: 500 dim: 500 }
+    shape { dim: 1 dim: 3 dim: 100 dim: 100 }
   }
 }
 layer {
@@ -520,7 +520,7 @@ layer {
   }
 }
 layer {
-  name: "softmax_score\"
+  name: "softmax_score"
   type: "Softmax"
   bottom: "score"
   top: "softmax_score"
