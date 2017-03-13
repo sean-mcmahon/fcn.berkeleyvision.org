@@ -5,18 +5,23 @@ test_iter: 654
 test_interval: 999999999
 display: 20
 average_loss: 20
-# lr_policy: "fixed"
-lr_policy: "step"
-gamma: 0.33
-stepsize: 2000
-# lr for unnormalized softmax
-base_lr: 1e-11
-# high momentum
+type: "Adam"
+## default caffe adam params
 momentum: 0.99
+momentum2: 0.999
+delta: 10e-8
+# lr_policy: "fixed"
+#lr_policy: "step"
+#gamma: 0.33
+#stepsize: 2000
+# lr for unnormalized softmax
+base_lr: 1e-10
+# high momentum
+#momentum: 0.99
 # no gradient accumulation
-iter_size: 1
-max_iter: 300000
+iter_size: 8
+max_iter: 5000
 weight_decay: 0.0005
-snapshot: 2000
-snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/step_lrpolicy2"
+snapshot: 250
+snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/adam"
 test_initialization: false
