@@ -46,7 +46,7 @@ else:
 import surgery, score
 
 # init
-solver = caffe.SGDSolver(file_location+'/solver.prototxt')
+solver = caffe.AdamSolver(file_location+'/solver.prototxt')
 solver.net.copy_from(weights)
 
 # surgeries
@@ -74,4 +74,4 @@ for _ in range(50):
     # and 'export CUDA_VISIBLE_DEVICES=1'
     # print '\n>>>> Validation <<<<\n'
     # score.seg_tests(solver, False, val, layer='score')
-python '\n completed colour only train'
+print '\n completed colour only train'

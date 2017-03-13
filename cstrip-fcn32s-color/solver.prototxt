@@ -10,12 +10,12 @@ type: "Adam"
 momentum: 0.99
 momentum2: 0.999
 delta: 10e-8
-# lr_policy: "fixed"
+lr_policy: "fixed"
 #lr_policy: "step"
 #gamma: 0.33
 #stepsize: 2000
 # lr for unnormalized softmax
-base_lr: 1e-10
+base_lr: 1e-12
 # high momentum
 #momentum: 0.99
 # no gradient accumulation
@@ -23,5 +23,5 @@ iter_size: 8
 max_iter: 5000
 weight_decay: 0.0005
 snapshot: 250
-snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/adam"
+snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/adam2"
 test_initialization: false
