@@ -1,10 +1,10 @@
 #!/bin/bash -l
 #:
-#PBS -N color_adam
+#PBS -N color_adam3
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=8GB
-#PBS -l walltime=4:00:00
+#PBS -l walltime=10:00:00
 #PBS -l gputype=K40
 
 module load python/2.7.11-foss-2016a
@@ -64,7 +64,7 @@ if [[ -z "$set_mode" ]]; then
   set_mode='gpu'
 fi
 current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/logs/FCNcolor_adam2_'$current_date'.log'
+log_filename=$working_dir'/logs/FCNcolor_adam3_'$current_date'.log'
 
 python $python_script --mode $set_mode 2>&1 | tee $log_filename
 echo $log_filename

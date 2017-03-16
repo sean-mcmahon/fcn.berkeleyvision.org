@@ -57,11 +57,11 @@ surgery.interp(solver.net, interp_layers) # calc deconv filter weights
 # scoring
 val = np.loadtxt(file_location[:file_location.rfind('/')]+'/data/cs-trip/val.txt', dtype=str)
 
-for _ in range(50):
+for _ in range(20):
     print '------------------------------'
     print 'Running solver.step iter {}'.format(_)
     print '------------------------------'
-    solver.step(250)
+    solver.step(500)
 
     score.seg_loss_tests(solver, val, layer='score')
     # print 'layer: conv1_1 len {}, shape {}, values {}'.format(len(filter_1), np.shape(filter_1), np.unique(filter_1))
