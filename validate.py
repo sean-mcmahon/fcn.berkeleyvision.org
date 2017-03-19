@@ -106,10 +106,12 @@ elif args.test_type == 'testConv' or args.test_type == 'convtest' \
     weights = os.path.join(snapshot_dir[0], 'conv_fusion', snapshot_filter +
                            '_iter_' + str(iteration) + '.caffemodel')
     score_layer = 'score_fused'
-elif args.test_type == 'train':
-    solver = caffe.SGDSolver(file_location + '/' +
-                             network_dir + 'solver_test-trainingSet.prototxt')
-    test_set = np.loadtxt(file_location + '/data/cs-trip/train.txt', dtype=str)
+elif args.test_type == "train":
+    solver = caffe.SGDSolver(os.path.join(file_location,
+                                          network_dir,
+                                          'solver_test-trainingSet.prototxt'))
+    test_set = np.loadtxt(os.path.join(file_location, 'data/cs-trip/train.txt'),
+                          dtype=str)
 elif args.test_type == 'trainMix' or args.test_type == 'mixTrain' or args.test_type == 'mixtrain':
     solver = caffe.SGDSolver(file_location + '/' +
                              network_dir + 'solver_test-trainingSet_mix.prototxt')
