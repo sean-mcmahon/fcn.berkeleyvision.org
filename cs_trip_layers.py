@@ -53,6 +53,7 @@ class CStripSegDataLayer(caffe.Layer):
         self.random = params.get('randomize', True)
         self.seed = params.get('seed', None)
         # self.null_value = params.get('null_value',-1)
+        self.noisy_tops = params.get('noisy_tops', 'None')
         self.file_location = os.path.realpath(
             os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
