@@ -21,7 +21,7 @@ class CStripSegDataLayer(caffe.Layer):
     Load (input image, label image) pairs from Construction Site Trip
     one-at-a-time while reshaping the net to preserve dimensions.
 
-    The labels consist of trip (1) and non-trip (2)
+    The labels consist of trip and non-trip
 
     Use this to feed data to a fully convolutional network.
     """
@@ -103,6 +103,10 @@ class CStripSegDataLayer(caffe.Layer):
         if self.random:
             random.seed(self.seed)
             self.idx = random.randint(0, len(self.indices) - 1)
+        if 'noisy_color' in self.tops or 'noisy_depth' in self.tops:
+            print '\n+++++++++++++++++++++++++++++++++++++++++++++++++++++'
+            print 'WARNING: using noisy data as one of inputs to network'
+            print '+++++++++++++++++++++++++++++++++++++++++++++++++++++\n'
         print 'cs_trip_layers: setup complete.'
 
     def reshape(self, bottom, top):
@@ -143,6 +147,10 @@ class CStripSegDataLayer(caffe.Layer):
             return self.load_hha(idx, sub_dir)
         elif top == 'hha2':
             return self.load_hha2(idx, sub_dir)
+        elif top == 'noisy_color':
+            return self.load_noisy_image(idx, sub_dir)
+        elif top == 'noisy_depth':
+            return self.load_noisy_depth(idx, sub_dir)
         else:
             raise Exception("Unknown output type: {}".format(top))
 
@@ -169,6 +177,37 @@ class CStripSegDataLayer(caffe.Layer):
         # if self.split is not 'train':
         # print 'loading image from {} with index {}'.format(sub_dir, idx)
         return in_
+
+    def load_noisy_image(self, idx, sub_dir):
+        im = Image.open(glob.glob(
+            '{}/{}/colour/colourimg_{}_*'.format(
+                self.cstrip_dir, sub_dir, idx))[0])
+        # im = Image.open(
+        # '{}/{}/colour/colourimg{}.png'.format(self.cstrip_dir, idx))
+        in_ = np.array(im, dtype=np.float32)
+        n_img = np.zeros(in_.shape).astype(np.float32)
+        n_img = n_img[:, :, ::-1]
+        n_img = n_img.transpose((2, 0, 1))
+
+        return n_img
+
+    def load_noisy_depth(self, idx, sub_dir):
+        im = Image.open(glob.glob(
+            '{}/{}/depth/depthimg_{}_*'.format(
+                self.cstrip_dir, sub_dir, idx))[0])
+        d = np.array(im, dtype=np.float32)
+
+        noisy_d = np.zeros(d.shape) + self.null_value
+        # rows, cols = d.shape
+        # sigma = 12  # 25 probably too much, maybe 12 is better
+        # mu = 0
+        # noise = sigma * np.random.randn(rows, cols) + mu
+        # noisy_d = np.clip(noisy_d + noise, 0, 255)
+        # noisy_d = noisy_d.astype(np.uint8)
+        noisy_d = noisy_d.astype(np.float32)
+        noisy_d = noisy_d[np.newaxis, ...]
+
+        return noisy_d
 
     def load_label(self, idx, sub_dir):
         """
