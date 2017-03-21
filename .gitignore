@@ -13,3 +13,4 @@ core
 *.h5
 *.mat
 *.pdf
+cstrip-fcn32s-color/colorSnapshot/*
