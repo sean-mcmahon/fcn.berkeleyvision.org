@@ -75,11 +75,11 @@ if args.test_type == 'val':
     solver = caffe.SGDSolver(file_location + '/solver.prototxt')
     test_set = np.loadtxt(file_location[:file_location.rfind(
         '/')] + '/data/cs-trip/val.txt', dtype=str)
-elif args.test_type == 'test':
+elif 'test' in args.test_type:
     solver = caffe.SGDSolver(file_location + '/solver_test.prototxt')
     test_set = np.loadtxt(file_location[:file_location.rfind(
         '/')] + '/data/cs-trip/test.txt', dtype=str)
-elif args.test_type == 'train':
+elif 'train' in args.test_type:
     solver = caffe.SGDSolver(
         file_location + '/solver_test-trainingSet.prototxt')
     test_set = np.loadtxt(file_location[:file_location.rfind(
