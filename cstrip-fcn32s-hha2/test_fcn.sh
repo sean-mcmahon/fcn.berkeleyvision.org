@@ -64,7 +64,7 @@ if [[ -z "$set_mode" ]]; then
 fi
 split="$2"
 if [[ -z "$split" ]]; then
-  split='test'
+  split='train'
 fi
 snapshot_iter="$3"
 if [[ -z "$snapshot_iter" ]]; then
@@ -84,3 +84,4 @@ log_filename=$working_dir'/'$network_dir'/logs/'$split'_dataset_snapshot_'$snaps
 
 python $python_script --mode $set_mode --test_type $split --iteration $snapshot_iter --snapshot_filter $snapshot_filter_ --network_dir $network_dir 2>&1 | tee $log_filename
 echo "Tested on network: $network_dir"
+echo "Logfile saved to: $log_filename"

@@ -66,7 +66,7 @@ if [[ -z "$set_mode" ]]; then
 fi
 split="$2"
 if [[ -z "$split" ]]; then
-  split='test'
+  split='train'
 fi
 snapshot_iter="$3"
 if [[ -z "$snapshot_iter" ]]; then
@@ -81,3 +81,5 @@ fi
 log_filename=$working_dir'/logs/'$split'_dataset_snapshot_'$snapshot_filter_'_'$snapshot_iter'_results.log'
 
 python $python_script --mode $set_mode --test_type $split --iteration $snapshot_iter --snapshot_filter $snapshot_filter_ 2>&1 | tee $log_filename
+echo 'Snapshot: '$snapshot_filter_
+echo 'Logfile saved to: '$log_filename

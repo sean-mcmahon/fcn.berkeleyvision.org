@@ -5,6 +5,7 @@
 #PBS -l ncpus=1
 #PBS -l mem=4GB
 #PBS -l walltime=4:00:00
+#PBS -l gputype=K40
 
 module load python/2.7.11-foss-2016a
 module load caffe
@@ -63,7 +64,7 @@ if [[ -z "$set_mode" ]]; then
 fi
 split="$2"
 if [[ -z "$split" ]]; then
-  split='test'
+  split='train'
 fi
 snapshot_iter="$3"
 if [[ -z "$snapshot_iter" ]]; then

@@ -66,7 +66,7 @@ if [[ -z "$set_mode" ]]; then
 fi
 split="$2"
 if [[ -z "$split" ]]; then
-  split='test'
+  split='train'
 fi
 snapshot_iter="$3"
 if [[ -z "$snapshot_iter" ]]; then
