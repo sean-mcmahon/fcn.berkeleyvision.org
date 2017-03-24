@@ -95,24 +95,14 @@ del base_net, base_net_depth
 val = np.loadtxt(file_location[:file_location.rfind('/')] +
                  '/data/cs-trip/val.txt',
                  dtype=str)
-
+score_layer = 'score'
 for _ in range(50):
     print '------------------------------'
     print 'Running solver.step iter {}'.format(_)
     print '------------------------------'
     solver.step(2000)
-    # filter_1 = solver.net.params['conv1_1_bgrd'][0].data
-    # print 'layer: conv1_1_bgrd len {}, shape {}, values {}'.format(len(filter_1), np.shape(filter_1), np.unique(filter_1))
-    # filter_2 = solver.net.params['conv1_2'][0].data
-    # print 'layer: conv1_2 len {}, shape {}, values {}'.format(len(filter_2), np.shape(filter_2), np.unique(filter_2))
-    # score_fr_trip = solver.net.params['score_fr_trip'][0].data
-    # print 'layer: score_fr_trip len {}, shape {}, values {}'.format(len(score_fr_trip), np.shape(score_fr_trip), np.unique(score_fr_trip))
-    # upscore_trip = solver.net.params['upscore_trip'][0].data
-    # print 'layer: upscore_trip len {}, shape {}, values {}'.format(len(upscore_trip), np.shape(upscore_trip), np.unique(upscore_trip))
-    # break
-
+    score.seg_loss_tests(solver, val, layer=score_layer)
     # if getting issues on HPC try
     # export MKL_CBWR=AUTO
     # and 'export CUDA_VISIBLE_DEVICES=1'
-    # print '\n>>>> Validation <<<<\n'
-    # score.seg_tests(solver, False, val, layer='score')
+print 'Colour-depth early'

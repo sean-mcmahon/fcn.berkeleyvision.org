@@ -75,14 +75,24 @@ def fcn(split, tops):
 
 
 def make_net():
-    tops = ['color', 'depth', 'label']
-    with open('trainval.prototxt', 'w') as f:
+    # tops = ['color', 'depth', 'label']
+    # with open('trainval.prototxt', 'w') as f:
+    #     f.write(str(fcn('train', tops)))
+    #
+    # with open('val.prototxt', 'w') as f:
+    #     f.write(str(fcn('val', tops)))
+    #
+    # with open('test.prototxt', 'w') as f:
+    #     f.write(str(fcn('test', tops)))
+
+    tops = ['color', 'noisy_depth', 'label']
+    with open('trainval_nd.prototxt', 'w') as f:
         f.write(str(fcn('train', tops)))
 
-    with open('val.prototxt', 'w') as f:
+    with open('val_nd.prototxt', 'w') as f:
         f.write(str(fcn('val', tops)))
 
-    with open('test.prototxt', 'w') as f:
+    with open('test_nd.prototxt', 'w') as f:
         f.write(str(fcn('test', tops)))
 
 if __name__ == '__main__':

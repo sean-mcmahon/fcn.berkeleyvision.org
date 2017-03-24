@@ -5,7 +5,7 @@
 #PBS -l ncpus=1
 #PBS -l mem=8GB
 #PBS -l walltime=24:00:00
-#PBS -l gputype=K40
+#PBS -l gputype=M40
 
 module load python/2.7.11-foss-2016a
 module load caffe
@@ -69,7 +69,7 @@ if [[ -z "$pretain_depth_" ]]; then
   pretain_depth_='True'
 fi
 current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/logs/FCNcolorDepth_colordepth_init_lower_2e10LR_2nd_'$current_date'.log'
+log_filename=$working_dir'/logs/FCNcolorDepth_colorPretrainDepth_init_2nd_NoDepth_'$current_date'.log'
 
 python $python_script --mode $set_mode --pretrain_depth $pretain_depth_ 2>&1 | tee $log_filename
 echo $log_filename

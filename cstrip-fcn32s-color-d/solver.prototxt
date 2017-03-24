@@ -1,5 +1,5 @@
-train_net: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-d/trainval.prototxt"
-test_net: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-d/val.prototxt"
+train_net: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-d/trainval_nd.prototxt"
+test_net: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-d/val_nd.prototxt"
 test_iter: 654
 # make test net, but don't invoke it from the solver itself
 test_interval: 999999999
@@ -7,7 +7,7 @@ display: 20
 average_loss: 20
 lr_policy: "fixed"
 # lr for unnormalized softmax
-base_lr: 2e-10
+base_lr: 5e-10
 # high momentum
 momentum: 0.99
 # no gradient accumulation
@@ -15,5 +15,5 @@ iter_size: 1
 max_iter: 300000
 weight_decay: 0.0005
 snapshot: 2000
-snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-d/colorDepthSnapshot/colordepth_init_lower_2e10LR_2nd"
+snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color-d/colorDepthSnapshot/colorPretrainDepth_init_2nd_NoDepth"
 test_initialization: false

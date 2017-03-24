@@ -50,7 +50,7 @@ class CStripSegDataLayer(caffe.Layer):
             self.cstrip_dir = '/home/n8307628' + params['cstrip_dir']
         self.split = params['split']
         self.tops = params['tops']
-        self.random = params.get('randomize', False)
+        self.random = params.get('randomize', True)
         self.seed = params.get('seed', None)
         # self.null_value = params.get('null_value',-1)
         self.noisy_tops = params.get('noisy_tops', 'None')
@@ -111,7 +111,7 @@ class CStripSegDataLayer(caffe.Layer):
             print '+++++++++++++++++++++++++++++++++++++++++++++++++++++\n'
         else:
             print 'Using tops:'
-            print tops
+            print self.tops
         print 'cs_trip_layers: setup complete.'
 
     def reshape(self, bottom, top):
