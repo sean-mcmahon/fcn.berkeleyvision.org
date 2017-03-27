@@ -23,11 +23,11 @@ layer {
   bottom: "data"
   top: "conv1_1_bgrd"
   param {
-    lr_mult: 4
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 8
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -49,11 +49,11 @@ layer {
   bottom: "conv1_1_bgrd"
   top: "conv1_2"
   param {
-    lr_mult: 4
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 8
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {

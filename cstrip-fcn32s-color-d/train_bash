@@ -1,11 +1,11 @@
 #!/bin/bash -l
 #:
-#PBS -N FCN_LR_rgbdinit
+#PBS -N FCN_NyuColourInit2
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=8GB
-#PBS -l walltime=24:00:00
-#PBS -l gputype=M40
+#PBS -l walltime=12:00:00
+#PBS -l gputype=K40
 
 module load python/2.7.11-foss-2016a
 module load caffe
@@ -74,7 +74,7 @@ if [[ -z "$pretrain_depth_conv1_1_" ]]; then
 fi
 
 current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/logs/FCNcolorDepth_NYUv2colorPretrainDepth_init_2nd_NoDepth_'$current_date'.log'
+log_filename=$working_dir'/logs/FCNcolorDepth_NYUv2colorPretrainDepth_init_2nd_NoDepth_sameLRMultiAsRGB_'$current_date'.log'
 
 python $python_script --mode $set_mode --pretrain_depth_conv1_1 $pretrain_depth_conv1_1_ --pretrain_network $pretrain_network_ 2>&1 | tee $log_filename
 echo $log_filename
