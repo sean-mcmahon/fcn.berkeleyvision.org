@@ -66,15 +66,15 @@ if [[ -z "$set_mode" ]]; then
 fi
 split="$2"
 if [[ -z "$split" ]]; then
-  split='test'
+  split='test_nd'
 fi
 snapshot_iter="$3"
 if [[ -z "$snapshot_iter" ]]; then
-  snapshot_iter='48000'
+  snapshot_iter='36000'
 fi
 snapshot_filter_="$4"
 if [[ -z "$snapshot_filter_" ]]; then
-  snapshot_filter_='colorPretrainDepth_init_2nd'
+  snapshot_filter_='colorPretrainDepth_init_2nd_NoDepth'
 fi
 
 # current_date=`date +%Y-%m-%d_%H-%M-%S`

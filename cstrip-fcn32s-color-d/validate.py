@@ -75,15 +75,19 @@ if args.test_type == 'val':
     solver = caffe.SGDSolver(file_location + '/solver.prototxt')
     test_set = np.loadtxt(file_location[:file_location.rfind(
         '/')] + '/data/cs-trip/val.txt', dtype=str)
-elif 'test' in args.test_type:
+elif args.test_type == 'test':
     solver = caffe.SGDSolver(file_location + '/solver_test.prototxt')
     test_set = np.loadtxt(file_location[:file_location.rfind(
         '/')] + '/data/cs-trip/test.txt', dtype=str)
-elif 'train' in args.test_type:
+elif args.test_type == 'train':
     solver = caffe.SGDSolver(
         file_location + '/solver_test-trainingSet.prototxt')
     test_set = np.loadtxt(file_location[:file_location.rfind(
         '/')] + '/data/cs-trip/train.txt', dtype=str)
+elif args.test_type == 'test_nd':
+    solver = caffe.SGDSolver(file_location + '/solver_test_nd.prototxt')
+    test_set = np.loadtxt(file_location[:file_location.rfind(
+        '/')] + '/data/cs-trip/test.txt', dtype=str)
 else:
     print 'Incorrect test_type given {}; expecting "train", "val" or "test"'.format(args.test_type)
     raise
