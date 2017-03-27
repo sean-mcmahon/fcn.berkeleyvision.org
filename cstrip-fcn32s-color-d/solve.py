@@ -21,23 +21,25 @@ home_dir = expanduser("~")
 # User Input
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', default='CPU')
-parser.add_argument('--pretrain_depth', default='False')
+parser.add_argument('--pretrain_depth_conv1_1', default='False')
+parser.add_argument('--pretrain_network', default='RGB_CS')
 args = parser.parse_args()
-pretrain_depth = False
-if args.pretrain_depth == "True" or args.pretrain_depth == "true":
-    pretrain_depth = True
+pretrain_depth_conv1_1 = False
+if args.pretrain_depth_conv1_1 == "True" or args.pretrain_depth_conv1_1 == "true":
+    pretrain_depth_conv1_1 = True
+pretrain_network = args.pretrain_network
 print 'This is the colour-DEPTH solver!'
 
 # import support functions
 if 'n8307628' in home_dir:
     caffe_root = home_dir + '/Fully-Conv-Network/Resources/caffe'
     weights = home_dir + \
-        '/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel'
+        '/Fully-Conv-Network/Resources/FCN_models'
     weights_depth = home_dir + \
         '/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-depth/DepthSnapshot/negOneNull_mean_sub_iter_8000.caffemodel'
 elif 'sean' in home_dir:
     caffe_root = home_dir + '/src/caffe'
-    weights = home_dir + '/hpc-home/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel'
+    weights = home_dir + '/hpc-home/Fully-Conv-Network/Resources/FCN_models'
     weights_depth = home_dir + \
         '/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-depth/DepthSnapshot/negOneNull_mean_sub_iter_8000.caffemodel'
 filename, path, desc = imp.find_module('caffe', [caffe_root + '/python/'])
@@ -56,6 +58,22 @@ else:
     print '==============='
 import surgery
 import score
+if pretrain_network == "RGB_CS":
+    weights = os.path.join(
+        weights, 'cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel')
+    print 'Pretrain: Springfield Construction Colour (RGB) weights'
+elif pretrain_network == "RGB_NYU":
+    weights = os.path.join(
+        weights, 'pretrained_weights/nyud-fcn32s-color-heavy.caffemodel')
+    print 'Pretrain: NYUv2 colour weights'
+elif pretrain_network == "Depth_CS":
+    weights = os.path.join(
+        weights,
+        'cstrip-fcn32s-depth/DepthSnapshot/negOneNull_mean_sub_iter_8000.caffemodel')
+    print 'Pretrain: Springfield Construction Depth weights'
+else:
+    raise Exception(
+        'Invalid network pretrain network specified ({})'.format(pretrain_network))
 
 # init
 print 'Using colour weights from {}'.format(weights)
@@ -86,7 +104,7 @@ solver.net.params['conv1_1_bgrd'][0].data[:, 3] = np.mean(base_net.params[
 solver.net.params['conv1_1_bgrd'][1].data[...] = base_net.params[
     'conv1_1'][1].data
 
-if (pretrain_depth):
+if (pretrain_depth_conv1_1):
     print 'copying Depth params from conv1_1  ->  conv1_1_bgrd'
     depth_filters = base_net_depth.params['conv1_1'][0].data
     solver.net.params['conv1_1_bgrd'][0].data[:, 3] = np.squeeze(depth_filters)
@@ -99,11 +117,11 @@ val = np.loadtxt(file_location[:file_location.rfind('/')] +
                  '/data/cs-trip/val.txt',
                  dtype=str)
 score_layer = 'score'
-for _ in range(50):
+for _ in range(10):
     print '------------------------------'
     print 'Running solver.step iter {}'.format(_)
     print '------------------------------'
-    solver.step(2000)
+    solver.step(1000)
     score.seg_loss_tests(solver, val, layer=score_layer)
     # if getting issues on HPC try
     # export MKL_CBWR=AUTO

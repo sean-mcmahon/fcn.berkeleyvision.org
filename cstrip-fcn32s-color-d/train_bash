@@ -64,12 +64,17 @@ set_mode="$1"
 if [[ -z "$set_mode" ]]; then
   set_mode='gpu'
 fi
-pretain_depth_="$2"
-if [[ -z "$pretain_depth_" ]]; then
-  pretain_depth_='True'
+pretrain_network_="$2"
+if [[ -z "$pretrain_network_" ]]; then
+  pretrain_network_='RGB_NYU'
 fi
-current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/logs/FCNcolorDepth_colorPretrainDepth_init_2nd_NoDepth_'$current_date'.log'
+pretrain_depth_conv1_1_="$3"
+if [[ -z "$pretrain_depth_conv1_1_" ]]; then
+  pretrain_depth_conv1_1_='True'
+fi
 
-python $python_script --mode $set_mode --pretrain_depth $pretain_depth_ 2>&1 | tee $log_filename
+current_date=`date +%Y-%m-%d_%H-%M-%S`
+log_filename=$working_dir'/logs/FCNcolorDepth_NYUv2colorPretrainDepth_init_2nd_NoDepth_'$current_date'.log'
+
+python $python_script --mode $set_mode --pretrain_depth_conv1_1 $pretrain_depth_conv1_1_ --pretrain_network $pretrain_network_ 2>&1 | tee $log_filename
 echo $log_filename
