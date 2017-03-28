@@ -478,11 +478,11 @@ layer {
   bottom: "fc7"
   top: "score_fr"
   param {
-    lr_mult: 10
+    lr_mult: 5
     decay_mult: 1
   }
   param {
-    lr_mult: 2
+    lr_mult: 10
     decay_mult: 0
   }
   convolution_param {

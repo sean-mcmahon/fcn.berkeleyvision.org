@@ -30,10 +30,10 @@ print 'This is the COLOUR only solver!'
 if 'n8307628' in home_dir:
     caffe_root = home_dir + '/Fully-Conv-Network/Resources/caffe'
     weights = home_dir + \
-        '/Fully-Conv-Network/Resources/FCN_models/pretrained_weights/nyud-fcn32s-color-heavy.caffemodel'
+        '/Fully-Conv-Network/Resources/FCN_models'
 elif 'sean' in home_dir:
     caffe_root = home_dir + '/src/caffe'
-    weights = home_dir + '/hpc-home/Fully-Conv-Network/Resources/FCN_models/pretrained_weights/nyud-fcn32s-color-heavy.caffemodel'
+    weights = home_dir + '/hpc-home/Fully-Conv-Network/Resources/FCN_models'
 filename, path, desc = imp.find_module('caffe', [caffe_root + '/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
 if 'g' in args.mode or 'G' in args.mode:
@@ -59,6 +59,10 @@ if pretrain_weights == "NYU":
 elif pretrain_weights == "CS":
     weights = os.path.join(
         weights, 'cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel')
+    print 'Pretrain on CS weights (_iter_2000.caffemodel)'
+else:
+    Exception('Unrecognised pretrain weights option given ({})'.format(
+        pretrain_weights))
 
 # init
 solver = caffe.SGDSolver(file_location + '/solver.prototxt')
@@ -73,7 +77,7 @@ surgery.interp(solver.net, interp_layers)  # calc deconv filter weights
 val = np.loadtxt(file_location[:file_location.rfind(
     '/')] + '/data/cs-trip/val.txt', dtype=str)
 
-for _ in range(10):
+for _ in range(50):
     print '------------------------------'
     print 'Running solver.step iter {}'.format(_)
     print '------------------------------'

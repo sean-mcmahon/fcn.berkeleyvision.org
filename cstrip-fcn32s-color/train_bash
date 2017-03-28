@@ -1,10 +1,10 @@
 #!/bin/bash -l
 #:
-#PBS -N color_repl2
+#PBS -N color_CSpretrain
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=8GB
-#PBS -l walltime=10:00:00
+#PBS -l walltime=24:00:00
 #PBS -l gputype=K40
 
 module load python/2.7.11-foss-2016a
@@ -63,8 +63,12 @@ set_mode="$1"
 if [[ -z "$set_mode" ]]; then
   set_mode='gpu'
 fi
+weight_init="$2"
+if [[ -z "$weight_init" ]]; then
+  weight_init='CS'
+fi
 current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/logs/FCNcolor_replication1stTrain_2_'$current_date'.log'
+log_filename=$working_dir'/logs/FCNcolor_pretrainCS_1_'$current_date'.log'
 
-python $python_script --mode $set_mode 2>&1 | tee $log_filename
-echo $log_filename
+python $python_script --mode $set_mode --pretrain $weight_init 2>&1 | tee $log_filename
+echo 'Saved to '$log_filename
