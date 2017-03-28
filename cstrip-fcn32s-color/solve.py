@@ -46,7 +46,7 @@ else:
 import surgery, score
 
 # init
-solver = caffe.AdamSolver(file_location+'/solver.prototxt')
+solver = caffe.SGDSolver(file_location+'/solver.prototxt')
 solver.net.copy_from(weights)
 
 # surgeries
@@ -57,11 +57,11 @@ surgery.interp(solver.net, interp_layers) # calc deconv filter weights
 # scoring
 val = np.loadtxt(file_location[:file_location.rfind('/')]+'/data/cs-trip/val.txt', dtype=str)
 
-for _ in range(20):
+for _ in range(10):
     print '------------------------------'
     print 'Running solver.step iter {}'.format(_)
     print '------------------------------'
-    solver.step(500)
+    solver.step(2000)
 
     score.seg_loss_tests(solver, val, layer='score')
     # print 'layer: conv1_1 len {}, shape {}, values {}'.format(len(filter_1), np.shape(filter_1), np.unique(filter_1))
