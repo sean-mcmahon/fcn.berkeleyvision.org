@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #:
-#PBS -N color_adam3
+#PBS -N color_repl2
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=8GB
@@ -64,7 +64,7 @@ if [[ -z "$set_mode" ]]; then
   set_mode='gpu'
 fi
 current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/logs/FCNcolor_adam3_'$current_date'.log'
+log_filename=$working_dir'/logs/FCNcolor_replication1stTrain_2_'$current_date'.log'
 
 python $python_script --mode $set_mode 2>&1 | tee $log_filename
 echo $log_filename
