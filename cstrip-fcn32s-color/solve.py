@@ -18,7 +18,9 @@ home_dir = expanduser("~")
 # User Input
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', default='gpu')
+parser.add_argument('--pretrain', default='NYU')
 args = parser.parse_args()
+pretrain_weights = args.pretrain
 print 'This is the COLOUR only solver!'
 
 # import support functions
@@ -44,6 +46,12 @@ else:
     print '==============='
 # caffe.set_device(1)
 import surgery, score
+
+if pretrain_weights == "NYU":
+    weights = os.path.join(weights, 'pretrained_weights/nyud-fcn32s-color-heavy.caffemodel')
+    print 'Pretrain on NYU weights'
+elif pretrain_weights == "CS":
+    weights = os.path.join(weights, 'cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel')
 
 # init
 solver = caffe.SGDSolver(file_location+'/solver.prototxt')
