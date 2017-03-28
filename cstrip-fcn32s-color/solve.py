@@ -5,13 +5,16 @@ cstrip COLOUR only
 """
 # import caffe
 import numpy as np
-import os, sys
+import os
+import sys
 from os.path import expanduser
 import imp
 import argparse
 
-# add '../' directory to path for importing score.py, surgery.py and pycaffe layer
-file_location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+# add '../' directory to path for importing score.py, surgery.py and
+# pycaffe layer
+file_location = os.path.realpath(os.path.join(
+    os.getcwd(), os.path.dirname(__file__)))
 sys.path.append(file_location[:file_location.rfind('/')])
 home_dir = expanduser("~")
 
@@ -25,12 +28,13 @@ print 'This is the COLOUR only solver!'
 
 # import support functions
 if 'n8307628' in home_dir:
-    caffe_root = home_dir+'/Fully-Conv-Network/Resources/caffe'
-    weights = home_dir+'/Fully-Conv-Network/Resources/FCN_models/pretrained_weights/nyud-fcn32s-color-heavy.caffemodel'
+    caffe_root = home_dir + '/Fully-Conv-Network/Resources/caffe'
+    weights = home_dir + \
+        '/Fully-Conv-Network/Resources/FCN_models/pretrained_weights/nyud-fcn32s-color-heavy.caffemodel'
 elif 'sean' in home_dir:
-    caffe_root = home_dir+'/src/caffe'
-    weights = home_dir+'/hpc-home/Fully-Conv-Network/Resources/FCN_models/pretrained_weights/nyud-fcn32s-color-heavy.caffemodel'
-filename, path, desc =  imp.find_module('caffe', [caffe_root+'/python/'])
+    caffe_root = home_dir + '/src/caffe'
+    weights = home_dir + '/hpc-home/Fully-Conv-Network/Resources/FCN_models/pretrained_weights/nyud-fcn32s-color-heavy.caffemodel'
+filename, path, desc = imp.find_module('caffe', [caffe_root + '/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
 if 'g' in args.mode or 'G' in args.mode:
     caffe.set_mode_gpu()
@@ -45,25 +49,29 @@ else:
     print '-- GPU Mode Chosen --'
     print '==============='
 # caffe.set_device(1)
-import surgery, score
+import surgery
+import score
 
 if pretrain_weights == "NYU":
-    weights = os.path.join(weights, 'pretrained_weights/nyud-fcn32s-color-heavy.caffemodel')
+    weights = os.path.join(
+        weights, 'pretrained_weights/nyud-fcn32s-color-heavy.caffemodel')
     print 'Pretrain on NYU weights'
 elif pretrain_weights == "CS":
-    weights = os.path.join(weights, 'cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel')
+    weights = os.path.join(
+        weights, 'cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel')
 
 # init
-solver = caffe.SGDSolver(file_location+'/solver.prototxt')
+solver = caffe.SGDSolver(file_location + '/solver.prototxt')
 solver.net.copy_from(weights)
 
 # surgeries
 interp_layers = [k for k in solver.net.params.keys() if 'up' in k]
 print 'performing surgery on {}'.format(interp_layers)
-surgery.interp(solver.net, interp_layers) # calc deconv filter weights
+surgery.interp(solver.net, interp_layers)  # calc deconv filter weights
 
 # scoring
-val = np.loadtxt(file_location[:file_location.rfind('/')]+'/data/cs-trip/val.txt', dtype=str)
+val = np.loadtxt(file_location[:file_location.rfind(
+    '/')] + '/data/cs-trip/val.txt', dtype=str)
 
 for _ in range(10):
     print '------------------------------'
