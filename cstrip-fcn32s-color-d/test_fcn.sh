@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #:
-#PBS -N validate_FCN3
+#PBS -N EarlyRGBD
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=4GB
@@ -70,11 +70,11 @@ if [[ -z "$split" ]]; then
 fi
 snapshot_iter="$3"
 if [[ -z "$snapshot_iter" ]]; then
-  snapshot_iter='36000'
+  snapshot_iter='8000'
 fi
 snapshot_filter_="$4"
 if [[ -z "$snapshot_filter_" ]]; then
-  snapshot_filter_='colorPretrainDepth_init_2nd_NoDepth'
+  snapshot_filter_='NYUv2colorPretrainDepth_init_2nd_NoDepth_sameLRMultiAsRGB'
 fi
 
 # current_date=`date +%Y-%m-%d_%H-%M-%S`
