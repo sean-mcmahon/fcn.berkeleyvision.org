@@ -103,7 +103,7 @@ def parse_log(log_file):
     val_acc_iterations = np.array(val_acc_iterations)
     val_acc = np.array(val_acc)
 
-    train_acc_pattern = r"Iteration (?P<iter_num>\d+) training trip accuracy (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
+    train_acc_pattern = r"Iteration (?P<iter_num>\d+) train trip accuracy (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
     train_acc = []
     train_acc_iterations = []
     train_acc_iteration_checkpoints_ind = []
@@ -141,8 +141,8 @@ def disp_results(fig, ax1, ax2, loss_iterations, losses, val_acc_iterations,
         label='training loss')
 
     val_a_h, = ax2.plot(val_acc_iterations, val_accuracies, plt.rcParams[
-        'axes.color_cycle'][(color_ind * 2 + 1) % modula],
-        label='val accuracy')
+        'axes.color_cycle'][(color_ind * 2 + 1) % modula], linestyle='-.',
+        linewidth=2, label='val accuracy')
     ax2.plot(val_acc_iterations[val_acc_iteration_checkpoints_ind], val_accuracies[
              val_acc_iteration_checkpoints_ind], 'o',
              color=plt.rcParams['axes.color_cycle'][(color_ind * 2 + 1) % modula])
