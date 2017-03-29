@@ -1,11 +1,11 @@
 #!/bin/bash -l
 #:
-#PBS -N color_ValCheck
-#PBS -l ngpus=1
+#PBS -N color_5ValCheck
+#PBS -l ngpus=0
 #PBS -l ncpus=1
-#PBS -l mem=8GB
+#PBS -l mem=64GB
 #PBS -l walltime=4:00:00
-#PBS -l gputype=K40
+# PBS -l gputype=M40
 
 module load python/2.7.11-foss-2016a
 module load caffe
@@ -61,14 +61,15 @@ fi
 
 set_mode="$1"
 if [[ -z "$set_mode" ]]; then
-  set_mode='gpu'
+  set_mode='cpu'
 fi
 weight_init="$2"
 if [[ -z "$weight_init" ]]; then
   weight_init='NYU'
 fi
 current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/logs/FCNcolor_pretrainNYU_valAccCheck1_'$current_date'.log'
+log_filename=$working_dir'/logs/FCNcolor_pretrainNYU_valAccCheck_6_'$current_date'.log'
 
-python $python_script --mode $set_mode --pretrain $weight_init 2>&1 | tee $log_filename
+python $python_script --mode $set_mode --pretrain $weight_init --save_weights 'False'
+#2>&1 | tee $log_filename
 echo 'Saved to '$log_filename
