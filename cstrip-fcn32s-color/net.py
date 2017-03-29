@@ -3,26 +3,29 @@ from caffe import layers as L, params as P
 from caffe.coord_map import crop
 
 
+engineNum = 1  # 1 CAFFE 2 CUDNN
+
 def conv_relu(bottom, nout, ks=3, stride=1, pad=1):
     conv = L.Convolution(bottom, kernel_size=ks, stride=stride,
-                         num_output=nout, pad=pad,
+                         num_output=nout, pad=pad, engine=engineNum,
                          param=[dict(lr_mult=1, decay_mult=1), dict(lr_mult=2, decay_mult=0)])
-    return conv, L.ReLU(conv, in_place=True)
+    return conv, L.ReLU(conv, in_place=True,engine=engineNum)
 
 
 def max_pool(bottom, ks=2, stride=2):
-    return L.Pooling(bottom, pool=P.Pooling.MAX, kernel_size=ks, stride=stride)
+    return L.Pooling(bottom, pool=P.Pooling.MAX, kernel_size=ks, stride=stride,
+                     engine=engineNum)
 
 
 def fcn(split, tops):
     n = caffe.NetSpec()
     n.data, n.label = L.Python(module='cs_trip_layers',
-                                layer='CStripSegDataLayer', ntop=2,
-                                param_str=str(dict(
-                                    cstrip_dir='/Construction_Site/' +
-                                    'Springfield/12Aug16/K2',
-                                    split=split, tops=tops,
-                                    seed=1337)))
+                               layer='CStripSegDataLayer', ntop=2,
+                               param_str=str(dict(
+                                   cstrip_dir='/Construction_Site/' +
+                                   'Springfield/12Aug16/K2',
+                                   split=split, tops=tops,
+                                   seed=1337)))
 
     # the base net
     n.conv1_1, n.relu1_1 = conv_relu(n.data, 64, pad=100)
@@ -55,7 +58,7 @@ def fcn(split, tops):
     n.drop7 = L.Dropout(n.relu7, dropout_ratio=0.5, in_place=True)
 
     n.score_fr_trip = L.Convolution(n.drop7, num_output=2, kernel_size=1,
-                                    pad=0, weight_filler=dict(type='xavier'),
+                                    pad=0, engine=engineNum, weight_filler=dict(type='xavier'),
                                     param=[dict(lr_mult=5, decay_mult=1),
                                            dict(lr_mult=10, decay_mult=0)])
     n.upscore_trip = L.Deconvolution(n.score_fr_trip,
