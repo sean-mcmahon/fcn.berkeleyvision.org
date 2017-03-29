@@ -22,7 +22,9 @@ home_dir = expanduser("~")
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', default='gpu')
 parser.add_argument('--pretrain', default='NYU')
+parser.add_argument('--save_weights', default=True)
 args = parser.parse_args()
+save_weights = args.save_weights
 pretrain_weights = args.pretrain
 print 'This is the COLOUR only solver!'
 
@@ -77,29 +79,29 @@ surgery.interp(solver.net, interp_layers)  # calc deconv filter weights
 # scoring
 val = np.loadtxt(file_location[:file_location.rfind(
     '/')] + '/data/cs-trip/val.txt', dtype=str)
-val_trip_acc_baseline = 0.0
+trainset = np.loadtxt(file_location[:file_location.rfind(
+    '/')] + '/data/cs-trip/train.txt', dtype=str)
+val_trip_acc_baseline = 0.45
 
-for _ in range(50):
+for _ in range(80):
     print '------------------------------'
     print 'Running solver.step iter {}'.format(_)
     print '------------------------------'
-    solver.step(40)
+    solver.step(50)
 
     val_trip_acc = score.seg_loss_tests(solver, val, layer='score')
-    if val_trip_acc:
+    train_trip_acc = score.seg_loss_train_test(solver, trainset, layer='score')
+    print 'Checking validation acc. Acc={}, baseline={}'.format(
+        val_trip_acc,
+        val_trip_acc_baseline)
+    if val_trip_acc is not None and save_weights:
+        print 'Checking validation acc'
         if val_trip_acc > val_trip_acc_baseline:
+            print 'saving snapshot'
             solver.snapshot()
             val_trip_acc_baseline = val_trip_acc
-            print 'Saved snapshot at iteration {} (trip acc = {})'.format(
-                solver.iter, val_trip_acc)
-    # print 'layer: conv1_1 len {}, shape {}, values {}'.format(len(filter_1), np.shape(filter_1), np.unique(filter_1))
-    # filter_2 = solver.net.params['conv1_2'][0].data
-    # print 'layer: conv1_2 len {}, shape {}, values {}'.format(len(filter_2), np.shape(filter_2), np.unique(filter_2))
-    # score_fr_trip = solver.net.params['score_fr_trip'][0].data
-    # print 'layer: score_fr_trip len {}, shape {}, values {}'.format(len(score_fr_trip), np.shape(score_fr_trip), np.unique(score_fr_trip))
     # if getting issues on HPC try
     # export MKL_CBWR=AUTO
     # and 'export CUDA_VISIBLE_DEVICES=1'
     # print '\n>>>> Validation <<<<\n'
-    # score.seg_tests(solver, False, val, layer='score')
 print '\n completed colour only train'
