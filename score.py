@@ -180,8 +180,17 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label',
 def seg_loss_tests(solver, dataset, layer='score', gt='label', test_type='val'):
     print '>>>', datetime.now(), 'Begin seg loss tests'
     solver.test_nets[0].share_with(solver.net)
-    seg_loss(solver.test_nets[0], solver.iter,
-             dataset, test_type, True, gt, layer)
+    acc = seg_loss(solver.test_nets[0], solver.iter,
+                   dataset, test_type, True, gt, layer)
+    return acc
+
+
+def seg_loss_train_test(solver, dataset, layer='score', gt='label', test_type='train'):
+    print '>>>', datetime.now(), 'Begin train seg loss tests'
+    net = solver.net
+    acc = seg_loss(net, solver.iter,
+                   dataset, test_type, True, gt, layer)
+    return acc
 
 
 def seg_loss(net, iteration, dataset, test_type='training',
@@ -193,10 +202,13 @@ def seg_loss(net, iteration, dataset, test_type='training',
     if calc_hist:
         n_cl = net.blobs[layer].channels
         hist = np.zeros((n_cl, n_cl))
+    checkforMatch = True
     for count, idx in enumerate(dataset):
         start_time = time.time()
         net.forward()
-        checkDataMatch(net.blobs[gt].data[0, 0], idx[0], idx[1])
+        if checkforMatch:
+            checkDataMatch(net.blobs[gt].data[0, 0], idx[0], idx[1])
+            checkforMatch = False
         forward_times[count] = time.time() - start_time
         if calc_hist:
             hist += fast_hist(net.blobs[gt].data[0, 0].flatten(),
@@ -218,7 +230,7 @@ def seg_loss(net, iteration, dataset, test_type='training',
         acc = np.diag(hist) / hist.sum(1)
         print '>>>', datetime.now(), 'Iteration', '{}'.format(iteration), \
             test_type, 'trip accuracy', acc[1]
-        return acc
+        return acc[1]
     else:
         return None
 
