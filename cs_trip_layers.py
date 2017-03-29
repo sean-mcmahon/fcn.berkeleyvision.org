@@ -168,6 +168,7 @@ class CStripSegDataLayer(caffe.Layer):
         - transpose to channel x height x width order
         """
         # idx_str = str(idx).zfill(4)
+        # print 'Loading rgb image sub_dir {}, idx {}'.format(sub_dir, idx)
         im = Image.open(glob.glob(
             '{}/{}/colour/colourimg_{}_*'.format(
                 self.cstrip_dir, sub_dir, idx))[0])
