@@ -27,6 +27,7 @@ layer {
     pad: 100
     kernel_size: 3
     stride: 1
+    engine: CAFFE
   }
 }
 layer {
@@ -34,6 +35,9 @@ layer {
   type: "ReLU"
   bottom: "conv1_1"
   top: "conv1_1"
+  relu_param {
+    engine: CAFFE
+  }
 }
 layer {
   name: "conv1_2"
@@ -53,6 +57,7 @@ layer {
     pad: 1
     kernel_size: 3
     stride: 1
+    engine: CAFFE
   }
 }
 layer {
@@ -60,6 +65,9 @@ layer {
   type: "ReLU"
   bottom: "conv1_2"
   top: "conv1_2"
+  relu_param {
+    engine: CAFFE
+  }
 }
 layer {
   name: "pool1"
@@ -70,6 +78,7 @@ layer {
     pool: MAX
     kernel_size: 2
     stride: 2
+    engine: CAFFE
   }
 }
 layer {
@@ -90,6 +99,7 @@ layer {
     pad: 1
     kernel_size: 3
     stride: 1
+    engine: CAFFE
   }
 }
 layer {
@@ -97,6 +107,9 @@ layer {
   type: "ReLU"
   bottom: "conv2_1"
   top: "conv2_1"
+  relu_param {
+    engine: CAFFE
+  }
 }
 layer {
   name: "conv2_2"
@@ -116,6 +129,7 @@ layer {
     pad: 1
     kernel_size: 3
     stride: 1
+    engine: CAFFE
   }
 }
 layer {
@@ -123,6 +137,9 @@ layer {
   type: "ReLU"
   bottom: "conv2_2"
   top: "conv2_2"
+  relu_param {
+    engine: CAFFE
+  }
 }
 layer {
   name: "pool2"
@@ -133,6 +150,7 @@ layer {
     pool: MAX
     kernel_size: 2
     stride: 2
+    engine: CAFFE
   }
 }
 layer {
@@ -153,6 +171,7 @@ layer {
     pad: 1
     kernel_size: 3
     stride: 1
+    engine: CAFFE
   }
 }
 layer {
@@ -160,6 +179,9 @@ layer {
   type: "ReLU"
   bottom: "conv3_1"
   top: "conv3_1"
+  relu_param {
+    engine: CAFFE
+  }
 }
 layer {
   name: "conv3_2"
@@ -179,6 +201,7 @@ layer {
     pad: 1
     kernel_size: 3
     stride: 1
+    engine: CAFFE
   }
 }
 layer {
@@ -186,6 +209,9 @@ layer {
   type: "ReLU"
   bottom: "conv3_2"
   top: "conv3_2"
+  relu_param {
+    engine: CAFFE
+  }
 }
 layer {
   name: "conv3_3"
@@ -205,6 +231,7 @@ layer {
     pad: 1
     kernel_size: 3
     stride: 1
+    engine: CAFFE
   }
 }
 layer {
@@ -212,6 +239,9 @@ layer {
   type: "ReLU"
   bottom: "conv3_3"
   top: "conv3_3"
+  relu_param {
+    engine: CAFFE
+  }
 }
 layer {
   name: "pool3"
@@ -222,6 +252,7 @@ layer {
     pool: MAX
     kernel_size: 2
     stride: 2
+    engine: CAFFE
   }
 }
 layer {
@@ -242,6 +273,7 @@ layer {
     pad: 1
     kernel_size: 3
     stride: 1
+    engine: CAFFE
   }
 }
 layer {
@@ -249,6 +281,9 @@ layer {
   type: "ReLU"
   bottom: "conv4_1"
   top: "conv4_1"
+  relu_param {
+    engine: CAFFE
+  }
 }
 layer {
   name: "conv4_2"
@@ -268,6 +303,7 @@ layer {
     pad: 1
     kernel_size: 3
     stride: 1
+    engine: CAFFE
   }
 }
 layer {
@@ -275,6 +311,9 @@ layer {
   type: "ReLU"
   bottom: "conv4_2"
   top: "conv4_2"
+  relu_param {
+    engine: CAFFE
+  }
 }
 layer {
   name: "conv4_3"
@@ -294,6 +333,7 @@ layer {
     pad: 1
     kernel_size: 3
     stride: 1
+    engine: CAFFE
   }
 }
 layer {
@@ -301,6 +341,9 @@ layer {
   type: "ReLU"
   bottom: "conv4_3"
   top: "conv4_3"
+  relu_param {
+    engine: CAFFE
+  }
 }
 layer {
   name: "pool4"
@@ -311,6 +354,7 @@ layer {
     pool: MAX
     kernel_size: 2
     stride: 2
+    engine: CAFFE
   }
 }
 layer {
@@ -331,6 +375,7 @@ layer {
     pad: 1
     kernel_size: 3
     stride: 1
+    engine: CAFFE
   }
 }
 layer {
@@ -338,6 +383,9 @@ layer {
   type: "ReLU"
   bottom: "conv5_1"
   top: "conv5_1"
+  relu_param {
+    engine: CAFFE
+  }
 }
 layer {
   name: "conv5_2"
@@ -357,6 +405,7 @@ layer {
     pad: 1
     kernel_size: 3
     stride: 1
+    engine: CAFFE
   }
 }
 layer {
@@ -364,6 +413,9 @@ layer {
   type: "ReLU"
   bottom: "conv5_2"
   top: "conv5_2"
+  relu_param {
+    engine: CAFFE
+  }
 }
 layer {
   name: "conv5_3"
@@ -383,6 +435,7 @@ layer {
     pad: 1
     kernel_size: 3
     stride: 1
+    engine: CAFFE
   }
 }
 layer {
@@ -390,6 +443,9 @@ layer {
   type: "ReLU"
   bottom: "conv5_3"
   top: "conv5_3"
+  relu_param {
+    engine: CAFFE
+  }
 }
 layer {
   name: "pool5"
@@ -400,6 +456,7 @@ layer {
     pool: MAX
     kernel_size: 2
     stride: 2
+    engine: CAFFE
   }
 }
 layer {
@@ -420,6 +477,7 @@ layer {
     pad: 0
     kernel_size: 7
     stride: 1
+    engine: CAFFE
   }
 }
 layer {
@@ -427,6 +485,9 @@ layer {
   type: "ReLU"
   bottom: "fc6"
   top: "fc6"
+  relu_param {
+    engine: CAFFE
+  }
 }
 layer {
   name: "drop6"
@@ -455,6 +516,7 @@ layer {
     pad: 0
     kernel_size: 1
     stride: 1
+    engine: CAFFE
   }
 }
 layer {
@@ -462,6 +524,9 @@ layer {
   type: "ReLU"
   bottom: "fc7"
   top: "fc7"
+  relu_param {
+    engine: CAFFE
+  }
 }
 layer {
   name: "drop7"
@@ -492,6 +557,7 @@ layer {
     weight_filler {
       type: "xavier"
     }
+    engine: CAFFE
   }
 }
 layer {
