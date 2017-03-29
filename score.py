@@ -218,6 +218,9 @@ def seg_loss(net, iteration, dataset, test_type='training',
         acc = np.diag(hist) / hist.sum(1)
         print '>>>', datetime.now(), 'Iteration', '{}'.format(iteration), \
             test_type, 'trip accuracy', acc[1]
+        return acc
+    else:
+        return None
 
 
 def seg_tests(solver, save_format, dataset, layer='score', gt='label',

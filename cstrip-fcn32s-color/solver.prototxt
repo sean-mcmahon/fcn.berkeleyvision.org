@@ -14,6 +14,6 @@ momentum: 0.99
 iter_size: 1
 max_iter: 300000
 weight_decay: 0.0005
-snapshot: 2000
-snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/pretrainCS_1"
+snapshot: 999999999
+snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/valAccCheck1"
 test_initialization: false

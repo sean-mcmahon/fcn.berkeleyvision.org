@@ -52,6 +52,7 @@ else:
 import surgery
 import score
 
+
 if pretrain_weights == "NYU":
     weights = os.path.join(
         weights, 'pretrained_weights/nyud-fcn32s-color-heavy.caffemodel')
@@ -76,14 +77,21 @@ surgery.interp(solver.net, interp_layers)  # calc deconv filter weights
 # scoring
 val = np.loadtxt(file_location[:file_location.rfind(
     '/')] + '/data/cs-trip/val.txt', dtype=str)
+val_trip_acc_baseline = 0.0
 
 for _ in range(50):
     print '------------------------------'
     print 'Running solver.step iter {}'.format(_)
     print '------------------------------'
-    solver.step(2000)
+    solver.step(40)
 
-    score.seg_loss_tests(solver, val, layer='score')
+    val_trip_acc = score.seg_loss_tests(solver, val, layer='score')
+    if val_trip_acc:
+        if val_trip_acc > val_trip_acc_baseline:
+            solver.snapshot()
+            val_trip_acc_baseline = val_trip_acc
+            print 'Saved snapshot at iteration {} (trip acc = {})'.format(
+                solver.iter, val_trip_acc)
     # print 'layer: conv1_1 len {}, shape {}, values {}'.format(len(filter_1), np.shape(filter_1), np.unique(filter_1))
     # filter_2 = solver.net.params['conv1_2'][0].data
     # print 'layer: conv1_2 len {}, shape {}, values {}'.format(len(filter_2), np.shape(filter_2), np.unique(filter_2))
