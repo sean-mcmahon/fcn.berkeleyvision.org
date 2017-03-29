@@ -6,7 +6,7 @@ layer {
   python_param {
     module: "cs_trip_layers"
     layer: "CStripSegDataLayer"
-    param_str: "{\'tops\': [\'color\', \'label\'], \'seed\': 1337, \'cstrip_dir\': \'/Construction_Site/Springfield/12Aug16/K2\', \'split\': \'train\'}"
+    param_str: "{\'seed\': 1337, \'tops\': [\'color\', \'label\'], \'split\': \'train\', \'cstrip_dir\': \'/Construction_Site/Springfield/12Aug16/K2\'}"
   }
 }
 layer {
@@ -476,7 +476,7 @@ layer {
   name: "score_fr_trip"
   type: "Convolution"
   bottom: "fc7"
-  top: "score_fr"
+  top: "score_fr_trip"
   param {
     lr_mult: 5
     decay_mult: 1
@@ -497,8 +497,8 @@ layer {
 layer {
   name: "upscore_trip"
   type: "Deconvolution"
-  bottom: "score_fr"
-  top: "upscore"
+  bottom: "score_fr_trip"
+  top: "upscore_trip"
   param {
     lr_mult: 0
   }
@@ -512,7 +512,7 @@ layer {
 layer {
   name: "score"
   type: "Crop"
-  bottom: "upscore"
+  bottom: "upscore_trip"
   bottom: "data"
   top: "score"
   crop_param {
