@@ -97,7 +97,6 @@ def createSolver(params_dict, train_net_path, test_net_path, snapshot_dir):
 
 if __name__ == '__main__':
 
-    print 'This is the COLOUR only solver!'
     params_dict = {'base_lr': 1e-10, 'solverType': 'SGD', 'f_multi': 5,
                    'dropout': 0.5, 'type': 'rgb', 'weight_init': 'NYU_rgb'}
 
@@ -143,27 +142,27 @@ if __name__ == '__main__':
                                        'data/cs-trip/train.txt'), dtype=str)
     val_trip_acc_baseline = 0.45
 
-    # for _ in range(80):
-    #     print '------------------------------'
-    #     print 'Running solver.step iter {}'.format(_)
-    #     print '------------------------------'
-    #     solver.step(50)
-    #
-    #     val_trip_acc = score.seg_loss_tests(solver, val, layer='score')
-    #     train_trip_acc = score.seg_loss_train_test(
-    #         solver, trainset, layer='score')
-    #     # print 'Checking validation acc. Acc={}, baseline={}'.format(
-    #     #     val_trip_acc,
-    #     #     val_trip_acc_baseline)
-    #     if save_weights and val_trip_acc is not None:
-    #         print 'Checking validation acc'
-    #         if val_trip_acc > val_trip_acc_baseline:
-    #             print 'saving snapshot'
-    #             solver.snapshot()
-    #             val_trip_acc_baseline = val_trip_acc
+    for _ in range(80):
+        print '------------------------------'
+        print 'Running solver.step iter {}'.format(_)
+        print '------------------------------'
+        solver.step(50)
+
+        val_trip_acc = score.seg_loss_tests(solver, val, layer='score')
+        train_trip_acc = score.seg_loss_train_test(
+            solver, trainset, layer='score')
+        # print 'Checking validation acc. Acc={}, baseline={}'.format(
+        #     val_trip_acc,
+        #     val_trip_acc_baseline)
+        if save_weights and val_trip_acc is not None:
+            print 'Checking validation acc'
+            if val_trip_acc > val_trip_acc_baseline:
+                print 'saving snapshot'
+                solver.snapshot()
+                val_trip_acc_baseline = val_trip_acc
     # if getting issues on HPC try
     # export MKL_CBWR=AUTO
     # and 'export CUDA_VISIBLE_DEVICES=1'
     # print '\n>>>> Validation <<<<\n'
     print '\n completed colour only train'
-    networks.print_net(file_location, split='test', net_type='rgb')
+    networks.print_net(file_location, split='test', params_dict['type'])
