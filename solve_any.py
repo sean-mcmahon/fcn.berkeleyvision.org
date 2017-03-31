@@ -40,11 +40,11 @@ pretrain_weights = args.pretrain
 # import support functions
 if 'n8307628' in home_dir:
     caffe_root = home_dir + '/Fully-Conv-Network/Resources/caffe'
-    weights = home_dir + \
+    weights_path = home_dir + \
         '/Fully-Conv-Network/Resources/FCN_models'
 elif 'sean' in home_dir:
     caffe_root = home_dir + '/src/caffe'
-    weights = home_dir + '/hpc-home/Fully-Conv-Network/Resources/FCN_models'
+    weights_path = home_dir + '/hpc-home/Fully-Conv-Network/Resources/FCN_models'
 filename, path, desc = imp.find_module('caffe', [caffe_root + '/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
 if 'g' in args.mode or 'G' in args.mode:
@@ -95,18 +95,15 @@ def createSolver(params_dict, train_net_path, test_net_path, snapshot_dir):
         f.write(str(s))
         return f.name
 
-if __name__ == '__main__':
 
-    params_dict = {'base_lr': 1e-10, 'solverType': 'SGD', 'f_multi': 5,
-                   'dropout': 0.5, 'type': 'rgb', 'weight_init': 'NYU_rgb'}
-
+def run_solver(params_dict):
     if params_dict['weight_init'] == "NYU_rgb":
         weights = os.path.join(
-            weights, 'pretrained_weights/nyud-fcn32s-color-heavy.caffemodel')
+            weights_path, 'pretrained_weights/nyud-fcn32s-color-heavy.caffemodel')
         print 'Pretrain on NYU weights'
     elif params_dict['weight_init'] == "CS_rgb":
         weights = os.path.join(
-            weights, 'cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel')
+            weights_path, 'cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel')
         print 'Pretrain on CS weights (_iter_2000.caffemodel)'
     else:
         Exception('Unrecognised pretrain weights option given ({})'.format(
@@ -165,4 +162,10 @@ if __name__ == '__main__':
     # and 'export CUDA_VISIBLE_DEVICES=1'
     # print '\n>>>> Validation <<<<\n'
     print '\n completed colour only train'
-    networks.print_net(file_location, split='test', params_dict['type'])
+    networks.print_net(file_location, split='test', net_type=params_dict['type'])
+
+if __name__ == '__main__':
+
+    params_dict = {'base_lr': 1e-10, 'solverType': 'SGD', 'f_multi': 5,
+                   'dropout': 0.5, 'type': 'rgb', 'weight_init': 'NYU_rgb'}
+    run_solver(params_dict)
