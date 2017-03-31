@@ -20,7 +20,7 @@ def max_pool(bottom, engineNum=defEngine, ks=2, engineNumks=2, stride=2):
                      engine=engineNum)
 
 
-def fcn_rgb(split, tops, dropout_prob=0.5, final_multi=1, engineNum=1, freeze=False):
+def fcn_rgb(split, tops, dropout_prob=0.5, final_multi=1, engineNum=0, freeze=False):
     n = caffe.NetSpec()
     n.data, n.label = L.Python(module='cs_trip_layers',
                                layer='CStripSegDataLayer', ntop=2,
@@ -118,4 +118,4 @@ def print_all_nets():
         f.write(str(fcn_rgb('test', tops).to_proto()))
 
 if __name__ == '__main__':
-    print_net()
+    print_all_nets()
