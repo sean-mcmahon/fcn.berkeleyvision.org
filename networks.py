@@ -2,7 +2,7 @@ import caffe
 from caffe import layers as L, params as P
 from caffe.coord_map import crop
 import tempfile
-
+import os.path
 # for engine: 1 CAFFE 2 CUDNN
 defEngine = 1
 
@@ -15,12 +15,12 @@ def conv_relu(bottom, nout, engineNum=defEngine, ks=3, stride=1, pad=1, lr=1):
     return conv, L.ReLU(conv, in_place=True, engine=engineNum)
 
 
-def max_pool(bottom, engineNum=defEngine, , engineNumks=2, stride=2):
+def max_pool(bottom, engineNum=defEngine, ks=2, engineNumks=2, stride=2):
     return L.Pooling(bottom, pool=P.Pooling.MAX, kernel_size=ks, stride=stride,
                      engine=engineNum)
 
 
-def fcn_rgb(split, tops, final_multi=1, engineNum=1, freeze=False):
+def fcn_rgb(split, tops, dropout_prob=0.5, final_multi=1, engineNum=1, freeze=False):
     n = caffe.NetSpec()
     n.data, n.label = L.Python(module='cs_trip_layers',
                                layer='CStripSegDataLayer', ntop=2,
@@ -62,9 +62,9 @@ def fcn_rgb(split, tops, final_multi=1, engineNum=1, freeze=False):
     # fully conv
     n.fc6, n.relu6 = conv_relu(
         n.pool5, 4096, engineNum,  ks=7, pad=0, lr=lr_multi)
-    n.drop6 = L.Dropout(n.relu6, dropout_ratio=0.5, in_place=True)
+    n.drop6 = L.Dropout(n.relu6, dropout_ratio=dropout_prob, in_place=True)
     n.fc7, n.relu7 = conv_relu(n.drop6, 4096, engineNum, ks=1, pad=0)
-    n.drop7 = L.Dropout(n.relu7, dropout_ratio=0.5, in_place=True)
+    n.drop7 = L.Dropout(n.relu7, dropout_ratio=dropout_prob, in_place=True)
 
     n.score_fr_trip = L.Convolution(n.drop7, num_output=2, kernel_size=1,
                                     pad=0, engine=engineNum,
@@ -84,19 +84,29 @@ def fcn_rgb(split, tops, final_multi=1, engineNum=1, freeze=False):
     return n
 
 
-def createNet(net_type='rgb', split, f_multi=5, engine=1):
+def createNet(split, net_type='rgb', f_multi=5, dropout_prob=0.5, engine=1):
 
     if net_type == 'rgb' or net_type == 'RGB':
         tops = ['color', 'label']
-        net = fcn_rgb(split, tops, engine, final_multi=f_multi)
+        net = fcn_rgb(split, tops, engineNum=engine, final_multi=f_multi,
+                      dropout_prob=dropout_prob)
     else:
         Exception('net_type {}, unrecognised create case for new network here.')
     with tempfile.NamedTemporaryFile(delete=False) as f:
-        f.write(str(n.to_proto()))
+        f.write(str(net.to_proto()))
         return f.name
 
 
-def print_net():
+def print_net(path, split='test', net_type='rgb'):
+    if net_type == 'rgb' or net_type == 'RGB':
+        tops = ['color', 'label']
+        with open(os.path.join(path, split + '.prototxt'), 'w') as f:
+            f.write(str(fcn_rgb(split, tops).to_proto()))
+    else:
+        Exception('net_type {}, unrecognised create case for new network here.')
+
+
+def print_all_nets():
     tops = ['color', 'label']
     with open('trainval.prototxt', 'w') as f:
         f.write(str(fcn_rgb('train', tops).to_proto()))
