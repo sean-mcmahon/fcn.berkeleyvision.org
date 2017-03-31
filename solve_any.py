@@ -12,6 +12,7 @@ import sys
 from os.path import expanduser
 import imp
 import argparse
+import tempfile
 
 # add '../' directory to path for importing score.py, surgery.py and
 # pycaffe layer
@@ -44,6 +45,8 @@ else:
 # caffe.set_device(1)
 import surgery
 import score
+import networks
+from caffe.proto import caffe_pb2
 
 
 def createSolver(train_net_path, test_net_path, params_dict):
@@ -63,13 +66,17 @@ def createSolver(train_net_path, test_net_path, params_dict):
     s.weight_decay = params_dict.get('weight_decay', 0.0005)
     s.display = params_dict.get('display', 20)
     s.snapshot = params_dict.get('snapshot', 999999999)
+    s.type = params_dict['solverType']
 
     snapshot_dir = file_location + '/fusionSnapshot/secondTrain'
     if not os.path.isdir(snapshot_dir):
         os.mkdir(snapshot_dir)
     s.snapshot_prefix = snapshot_dir
     s.test_initialization = params_dict.get('test_initialization', False)
-    return s
+
+    with tempfile.NamedTemporaryFile(delete=False) as f:
+        f.write(str(s))
+        return f.name
 
 if __name__ == '__main__':
     # User Input
@@ -88,11 +95,11 @@ if __name__ == '__main__':
     pretrain_weights = args.pretrain
     print 'This is the COLOUR only solver!'
 
-    if pretrain_weights == "NYU":
+    if pretrain_weights == "NYU_rgb":
         weights = os.path.join(
             weights, 'pretrained_weights/nyud-fcn32s-color-heavy.caffemodel')
         print 'Pretrain on NYU weights'
-    elif pretrain_weights == "CS":
+    elif pretrain_weights == "CS_rgb":
         weights = os.path.join(
             weights, 'cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel')
         print 'Pretrain on CS weights (_iter_2000.caffemodel)'
@@ -100,8 +107,12 @@ if __name__ == '__main__':
         Exception('Unrecognised pretrain weights option given ({})'.format(
             pretrain_weights))
 
-    # init
-    solver = caffe.SGDSolver(file_location + '/solver.prototxt')
+    # init network arch
+    net_name = networks.createNet(net_type='rgb', split, f_multi=5, engine=1)
+
+    # init solver
+    solver_name = createSolver()
+    solver = caffe.get_solver(solver_name)
     solver.net.copy_from(weights)
 
     # surgeries
