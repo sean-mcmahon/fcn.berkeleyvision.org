@@ -15,6 +15,6 @@ iter_size: 1
 max_iter: 300000
 weight_decay: 0.0005
 snapshot: 999999999
-snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/valAccCheck_8_engCaffe"
+snapshot_prefix: "/home/n8307628/Fully-Conv-Network/Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/valAccCheck_9_engCaffe"
 test_initialization: false
 random_seed: 3711
