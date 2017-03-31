@@ -24,7 +24,13 @@ parser.add_argument('--mode', default='gpu')
 parser.add_argument('--pretrain', default='NYU')
 parser.add_argument('--save_weights', default=True)
 args = parser.parse_args()
-save_weights = args.save_weights
+if args.save_weights == 'True' or args.save_weights == 'true':
+    save_weights = True
+elif args.save_weights == 'False' or args.save_weights == 'false':
+    save_weights = False
+else:
+    Exception('Invalid "save_weights" argument given ({})'.format(
+        args.save_weights))
 pretrain_weights = args.pretrain
 print 'This is the COLOUR only solver!'
 
@@ -94,7 +100,7 @@ for _ in range(80):
     # print 'Checking validation acc. Acc={}, baseline={}'.format(
     #     val_trip_acc,
     #     val_trip_acc_baseline)
-    if val_trip_acc is not None and save_weights:
+    if save_weights and val_trip_acc is not None:
         print 'Checking validation acc'
         if val_trip_acc > val_trip_acc_baseline:
             print 'saving snapshot'
