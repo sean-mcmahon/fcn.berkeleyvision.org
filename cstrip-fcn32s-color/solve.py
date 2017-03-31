@@ -91,9 +91,9 @@ for _ in range(80):
 
     val_trip_acc = score.seg_loss_tests(solver, val, layer='score')
     train_trip_acc = score.seg_loss_train_test(solver, trainset, layer='score')
-    print 'Checking validation acc. Acc={}, baseline={}'.format(
-        val_trip_acc,
-        val_trip_acc_baseline)
+    # print 'Checking validation acc. Acc={}, baseline={}'.format(
+    #     val_trip_acc,
+    #     val_trip_acc_baseline)
     if val_trip_acc is not None and save_weights:
         print 'Checking validation acc'
         if val_trip_acc > val_trip_acc_baseline:

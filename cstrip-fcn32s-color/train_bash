@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #:
-#PBS -N color_9ValCheck
+#PBS -N color_10ValCheck
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=32GB
@@ -68,7 +68,7 @@ if [[ -z "$weight_init" ]]; then
   weight_init='NYU'
 fi
 current_date=`date +%Y-%m-%d_%H-%M-%S`
-log_filename=$working_dir'/logs/FCNcolor_pretrainNYU_valAccCheck_9_engCaffe_'$current_date'.log'
+log_filename=$working_dir'/logs/FCNcolor_pretrainNYU_valAccCheck_10val2_engCaffe_'$current_date'.log'
 
-python $python_script --mode $set_mode --pretrain $weight_init --save_weights 'True' 2>&1 | tee $log_filename
+python $python_script --mode $set_mode --pretrain $weight_init --save_weights 'False' 2>&1 | tee $log_filename
 echo 'Saved to '$log_filename

@@ -222,6 +222,8 @@ def seg_loss(net, iteration, dataset, test_type='training',
     mean_time = forward_times.sum() / len(forward_times)
     # mean loss, this prinout is tweaked to match caffe prinout for string
     # parsing
+    print '>>>', datetime.now(), 'Number of images in {} dataset {}'.format(
+        test_type, len(dataset))
     print '>>>', datetime.now(), 'Iteration', '{}'.format(iteration), \
         test_type, 'set loss =', loss
     print '>>>', datetime.now(), 'Iteration', '{}'.format(iteration), \
