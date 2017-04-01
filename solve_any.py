@@ -97,6 +97,10 @@ def createSolver(params_dict, train_net_path, test_net_path, snapshot_dir):
 
 
 def run_solver(params_dict):
+    print 'Running solver with parms:'
+    for param in params_dict:
+        print param, params_dict[param]
+
     if params_dict['weight_init'] == "NYU_rgb":
         weights = os.path.join(
             weights_path, 'pretrained_weights/nyud-fcn32s-color-heavy.caffemodel')
@@ -162,10 +166,15 @@ def run_solver(params_dict):
     # and 'export CUDA_VISIBLE_DEVICES=1'
     # print '\n>>>> Validation <<<<\n'
     print '\n completed colour only train'
-    networks.print_net(file_location, split='test', net_type=params_dict['type'])
+    networks.print_net(file_location, split='test',
+                       net_type=params_dict['type'])
 
 if __name__ == '__main__':
-
-    params_dict = {'base_lr': 1e-10, 'solverType': 'SGD', 'f_multi': 5,
-                   'dropout': 0.5, 'type': 'rgb', 'weight_init': 'NYU_rgb'}
+    dropout_regularisation = round(np.random.uniform(0.2, 0.9), 3)
+    learning_rate = round(10 ** np.random.uniform(-13, -9), 16)
+    final_learning_multiplier = np.random.randint(1, 10)
+    params_dict = {'base_lr': learning_rate, 'solverType': 'SGD',
+                   'f_multi': final_learning_multiplier,
+                   'dropout': dropout_regularisation,
+                   'type': 'rgb', 'weight_init': 'NYU_rgb'}
     run_solver(params_dict)
