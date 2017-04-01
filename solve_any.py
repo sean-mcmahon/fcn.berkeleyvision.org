@@ -26,17 +26,8 @@ home_dir = expanduser("~")
 # User Input
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', default='gpu')
-parser.add_argument('--pretrain', default='NYU')
-parser.add_argument('--save_weights', default=True)
+parser.add_argument('--working_dir', default='rgb_1')
 args = parser.parse_args()
-if args.save_weights == 'True' or args.save_weights == 'true':
-    save_weights = True
-elif args.save_weights == 'False' or args.save_weights == 'false':
-    save_weights = False
-else:
-    Exception('Invalid "save_weights" argument given ({})'.format(
-        args.save_weights))
-pretrain_weights = args.pretrain
 # import support functions
 if 'n8307628' in home_dir:
     caffe_root = home_dir + '/Fully-Conv-Network/Resources/caffe'
@@ -84,11 +75,15 @@ def createSolver(params_dict, train_net_path, test_net_path, snapshot_dir):
     s.display = params_dict.get('display', 20)
     s.snapshot = params_dict.get('snapshot', 999999999)
     s.type = params_dict['solverType']
+    s.random_seed = params_dict.get('rand_seed', 3711)
 
     # snapshot_dir = os.path.join(snapshot_dir, '' )
     if not os.path.isdir(snapshot_dir):
         os.mkdir(snapshot_dir)
-    s.snapshot_prefix = snapshot_dir
+    snap_dir = os.path.join(work_dir, 'snapshots')
+    if not os.path.isdir(snap_dir):
+        os.mkdir(snap_dir)
+    s.snapshot_prefix = os.path.join(snap_dir, params_dict['type'])
     s.test_initialization = params_dict.get('test_initialization', False)
 
     with tempfile.NamedTemporaryFile(delete=False) as f:
@@ -96,10 +91,13 @@ def createSolver(params_dict, train_net_path, test_net_path, snapshot_dir):
         return f.name
 
 
-def run_solver(params_dict):
+def run_solver(params_dict, work_dir):
+    print '\n--------------------------'
     print 'Running solver with parms:'
     for param in params_dict:
-        print param, params_dict[param]
+        print param, ':',  params_dict[param]
+    print '--------------------------\n'
+    save_weights = params_dict.get('save_weights', True)
 
     if params_dict['weight_init'] == "NYU_rgb":
         weights = os.path.join(
@@ -114,10 +112,10 @@ def run_solver(params_dict):
             params_dict['weight_init']))
 
     # init network arch
-    val_name = 'val2'
     # for engine: 1 CAFFE 2 CUDNN; CUDNN non-deterministic, but is quicker than CAFFE.
     # Basically use CAFFE for exact repeatable results and CUDNN for faster
     # run time
+    val_name = 'val2'
     val_net_name = networks.createNet(val_name, net_type=params_dict['type'],
                                       f_multi=0, engine=0)
     train_net_name = networks.createNet('train', net_type=params_dict['type'],
@@ -127,7 +125,7 @@ def run_solver(params_dict):
 
     # init solver
     solver_name = createSolver(params_dict,
-                               train_net_name, val_net_name, file_location)
+                               train_net_name, val_net_name, work_dir)
     solver = caffe.get_solver(solver_name)
     solver.net.copy_from(weights)
 
@@ -170,6 +168,9 @@ def run_solver(params_dict):
                        net_type=params_dict['type'])
 
 if __name__ == '__main__':
+    work_dir = args.working_dir
+    if '/home' not in work_dir:
+        work_dir = os.path.join(file_location, work_dir)
     dropout_regularisation = round(np.random.uniform(0.2, 0.9), 3)
     learning_rate = round(10 ** np.random.uniform(-13, -9), 16)
     final_learning_multiplier = np.random.randint(1, 10)
@@ -177,4 +178,4 @@ if __name__ == '__main__':
                    'f_multi': final_learning_multiplier,
                    'dropout': dropout_regularisation,
                    'type': 'rgb', 'weight_init': 'NYU_rgb'}
-    run_solver(params_dict)
+    run_solver(params_dict, work_dir)
