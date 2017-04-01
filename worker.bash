@@ -60,13 +60,13 @@ else
 fi
 
 current_date=`date +%Y-%m-%d_%H-%M-%S`
-set_mode="$1"
-if [[ -z "$set_mode" ]]; then
-  set_mode='gpu'
-fi
-training_dir_="$2"
+training_dir_="$1"
 if [[ -z "$training_dir_" ]]; then
   training_dir_='rgb_1'$current_date
+fi
+set_mode="$2"
+if [[ -z "$set_mode" ]]; then
+  set_mode='gpu'
 fi
 
 log_filename=$working_dir$training_dir_$current_date'.log'

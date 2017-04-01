@@ -164,7 +164,7 @@ def run_solver(params_dict, work_dir):
     # and 'export CUDA_VISIBLE_DEVICES=1'
     # print '\n>>>> Validation <<<<\n'
     print '\n completed colour only train'
-    networks.print_net(file_location, split='test',
+    networks.print_net(work_dir, split='test',
                        net_type=params_dict['type'])
 
 if __name__ == '__main__':
