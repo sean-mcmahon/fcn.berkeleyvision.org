@@ -28,20 +28,47 @@ parser.add_argument('--working_dir', default='rgb_1')
 args = parser.parse_args()
 
 
-def run_worker(working_dir):
+def run_worker(number_workers, working_dir):
     worker_file = os.path.join(file_location, 'worker.bash')
     if not os.path.isfile(worker_file):
         Exception("Could not find solve_any.py at {}".format(worker_file))
+    # job_name = assign_worker_id(working_dir)
     subprocess.call(os.path.basename(worker_file) + ' ' + working_dir)
 
+    return number_workers+1
+
+def assign_worker_id(working_dir):
+    # modify bash script with a desired name and then return that name
+    pass
+
+def check_worker(worker_dir):
+    # check on loss over last 500 iterations
+
+    # create/update plots of training
+
+    # return status -> continue training, cancel training or finished training
+    pass
+
+def del_worker(number_workers, job_id):
+    # deletes worker runnig
+    # need to get the hpc job ID to cancel
+
+    pass
+    # return number_workers - 1
+
 if __name__ == '__main__':
+    jobs_running = False
+    time = 5
+    time_limit = 4
+    num_workers = 0
     # run workers (maximum jobs 5?)
     for ii in range(4):
-        run_worker()
+        num_workers = run_worker(num_workers, directory)
 
     # check in on workes, deleting and adding as needed
     # do this infinitely or for certain time period?
     while(time <= time_limit):
+        pass
         # check status (train loss hasn't exploded) every 500 iterations
         # create plots of all running jobs
         # overview of performances of all jobs with params
@@ -54,5 +81,6 @@ if __name__ == '__main__':
         # repeat
 
     while(jobs_running):
+        pass
         # monitor existing jobs cancel if needed,
         # do no creaet any new jobs
