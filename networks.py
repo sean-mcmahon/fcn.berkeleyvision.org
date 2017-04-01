@@ -63,7 +63,8 @@ def fcn_rgb(split, tops, dropout_prob=0.5, final_multi=1, engineNum=0, freeze=Fa
     n.fc6, n.relu6 = conv_relu(
         n.pool5, 4096, engineNum,  ks=7, pad=0, lr=lr_multi)
     n.drop6 = L.Dropout(n.relu6, dropout_ratio=dropout_prob, in_place=True)
-    n.fc7, n.relu7 = conv_relu(n.drop6, 4096, engineNum, ks=1, pad=0)
+    n.fc7, n.relu7 = conv_relu(
+        n.drop6, 4096, engineNum, ks=1, pad=0, lr=lr_multi)
     n.drop7 = L.Dropout(n.relu7, dropout_ratio=dropout_prob, in_place=True)
 
     n.score_fr_trip = L.Convolution(n.drop7, num_output=2, kernel_size=1,
@@ -80,16 +81,18 @@ def fcn_rgb(split, tops, dropout_prob=0.5, final_multi=1, engineNum=0, freeze=Fa
     n.score = crop(n.upscore_trip, n.data)
     n.loss = L.SoftmaxWithLoss(n.score, n.label,
                                loss_param=dict(normalize=False))
+    n.softmax_score = L.Softmax(n.score)
 
     return n
 
 
-def createNet(split, net_type='rgb', f_multi=5, dropout_prob=0.5, engine=1):
+def createNet(split, net_type='rgb', f_multi=5, dropout_prob=0.5,
+              engine=1, freeze=False):
 
     if net_type == 'rgb' or net_type == 'RGB':
         tops = ['color', 'label']
         net = fcn_rgb(split, tops, engineNum=engine, final_multi=f_multi,
-                      dropout_prob=dropout_prob)
+                      dropout_prob=dropout_prob, freeze=freeze)
     else:
         Exception('net_type {}, unrecognised create case for new network here.')
     with tempfile.NamedTemporaryFile(delete=False) as f:

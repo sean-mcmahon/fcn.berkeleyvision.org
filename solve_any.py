@@ -57,7 +57,7 @@ import networks
 from caffe.proto import caffe_pb2
 
 
-def createSolver(params_dict, train_net_path, test_net_path, snapshot_dir):
+def createSolver(params_dict, train_net_path, test_net_path, work_dir):
     s = caffe_pb2.SolverParameter()
     s.train_net = train_net_path
     s.test_net.append(test_net_path)
@@ -77,13 +77,12 @@ def createSolver(params_dict, train_net_path, test_net_path, snapshot_dir):
     s.type = params_dict['solverType']
     s.random_seed = params_dict.get('rand_seed', 3711)
 
-    # snapshot_dir = os.path.join(snapshot_dir, '' )
+    if not os.path.isdir(work_dir):
+        os.mkdir(work_dir)
+    snapshot_dir = os.path.join(work_dir, 'snapshots')
     if not os.path.isdir(snapshot_dir):
         os.mkdir(snapshot_dir)
-    snap_dir = os.path.join(work_dir, 'snapshots')
-    if not os.path.isdir(snap_dir):
-        os.mkdir(snap_dir)
-    s.snapshot_prefix = os.path.join(snap_dir, params_dict['type'])
+    s.snapshot_prefix = os.path.join(snapshot_dir, params_dict['type'])
     s.test_initialization = params_dict.get('test_initialization', False)
 
     with tempfile.NamedTemporaryFile(delete=False) as f:
@@ -121,7 +120,9 @@ def run_solver(params_dict, work_dir):
     train_net_name = networks.createNet('train', net_type=params_dict['type'],
                                         f_multi=params_dict['f_multi'],
                                         dropout_prob=params_dict['dropout'],
-                                        engine=0)
+                                        engine=0,
+                                        freeze=params_dict.get(
+                                            'freeze_layers', False))
 
     # init solver
     solver_name = createSolver(params_dict,
@@ -171,11 +172,15 @@ if __name__ == '__main__':
     work_dir = args.working_dir
     if '/home' not in work_dir:
         work_dir = os.path.join(file_location, work_dir)
+
     dropout_regularisation = round(np.random.uniform(0.2, 0.9), 3)
     learning_rate = round(10 ** np.random.uniform(-13, -9), 16)
     final_learning_multiplier = np.random.randint(1, 10)
+    freeze_lower_layers = bool(np.random.randint(0, 1))
     params_dict = {'base_lr': learning_rate, 'solverType': 'SGD',
                    'f_multi': final_learning_multiplier,
                    'dropout': dropout_regularisation,
+                   'freeze_layers': freeze_lower_layers,
                    'type': 'rgb', 'weight_init': 'NYU_rgb'}
+
     run_solver(params_dict, work_dir)
