@@ -79,9 +79,9 @@ def fcn_rgb(split, tops, dropout_prob=0.5, final_multi=1, engineNum=0, freeze=Fa
                                                             bias_term=False),
                                      param=[dict(lr_mult=0)])
     n.score = crop(n.upscore_trip, n.data)
+    # n.softmax_score = L.Softmax(n.score)
     n.loss = L.SoftmaxWithLoss(n.score, n.label,
                                loss_param=dict(normalize=False))
-    n.softmax_score = L.Softmax(n.score)
 
     return n
 
