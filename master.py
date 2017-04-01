@@ -32,11 +32,12 @@ def run_worker(number_workers, working_dir):
     if not os.path.isfile(worker_file):
         Exception("Could not find solve_any.py at {}".format(worker_file))
     # job_name = assign_worker_id(working_dir)
-    qsub_call = "qsub {} {}".format(worker_file, working_dir)
+    qsub_call = "qsub -v TRAIN_DIR={} {}".format(working_dir, worker_file)
     try:
-        subprocess.call(qsub_call)
+        subprocess.call(qsub_call, shell=True)
     except:
-        print 'Error submitting worker job with command \n', qsub_call
+        print '****\nError submitting worker job with command \n', qsub_call
+        print '****'
         print "Error message:", sys.exc_info()[0]
         raise
 
@@ -67,10 +68,11 @@ if __name__ == '__main__':
     time_limit = 4
     num_workers = 0
     # run workers (maximum jobs 5?)
-    directories = ['rgb_1', 'rgb_2', 'rgb_3', 'rgb_4', 'rgb_5']
+    directories = ['rgb_1', 'rgb_2']
     for directory in directories:
         num_workers = run_worker(num_workers, directory)
     print num_workers, 'workers running!'
+    subprocess.call('qstat -u n8307628', shell=True)
 
     # check in on workes, deleting and adding as needed
     # do this infinitely or for certain time period?
