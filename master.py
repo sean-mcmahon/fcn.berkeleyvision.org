@@ -11,7 +11,6 @@ import os
 import sys
 from os.path import expanduser
 import argparse
-import tempfile
 import subprocess
 
 # add '../' directory to path for importing score.py, surgery.py and
@@ -33,7 +32,13 @@ def run_worker(number_workers, working_dir):
     if not os.path.isfile(worker_file):
         Exception("Could not find solve_any.py at {}".format(worker_file))
     # job_name = assign_worker_id(working_dir)
-    subprocess.call(os.path.basename(worker_file) + ' ' + working_dir)
+    qsub_call = "qsub {} {}".format(worker_file, working_dir)
+    try:
+        subprocess.call(qsub_call)
+    except:
+        print 'Error submitting worker job with command \n', qsub_call
+        print "Error message:", sys.exc_info()[0]
+        raise
 
     return number_workers+1
 
@@ -62,8 +67,10 @@ if __name__ == '__main__':
     time_limit = 4
     num_workers = 0
     # run workers (maximum jobs 5?)
-    for ii in range(4):
+    directories = ['rgb_1', 'rgb_2', 'rgb_3', 'rgb_4', 'rgb_5']
+    for directory in directories:
         num_workers = run_worker(num_workers, directory)
+    print num_workers, 'workers running!'
 
     # check in on workes, deleting and adding as needed
     # do this infinitely or for certain time period?
@@ -83,4 +90,4 @@ if __name__ == '__main__':
     while(jobs_running):
         pass
         # monitor existing jobs cancel if needed,
-        # do no creaet any new jobs
+        # do no create any new jobs
