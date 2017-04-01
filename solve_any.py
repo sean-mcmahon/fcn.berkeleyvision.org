@@ -169,9 +169,11 @@ def run_solver(params_dict, work_dir):
                        net_type=params_dict['type'])
 
 if __name__ == '__main__':
-    work_dir = args.working_dir
-    if '/home' not in work_dir:
-        work_dir = os.path.join(file_location, work_dir)
+    work_path = args.working_dir
+    if '/home' not in work_path:
+        work_dir = os.path.join(file_location, work_path)
+    else:
+        work_dir = work_path
 
     dropout_regularisation = round(np.random.uniform(0.2, 0.9), 3)
     learning_rate = round(10 ** np.random.uniform(-13, -9), 16)

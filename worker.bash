@@ -1,5 +1,4 @@
 #!/bin/bash -l
-#:
 #PBS -N worker
 #PBS -l ngpus=1
 #PBS -l ncpus=1
@@ -48,28 +47,33 @@ fi
 hpc_dir='/home/n8307628'
 local_dir='/home/sean'
 if [[ -d $local_dir ]]; then
-  working_dir=$local_dir'/hpc-home/Fully-Conv-Network/Resources/FCN_paramsearch'
+  working_dir=$local_dir'/hpc-home/Fully-Conv-Network/Resources/FCN_paramsearch/'
   python_script=$working_dir'/solve_any.py'
 elif [[ -d $hpc_dir ]]; then
-  working_dir=$hpc_dir'/Fully-Conv-Network/Resources/FCN_paramsearch'
-  python_script=$working_dir'/solve_any.py'
+  working_dir=$hpc_dir'/Fully-Conv-Network/Resources/FCN_paramsearch/'
+  python_script=$working_dir'solve_any.py'
   # Because using MKL Blas on HPC
   export MKL_CBWR=AUTO
 else
   echo "No directory found..."
 fi
 
+
 current_date=`date +%Y-%m-%d_%H-%M-%S`
-training_dir_="$1"
-if [[ -z "$training_dir_" ]]; then
-  training_dir_='rgb_1'$current_date
+train_folder_="$1"
+if [[ -z "$train_folder_" ]]; then
+  if [ -z ${TRAIN_DIR+x} ]; then
+    train_folder_='rgb_1'$current_date;
+  else train_folder_=$TRAIN_DIR
+  fi
 fi
 set_mode="$2"
 if [[ -z "$set_mode" ]]; then
   set_mode='gpu'
 fi
+echo "train_folder_="$train_folder_
 
-log_filename=$working_dir$training_dir_$current_date'.log'
-mkdir -p $working_dir$training_dir_
-python $python_script --mode $set_mode --working_dir $working_dir$training_dir_  2>&1 | tee $log_filename
+log_filename=$working_dir$train_folder_'/'$train_folder_'_logfile'$current_date'.log'
+mkdir -p $working_dir$train_folder_
+python $python_script --mode $set_mode --working_dir $working_dir$train_folder_  2>&1 | tee $log_filename
 echo 'Saved to '$log_filename
