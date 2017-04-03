@@ -43,7 +43,7 @@ def append_dir_to_txt(dir_txt, dir_name):
 def run_worker(work_dir):
     worker_file = os.path.join(file_location, 'worker.bash')
     if not os.path.isfile(worker_file):
-        Exception("Could not find solve_any.py at {}".format(worker_file))
+        raise Exception("Could not find solve_any.py at {}".format(worker_file))
     if not os.path.isdir(work_dir):
         os.mkdir(work_dir)
     qsub_call = "qsub -v MY_TRAIN_DIR={} {}".format(work_dir, worker_file)
@@ -77,7 +77,7 @@ def check_worker(id_, worker_dir):
             print '*** \nError finding logfilenames at', os.path.join(worker_dir,
                                                                       '*.log')
             print '***'
-            raise
+            return 'deployed'
         try:
             # this will fail (no matplotlib on HPC)
             vis_finetune.main(os.path.join(worker_dir, logfilename))
@@ -146,10 +146,10 @@ def del_worker(job_id):
 if __name__ == '__main__':
     jobs_running = False
     intialising_workers = True
-    workers_folder = 'rgb_workers'
-    if not os.path.isdir(workers_folder):
-        os.mkdir(workers_folder)
-    workers_name = workers_folder + '/rgb_trail1_'
+    session_folder = 'rgb_workers'
+    if not os.path.isdir(session_folder):
+        os.mkdir(session_folder)
+    workers_name = session_folder + '/rgb_trail1_'
     directories = []
     worker_ids = []
     print '---- master creating workers ----'
@@ -181,11 +181,11 @@ if __name__ == '__main__':
             else:
                 print 'unforseen job status -', status
 
-        time.sleep(2)
+        time.sleep(5)
 
     # check in on workes, deleting and adding as needed
     # do this infinitely or for certain time period?
-    timeout = time.time() + 60 * 1  # 1 minute
+    timeout = time.time() + 60 * 10  # 1 minute
     print '---- master: checking on workers ----'
     while(time.time() < timeout):
         to_remove = []
@@ -203,20 +203,22 @@ if __name__ == '__main__':
                 to_remove.append(worker_dir)
                 id_to_remove.append(job_id)
                 del_worker(job_id)
-                # create new worker
             elif worker_status == 'finished':
                 to_remove.append(worker_dir)
                 id_to_remove.append(job_id)
-                del_worker(job_id)
+                # del_worker(job_id)
                 pass
             else:
                 Exception('Unkown worker status returned %s.' % worker_status)
+                raise
         # remove deleted or finshed jobs from list and run new ones
         if len(to_remove) != len(id_to_remove):
             print 'to_remove:', to_remove
             print 'id_to_remove', to_remove
             Exception('Dir and IDs of jobs to remove do not align:')
+            raise
 
+        # Remove finished workers from lists and spawn new workers
         for item_dir, item_id in zip(to_remove, id_to_remove):
             directories.remove(item_dir)
             worker_ids.remove(item_id)
@@ -233,7 +235,8 @@ if __name__ == '__main__':
             print 'worker_ids', worker_ids
             Exception(
                 'Number of workers does not equal number of worker directories')
-        time.sleep(2)
+            raise
+        time.sleep(10)
 
     while(len(worker_ids) > 0):
         break

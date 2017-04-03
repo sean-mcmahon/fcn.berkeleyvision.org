@@ -83,7 +83,7 @@ def createSolver(params_dict, train_net_path, test_net_path, work_dir):
     s.display = params_dict.get('display', 20)
     s.snapshot = params_dict.get('snapshot', 999999999)
     s.type = params_dict['solverType']
-    s.random_seed = params_dict.get('rand_seed', np.rand.randint(100, 9999))
+    s.random_seed = params_dict.get('rand_seed', np.random.randint(100, 9999))
 
     if not os.path.isdir(work_dir):
         os.mkdir(work_dir)
@@ -133,7 +133,6 @@ def run_solver(params_dict, work_dir):
                                             'freeze_layers', False))
 
     # init solver
-    Exception('Quitting prematurley while debugging master.py')
     solver_name = createSolver(params_dict,
                                train_net_name, val_net_name, work_dir)
     solver = caffe.get_solver(solver_name)
