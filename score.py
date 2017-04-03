@@ -180,9 +180,9 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label',
 def seg_loss_tests(solver, dataset, layer='score', gt='label', test_type='val'):
     print '>>>', datetime.now(), 'Begin seg loss tests'
     solver.test_nets[0].share_with(solver.net)
-    acc = seg_loss(solver.test_nets[0], solver.iter,
+    acc, acc_loss = seg_loss(solver.test_nets[0], solver.iter,
                    dataset, test_type, True, gt, layer)
-    return acc
+    return acc, acc_loss
 
 
 def seg_loss_train_test(solver, dataset, layer='score', gt='label', test_type='train'):
@@ -232,9 +232,9 @@ def seg_loss(net, iteration, dataset, test_type='training',
         acc = np.diag(hist) / hist.sum(1)
         print '>>>', datetime.now(), 'Iteration', '{}'.format(iteration), \
             test_type, 'trip accuracy', acc[1]
-        return acc[1]
+        return acc[1], loss
     else:
-        return None
+        return None, None
 
 
 def seg_tests(solver, save_format, dataset, layer='score', gt='label',

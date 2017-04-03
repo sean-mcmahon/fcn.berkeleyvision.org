@@ -149,6 +149,7 @@ def run_solver(params_dict, work_dir):
     trainset = np.loadtxt(os.path.join(file_location,
                                        'data/cs-trip/train.txt'), dtype=str)
     val_trip_acc_baseline = 0.45
+    val_loss_buf = 4000000.0
 
     for _ in range(80):
         print '------------------------------'
@@ -156,18 +157,25 @@ def run_solver(params_dict, work_dir):
         print '------------------------------'
         solver.step(50)
 
-        val_trip_acc = score.seg_loss_tests(solver, val, layer='score')
-        train_trip_acc = score.seg_loss_train_test(
+        val_trip_acc, val_loss = score.seg_loss_tests(solver, val, layer='score')
+        train_trip_acc, train_loss = score.seg_loss_train_test(
             solver, trainset, layer='score')
         # print 'Checking validation acc. Acc={}, baseline={}'.format(
         #     val_trip_acc,
         #     val_trip_acc_baseline)
+
         if save_weights and val_trip_acc is not None:
             print 'Checking validation acc'
+
             if val_trip_acc > val_trip_acc_baseline:
                 print 'saving snapshot'
                 solver.snapshot()
                 val_trip_acc_baseline = val_trip_acc
+        if val_loss < val_loss_buf:
+            val_loss_buf = val_loss
+            if solver.iter > 60:
+                print 'minimum val loss @ iter {}, saving'.format(_)
+                solver.snapshot()
     # if getting issues on HPC try
     # export MKL_CBWR=AUTO
     # and 'export CUDA_VISIBLE_DEVICES=1'
