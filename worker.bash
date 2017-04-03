@@ -4,7 +4,7 @@
 #PBS -l ncpus=1
 #PBS -l mem=32GB
 #PBS -l walltime=4:00:00
-#PBS -l gputype=M40
+#PBS -l gputype=K40
 
 module load python/2.7.11-foss-2016a
 module load caffe
@@ -72,11 +72,13 @@ if [[ -z "$set_mode" ]]; then
   set_mode='gpu'
 fi
 echo "train_folder_="$train_folder_
+mkdir -p $working_dir$train_folder_
 
 jobID=$PBS_JOBID
+echo 'Job ID: '$PBS_JOBID
 echo 'Job ID: '$PBS_JOBID >> $working_dir$train_folder_'/'$PBS_JOBID'.txt'
 
-log_filename=$working_dir$train_folder_'/'$train_folder_'_logfile'$current_date'.log'
-mkdir -p $working_dir$train_folder_
+log_filename=$working_dir$train_folder_'/logfile'$current_date'.log'
+echo 'log_filename '$log_filename
 python $python_script --mode $set_mode --working_dir $working_dir$train_folder_  2>&1 | tee $log_filename
 echo 'Saved to '$log_filename
