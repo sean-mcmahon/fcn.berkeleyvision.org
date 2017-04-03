@@ -14,6 +14,7 @@ import argparse
 import subprocess
 import glob
 import re
+import time
 
 # add '../' directory to path for importing score.py, surgery.py and
 # pycaffe layer
@@ -107,24 +108,29 @@ def del_worker(number_workers, job_id):
 
 if __name__ == '__main__':
     jobs_running = False
-    time = 5
-    time_limit = 4
     num_workers = 0
-    # run workers (maximum jobs 5?)
-    directories = ['rgb_1', 'rgb_2']
-    for directory in directories:
-        num_workers = run_worker(num_workers, directory)
+    workers_name = 'rgb_trail1_'
+    directories = []
+    for directory_num in range(2):
+        dir_name = workers_name + str(directory_num)
+        directories.append(dir_name)
+        num_workers = run_worker(num_workers, dir_name)
     print num_workers, 'workers running!'
     subprocess.call('qstat -u n8307628', shell=True)
 
     # check in on workes, deleting and adding as needed
     # do this infinitely or for certain time period?
-    while(time <= time_limit):
+    timeout = time.time() + 60*1  # 1 minute
+    while(time.time() > timeout):
         to_remove = []
+        print 'directories in use:\n', directories
         for worker_dir in directories:
             # check status (train loss hasn't exploded)
             # create plots of all running jobs
+            print 'Before check, number workers, ', num_workers
             num_workers, worker_status = check_worker(num_workers, worker_dir)
+            print 'After check, number workers ', num_workers, 'status: ', \
+                worker_status
             if worker_status == 'deployed':
                 pass
             elif worker_status == 'del':
@@ -136,14 +142,19 @@ if __name__ == '__main__':
                 pass
             else:
                 Exception('Unkown worker status returned %s.' % worker_status)
+        # remove deleted or finshed jobs from list
+        for item in to_remove:
+            directories.remove(item)
+            directory_num += 1
+            dir_name = workers_name + str(directory_num)
+            directories.append(dir_name)
+            num_workers = run_worker(num_workers, dir_name)
+        print 'directories after deleting and adding:\n', directories
 
-        # overview of performances of all jobs with params
-        # check for completed jobs
-
-        # delete bad training runs
-
-        # run new batch of jobs so 5 are running
-
+        if len(directories != num_workers):
+            Exception(
+                'Number of workers does not equal number of worker directories')
+        time.sleep(2)
         # repeat
 
     while(num_workers > 0):
