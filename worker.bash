@@ -62,9 +62,9 @@ fi
 current_date=`date +%Y-%m-%d_%H-%M-%S`
 train_folder_="$1"
 if [[ -z "$train_folder_" ]]; then
-  if [ -z ${TRAIN_DIR+x} ]; then
+  if [ -z ${MY_TRAIN_DIR+x} ]; then
     train_folder_='rgb_1'$current_date;
-  else train_folder_=$TRAIN_DIR
+  else train_folder_=$MY_TRAIN_DIR
   fi
 fi
 set_mode="$2"
@@ -72,6 +72,9 @@ if [[ -z "$set_mode" ]]; then
   set_mode='gpu'
 fi
 echo "train_folder_="$train_folder_
+
+jobID=$PBS_JOBID
+echo 'Job ID: '$PBS_JOBID >> $working_dir$train_folder_'/'$PBS_JOBID'.txt'
 
 log_filename=$working_dir$train_folder_'/'$train_folder_'_logfile'$current_date'.log'
 mkdir -p $working_dir$train_folder_
