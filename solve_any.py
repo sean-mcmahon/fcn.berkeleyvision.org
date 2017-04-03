@@ -75,7 +75,7 @@ def createSolver(params_dict, train_net_path, test_net_path, work_dir):
     s.display = params_dict.get('display', 20)
     s.snapshot = params_dict.get('snapshot', 999999999)
     s.type = params_dict['solverType']
-    s.random_seed = params_dict.get('rand_seed', 3711)
+    s.random_seed = params_dict.get('rand_seed', np.rand.randint(100, 9999))
 
     if not os.path.isdir(work_dir):
         os.mkdir(work_dir)
@@ -183,6 +183,7 @@ if __name__ == '__main__':
                    'f_multi': final_learning_multiplier,
                    'dropout': dropout_regularisation,
                    'freeze_layers': freeze_lower_layers,
-                   'type': 'rgb', 'weight_init': 'NYU_rgb'}
+                   'type': 'rgb', 'weight_init': 'NYU_rgb',
+                   'rand_seed': 3711}
 
     run_solver(params_dict, work_dir)
