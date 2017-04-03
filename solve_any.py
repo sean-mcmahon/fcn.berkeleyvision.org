@@ -57,6 +57,14 @@ import networks
 from caffe.proto import caffe_pb2
 
 
+def write_dict(in_dict, work_dir):
+    if not os.path.isdir(work_dir):
+        os.mkdir(work_dir)
+    with open(os.path.join(work_dir, 'params.txt'), 'w') as f:
+        for key, value in in_dict.items():
+            f.write('{}: {}\n'.format(key, value))
+
+
 def createSolver(params_dict, train_net_path, test_net_path, work_dir):
     s = caffe_pb2.SolverParameter()
     s.train_net = train_net_path
@@ -185,5 +193,6 @@ if __name__ == '__main__':
                    'freeze_layers': freeze_lower_layers,
                    'type': 'rgb', 'weight_init': 'NYU_rgb',
                    'rand_seed': 3711}
+    write_dict(params_dict, work_dir)
 
     run_solver(params_dict, work_dir)
