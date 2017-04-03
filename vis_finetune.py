@@ -48,7 +48,7 @@ def main(files):
             os.getcwd(), os.path.dirname(__file__)))
         fig.suptitle(log_name, fontsize=7, fontweight='bold')
     print files[0]
-    fig.savefig(save_dir + log_name + '.pdf')
+    fig.savefig(os.path.join(save_dir, log_name + '.pdf'))
     print 'PDF file ({}.pdf) saved to {}'.format(log_name, save_dir)
     try:
         plt.show()
