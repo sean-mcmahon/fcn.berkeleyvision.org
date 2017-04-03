@@ -133,6 +133,7 @@ def run_solver(params_dict, work_dir):
                                             'freeze_layers', False))
 
     # init solver
+    Exception('Quitting prematurley while debugging master.py')
     solver_name = createSolver(params_dict,
                                train_net_name, val_net_name, work_dir)
     solver = caffe.get_solver(solver_name)
