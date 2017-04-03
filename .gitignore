@@ -13,4 +13,5 @@ core
 *.h5
 *.mat
 *.pdf
+rgb_test_1/*
 cstrip-fcn32s-color/colorSnapshot/*
