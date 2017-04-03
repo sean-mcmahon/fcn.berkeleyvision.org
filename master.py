@@ -34,12 +34,19 @@ parser.add_argument('--mode', default='gpu')
 parser.add_argument('--working_dir', default='rgb_1')
 args = parser.parse_args()
 
+def append_dir_to_txt(dir_txt, dir_name):
+    with open(dir_txt, "a") as myfile:
+        myfile.write(dir_name + '\n')
+    myfile.close()
 
-def run_worker(working_dir):
+
+def run_worker(work_dir):
     worker_file = os.path.join(file_location, 'worker.bash')
     if not os.path.isfile(worker_file):
         Exception("Could not find solve_any.py at {}".format(worker_file))
-    qsub_call = "qsub -v MY_TRAIN_DIR={} {}".format(working_dir, worker_file)
+    if not os.path.isdir(work_dir):
+        os.mkdir(work_dir)
+    qsub_call = "qsub -v MY_TRAIN_DIR={} {}".format(work_dir, worker_file)
     try:
         jobid_ = subprocess.check_output(qsub_call, shell=True)
     except:
@@ -139,7 +146,10 @@ def del_worker(job_id):
 if __name__ == '__main__':
     jobs_running = False
     intialising_workers = True
-    workers_name = 'rgb_workers/rgb_trail1_'
+    workers_folder = 'rgb_workers'
+    if not os.path.isdir(workers_folder):
+        os.mkdir(workers_folder)
+    workers_name = workers_folder + '/rgb_trail1_'
     directories = []
     worker_ids = []
     print '---- master creating workers ----'
@@ -152,9 +162,15 @@ if __name__ == '__main__':
     print len(worker_ids), 'workers running!'
     subprocess.call('qstat -u n8307628', shell=True)
 
+    dir_txt = 'rgb_workers/directories.txt'
+    thefile = open(dir_txt, 'w')
+    for item in directories:
+        thefile.write("%s\n" % item)
+    thefile.close()
+
     # wait for job to start and training to initialise
     waiting_for_init = True
-    print 'waiting for jobs to start...'
+    print 'waiting for a job to start...'
     while (waiting_for_init):
         for job_id in worker_ids:
             status = check_job_status(job_id)
@@ -163,7 +179,7 @@ if __name__ == '__main__':
             elif status == 'Q':
                 pass
             else:
-                print 'unforseen job status', status
+                print 'unforseen job status -', status
 
         time.sleep(2)
 
@@ -209,6 +225,7 @@ if __name__ == '__main__':
             job_id = run_worker(dir_name)
             directories.append(dir_name)
             worker_ids.append(job_id)
+            append_dir_to_txt(dir_txt, dir_name)
         # print '-- directories after deleting and adding:\n', directories, '\n'
 
         if len(directories) != len(worker_ids):
@@ -222,7 +239,7 @@ if __name__ == '__main__':
         break
         # monitor existing jobs cancel if needed,
         # do no create any new jobs
-    print '---- master deleting workers ----'
+    print '\n---- master deleting workers ----\n'
     for worker_dir, job_id in zip(directories, worker_ids):
         print 'Deleting \nworker_dir:', worker_dir
         print 'job_id:', job_id
