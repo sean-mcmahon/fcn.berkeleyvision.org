@@ -61,16 +61,21 @@ def check_worker(num_workers, worker_dir):
         vis_finetune.main(os.path.join(worker_dir, logfilename))
         with open(logfilename, 'r') as logfile:
             log = logfile.read()
-
-        # get the first loss value and compare against the last 5
-        # if more than 1 of the last 5 are above half cancel
+        # Get loss values
         loss_0_pattern = r"Iteration 0, loss = (?P<loss_val>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
         init_loss = float(re.findall(loss_0_pattern, log)
                           [0])  # should be 1 match
+        print 'check_worker:: init_loss=', init_loss
         loss_pattern = r"Iteration (?P<iter_num>\d+), loss = (?P<loss_val>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
         all_losses = re.findall(loss_pattern, log)
+        # Check for insufficient number of iterations
+        if len(all_losses) < 6:
+            print 'Insufficient train iterations to perform check.',
+            '\n{}\n'.format(all_losses)
+            return num_workers, 'deployed'
         last_5 = all_losses[-5, :]
         last_5 = [float(i) for i in last_5]
+        print 'last 5 losses = ', last_5
         if np.sum(last_5 > (init_loss / 2)) > 1:
             # more than 1 of the last 5 losses greater than half initial loss
             num_workers = del_worker(num_workers, job_id)
@@ -108,6 +113,7 @@ def del_worker(number_workers, job_id):
 
 if __name__ == '__main__':
     jobs_running = False
+    intialising_workers = True
     num_workers = 0
     workers_name = 'rgb_trail1_'
     directories = []
@@ -118,9 +124,11 @@ if __name__ == '__main__':
     print num_workers, 'workers running!'
     subprocess.call('qstat -u n8307628', shell=True)
 
+    # may need to add a sleep here while workers initialise
+
     # check in on workes, deleting and adding as needed
     # do this infinitely or for certain time period?
-    timeout = time.time() + 60*1  # 1 minute
+    timeout = time.time() + 60 * 1  # 1 minute
     while(time.time() > timeout):
         to_remove = []
         print 'directories in use:\n', directories
@@ -155,7 +163,6 @@ if __name__ == '__main__':
             Exception(
                 'Number of workers does not equal number of worker directories')
         time.sleep(2)
-        # repeat
 
     while(num_workers > 0):
         break
