@@ -59,37 +59,43 @@ def check_job_status(job_id):
 
 
 def check_worker(id_, worker_dir):
-    try:
-        logfilename = os.path.basename(
-            glob.glob(os.path.join(worker_dir, '*.log'))[0])
-    except IndexError:
-        print '*** \nError finding logfilenames at', os.path.join(worker_dir,
-                                                                  '*.log')
-        print '***'
-        raise
+
     # Get job ID
     status = check_job_status(id_)
     if status == 'R':
         # Job is running
-        # this will fail (no matplotlib on HPC)
         try:
+            logfilename = glob.glob(os.path.join(worker_dir, '*.log'))[0]
+        except IndexError:
+            print '*** \nError finding logfilenames at', os.path.join(worker_dir,
+                                                                      '*.log')
+            print '***'
+            raise
+        try:
+            # this will fail (no matplotlib on HPC)
             vis_finetune.main(os.path.join(worker_dir, logfilename))
         except:
             print 'Could not run vis_finetune.py. ', "Error msg: ", sys.exc_info()[0]
-        with open(logfilename, 'r') as logfile:
-            log = logfile.read()
+        try:
+            with open(logfilename, 'r') as logfile:
+                log = logfile.read()
+        except:
+            print 'logfilename = {}.'.format(logfilename)
+            subprocess.call('ls -l %s' % os.path.dirname(logfilename), shell=True)
+            print sys.exc_info()[0]
+            raise
         # Get loss values
         loss_0_pattern = r"Iteration 0, loss = (?P<loss_val>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
-        init_loss = float(re.findall(loss_0_pattern, log)
-                          [0])  # should be 1 match
-        print 'check_worker:: init_loss=', init_loss
+        loss_0_match = re.findall(loss_0_pattern, log)
         loss_pattern = r"Iteration (?P<iter_num>\d+), loss = (?P<loss_val>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
         all_losses = re.findall(loss_pattern, log)
         # Check for insufficient number of iterations
-        if len(all_losses) < 6:
+        if len(all_losses) < 6 or loss_0_match is None or not loss_0_match:
             print 'Insufficient train iterations to perform check.',
             '\n{}\n'.format(all_losses)
             return 'deployed'
+        init_loss = float(loss_0_match[0])  # should be 1 match
+        print 'check_worker:: init_loss=', init_loss
         last_5 = all_losses[-5, :]
         last_5 = [float(i) for i in last_5]
         print 'last 5 losses = ', last_5
@@ -112,7 +118,7 @@ def check_worker(id_, worker_dir):
 
         worker_status = 'finished'
     else:
-        print 'Unexpected status ', status, 'for job', job_id
+        print '++++\nUnexpected status ', status, 'for job', job_id, '\n++++'
         worker_status = 'deployed'
 
     return worker_status
@@ -137,11 +143,11 @@ if __name__ == '__main__':
     directories = []
     worker_ids = []
     print '---- master creating workers ----'
-    for directory_num in range(2):
+    for directory_num in range(3):
         dir_name = workers_name + str(directory_num)
         directories.append(dir_name)
         job_id = run_worker(dir_name)
-        print 'worker_id: ', job_id
+        print 'job_id: ', job_id
         worker_ids.append(job_id)
     print len(worker_ids), 'workers running!'
     subprocess.call('qstat -u n8307628', shell=True)
@@ -169,11 +175,11 @@ if __name__ == '__main__':
         to_remove = []
         id_to_remove = []
         print '\n--- Directories in use:\n', directories
-        for worker_dir, worker_id in zip(directories, worker_ids):
+        for worker_dir, job_id in zip(directories, worker_ids):
             # check status (train loss hasn't exploded)
             # create plots of all running jobs
-            print '-- Checking dir {}, job_id={}'.format(worker_dir, worker_id)
-            worker_id, worker_status = check_worker(worker_id, worker_dir)
+            print '-- Checking dir {}, job_id={}'.format(worker_dir, job_id)
+            worker_status = check_worker(job_id, worker_dir)
             print '-- After check, status:',  worker_status
             if worker_status == 'deployed':
                 pass
@@ -197,7 +203,7 @@ if __name__ == '__main__':
 
         for item_dir, item_id in zip(to_remove, id_to_remove):
             directories.remove(item_dir)
-            worker_ids.remove(id_to_remove)
+            worker_ids.remove(item_id)
             directory_num += 1
             dir_name = workers_name + str(directory_num)
             job_id = run_worker(dir_name)
@@ -217,7 +223,7 @@ if __name__ == '__main__':
         # monitor existing jobs cancel if needed,
         # do no create any new jobs
     print '---- master deleting workers ----'
-    for worker_dir, worker_id in zip(directories, worker_ids):
+    for worker_dir, job_id in zip(directories, worker_ids):
         print 'Deleting \nworker_dir:', worker_dir
         print 'job_id:', job_id
         del_worker(job_id)
