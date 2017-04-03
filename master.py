@@ -12,13 +12,16 @@ import sys
 from os.path import expanduser
 import argparse
 import subprocess
+import glob
+import re
 
 # add '../' directory to path for importing score.py, surgery.py and
 # pycaffe layer
 # for engine: 1 CAFFE 2 CUDNN
 file_location = os.path.realpath(os.path.join(
     os.getcwd(), os.path.dirname(__file__)))
-sys.path.append(file_location[:file_location.rfind('/')])
+sys.path.append(file_location)
+import vis_finetune
 home_dir = expanduser("~")
 # User Input
 parser = argparse.ArgumentParser()
@@ -31,8 +34,7 @@ def run_worker(number_workers, working_dir):
     worker_file = os.path.join(file_location, 'worker.bash')
     if not os.path.isfile(worker_file):
         Exception("Could not find solve_any.py at {}".format(worker_file))
-    # job_name = assign_worker_id(working_dir)
-    qsub_call = "qsub -v TRAIN_DIR={} {}".format(working_dir, worker_file)
+    qsub_call = "qsub -v MY_TRAIN_DIR={} {}".format(working_dir, worker_file)
     try:
         subprocess.call(qsub_call, shell=True)
     except:
@@ -41,13 +43,39 @@ def run_worker(number_workers, working_dir):
         print "Error message:", sys.exc_info()[0]
         raise
 
-    return number_workers+1
+    return number_workers + 1
 
-def assign_worker_id(working_dir):
-    # modify bash script with a desired name and then return that name
-    pass
 
 def check_worker(worker_dir):
+    logfilename = os.path.basename(
+        glob.glob(os.path.join(worker_dir, '*.log'))[0])
+    # Get job ID
+    job_id = os.path.basename(glob.glob(os.path.join(worker_dir, '*.txt'))[0])
+    a = subprocess.check_output(['qstat', job_id])
+    a_s = a.split("\n")
+    status = a_s[2][62]
+    if status == 'R':
+        # Job is running
+        with open(logfilename, 'r') as logfile:
+            log = logfile.read()
+
+        # get the first loss value and compare against the last 5
+        # if more than 1 of the last 5 are above half cancel
+        loss_0_pattern = r"Iteration 0, loss = (?P<loss_val>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
+        match = float(re.findall(loss_0_pattern, log)[0])  # should be 1 match
+        loss_pattern = r"Iteration (?P<iter_num>\d+), loss = (?P<loss_val>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
+        all_losses = re.findall(loss_pattern, log)
+        last_5 = all_losses[-5, :]
+        last_5 = [float(i) for i in last_5]
+        # this will fail (no matplotlib on HPC)
+        vis_finetune.main(os.path.join(worker_dir, logfile))
+        pass
+    elif status == 'Q':
+        # job qued return
+        return
+    else:
+        pass
+
     # check on loss over last 500 iterations
 
     # create/update plots of training
@@ -55,12 +83,19 @@ def check_worker(worker_dir):
     # return status -> continue training, cancel training or finished training
     pass
 
+
 def del_worker(number_workers, job_id):
     # deletes worker runnig
     # need to get the hpc job ID to cancel
-
-    pass
-    # return number_workers - 1
+    qsub_call = "qdel {}.pbs".format(job_id)
+    try:
+        subprocess.call(qsub_call, shell=True)
+    except:
+        print '****\nError submitting worker job with command \n', qsub_call
+        print '****'
+        print "Error message:", sys.exc_info()[0]
+        raise
+    return number_workers - 1
 
 if __name__ == '__main__':
     jobs_running = False
