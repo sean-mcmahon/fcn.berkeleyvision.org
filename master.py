@@ -46,7 +46,7 @@ def run_worker(number_workers, working_dir):
     return number_workers + 1
 
 
-def check_worker(worker_dir):
+def check_worker(num_workers, worker_dir):
     logfilename = os.path.basename(
         glob.glob(os.path.join(worker_dir, '*.log'))[0])
     # Get job ID
@@ -56,32 +56,40 @@ def check_worker(worker_dir):
     status = a_s[2][62]
     if status == 'R':
         # Job is running
+        # this will fail (no matplotlib on HPC)
+        vis_finetune.main(os.path.join(worker_dir, logfilename))
         with open(logfilename, 'r') as logfile:
             log = logfile.read()
 
         # get the first loss value and compare against the last 5
         # if more than 1 of the last 5 are above half cancel
         loss_0_pattern = r"Iteration 0, loss = (?P<loss_val>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
-        match = float(re.findall(loss_0_pattern, log)[0])  # should be 1 match
+        init_loss = float(re.findall(loss_0_pattern, log)
+                          [0])  # should be 1 match
         loss_pattern = r"Iteration (?P<iter_num>\d+), loss = (?P<loss_val>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
         all_losses = re.findall(loss_pattern, log)
         last_5 = all_losses[-5, :]
         last_5 = [float(i) for i in last_5]
-        # this will fail (no matplotlib on HPC)
-        vis_finetune.main(os.path.join(worker_dir, logfile))
-        pass
+        if np.sum(last_5 > (init_loss / 2)) > 1:
+            # more than 1 of the last 5 losses greater than half initial loss
+            num_workers = del_worker(num_workers, job_id)
+            worker_status = 'del'
+            print 'Deleted job {} (ID: {})'.format(os.path.basename(worker_dir),
+                                                   job_id)
+        else:
+            worker_status = 'deployed'
     elif status == 'Q':
         # job qued return
-        return
+        worker_status = 'deployed'
+    elif status == 'F':
+        # this will fail (no matplotlib on HPC)
+        vis_finetune.main(os.path.join(worker_dir, logfilename))
+        worker_status = 'finished'
     else:
-        pass
+        print 'Unexpected status ', status, 'for job', job_id
+        worker_status = 'deployed'
 
-    # check on loss over last 500 iterations
-
-    # create/update plots of training
-
-    # return status -> continue training, cancel training or finished training
-    pass
+    return num_workers, worker_status
 
 
 def del_worker(number_workers, job_id):
@@ -112,9 +120,23 @@ if __name__ == '__main__':
     # check in on workes, deleting and adding as needed
     # do this infinitely or for certain time period?
     while(time <= time_limit):
-        pass
-        # check status (train loss hasn't exploded) every 500 iterations
-        # create plots of all running jobs
+        to_remove = []
+        for worker_dir in directories:
+            # check status (train loss hasn't exploded)
+            # create plots of all running jobs
+            num_workers, worker_status = check_worker(num_workers, worker_dir)
+            if worker_status == 'deployed':
+                pass
+            elif worker_status == 'del':
+                to_remove.append(worker_dir)
+                # create new worker
+            elif worker_status == 'finished':
+                to_remove.append(worker_dir)
+                # create new worker
+                pass
+            else:
+                Exception('Unkown worker status returned %s.' % worker_status)
+
         # overview of performances of all jobs with params
         # check for completed jobs
 
@@ -124,7 +146,7 @@ if __name__ == '__main__':
 
         # repeat
 
-    while(jobs_running):
-        pass
+    while(num_workers > 0):
+        break
         # monitor existing jobs cancel if needed,
         # do no create any new jobs
