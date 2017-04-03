@@ -9,8 +9,10 @@ https://groups.google.com/forum/#!searchin/caffe-users/vis_finetune.py%7Csort:re
 import numpy as np
 import re
 import click
+import matplotlib
+matplotlib.use('Agg')
 from matplotlib import pylab as plt
-import matplotlib.pyplot
+# import matplotlib.pyplot
 import os
 
 
