@@ -22,7 +22,11 @@ import time
 file_location = os.path.realpath(os.path.join(
     os.getcwd(), os.path.dirname(__file__)))
 sys.path.append(file_location)
-import vis_finetune
+try:
+    import vis_finetune
+except ImportError:
+    print sys.exc_info()[0]
+
 home_dir = expanduser("~")
 # User Input
 parser = argparse.ArgumentParser()
@@ -31,38 +35,47 @@ parser.add_argument('--working_dir', default='rgb_1')
 args = parser.parse_args()
 
 
-def run_worker(number_workers, working_dir):
+def run_worker(working_dir):
     worker_file = os.path.join(file_location, 'worker.bash')
     if not os.path.isfile(worker_file):
         Exception("Could not find solve_any.py at {}".format(worker_file))
     qsub_call = "qsub -v MY_TRAIN_DIR={} {}".format(working_dir, worker_file)
     try:
-        subprocess.call(qsub_call, shell=True)
+        jobid_ = subprocess.check_output(qsub_call, shell=True)
     except:
         print '****\nError submitting worker job with command \n', qsub_call
         print '****'
         print "Error message:", sys.exc_info()[0]
         raise
 
-    return number_workers + 1
+    return jobid_
 
 
-def check_worker(num_workers, worker_dir):
-    logfilename = os.path.basename(
-        glob.glob(os.path.join(worker_dir, '*.log'))[0])
-    # Get job ID
-    job_id = os.path.basename(glob.glob(os.path.join(worker_dir, '*.txt'))[0])
-    a = subprocess.check_output(['qstat', job_id])
+def check_job_status(job_id):
+    a = subprocess.check_output('qstat -x ' + job_id, shell=True)
     a_s = a.split("\n")
     status = a_s[2][62]
+    return status
+
+
+def check_worker(id_, worker_dir):
+    try:
+        logfilename = os.path.basename(
+            glob.glob(os.path.join(worker_dir, '*.log'))[0])
+    except IndexError:
+        print '*** \nError finding logfilenames at', os.path.join(worker_dir,
+                                                                  '*.log')
+        print '***'
+        raise
+    # Get job ID
+    status = check_job_status(id_)
     if status == 'R':
         # Job is running
         # this will fail (no matplotlib on HPC)
         try:
             vis_finetune.main(os.path.join(worker_dir, logfilename))
         except:
-            print 'could not run vis_finetune.py'
-            print "Error msg: ", sys.exc_info()[0]
+            print 'Could not run vis_finetune.py. ', "Error msg: ", sys.exc_info()[0]
         with open(logfilename, 'r') as logfile:
             log = logfile.read()
         # Get loss values
@@ -76,13 +89,12 @@ def check_worker(num_workers, worker_dir):
         if len(all_losses) < 6:
             print 'Insufficient train iterations to perform check.',
             '\n{}\n'.format(all_losses)
-            return num_workers, 'deployed'
+            return 'deployed'
         last_5 = all_losses[-5, :]
         last_5 = [float(i) for i in last_5]
         print 'last 5 losses = ', last_5
         if np.sum(last_5 > (init_loss / 2)) > 1:
             # more than 1 of the last 5 losses greater than half initial loss
-            num_workers = del_worker(num_workers, job_id)
             worker_status = 'del'
             print 'Deleted job {} (ID: {})'.format(os.path.basename(worker_dir),
                                                    job_id)
@@ -96,18 +108,17 @@ def check_worker(num_workers, worker_dir):
         try:
             vis_finetune.main(os.path.join(worker_dir, logfilename))
         except:
-            print 'could not run vis_finetune.py'
-            print "Error msg: ", sys.exc_info()[0]
+            print 'Could not run vis_finetune.py. ', "Error msg: ", sys.exc_info()[0]
 
         worker_status = 'finished'
     else:
         print 'Unexpected status ', status, 'for job', job_id
         worker_status = 'deployed'
 
-    return num_workers, worker_status
+    return worker_status
 
 
-def del_worker(number_workers, job_id):
+def del_worker(job_id):
     # deletes worker runnig
     # need to get the hpc job ID to cancel
     qsub_call = "qdel {}.pbs".format(job_id)
@@ -118,62 +129,95 @@ def del_worker(number_workers, job_id):
         print '****'
         print "Error message:", sys.exc_info()[0]
         raise
-    return number_workers - 1
 
 if __name__ == '__main__':
     jobs_running = False
     intialising_workers = True
-    num_workers = 0
-    workers_name = 'rgb_trail1_'
+    workers_name = 'rgb_workers/rgb_trail1_'
     directories = []
+    worker_ids = []
+    print '---- master creating workers ----'
     for directory_num in range(2):
         dir_name = workers_name + str(directory_num)
         directories.append(dir_name)
-        num_workers = run_worker(num_workers, dir_name)
-    print num_workers, 'workers running!'
+        job_id = run_worker(dir_name)
+        print 'worker_id: ', job_id
+        worker_ids.append(job_id)
+    print len(worker_ids), 'workers running!'
     subprocess.call('qstat -u n8307628', shell=True)
 
-    # may need to add a sleep here while workers initialise
+    # wait for job to start and training to initialise
+    waiting_for_init = True
+    print 'waiting for jobs to start...'
+    while (waiting_for_init):
+        for job_id in worker_ids:
+            status = check_job_status(job_id)
+            if status == 'R':
+                waiting_for_init = False
+            elif status == 'Q':
+                pass
+            else:
+                print 'unforseen job status', status
+
+        time.sleep(2)
 
     # check in on workes, deleting and adding as needed
     # do this infinitely or for certain time period?
     timeout = time.time() + 60 * 1  # 1 minute
-    while(time.time() > timeout):
+    print '---- master: checking on workers ----'
+    while(time.time() < timeout):
         to_remove = []
-        print 'directories in use:\n', directories
-        for worker_dir in directories:
+        id_to_remove = []
+        print '\n--- Directories in use:\n', directories
+        for worker_dir, worker_id in zip(directories, worker_ids):
             # check status (train loss hasn't exploded)
             # create plots of all running jobs
-            print 'Before check, number workers, ', num_workers
-            num_workers, worker_status = check_worker(num_workers, worker_dir)
-            print 'After check, number workers ', num_workers, 'status: ', \
-                worker_status
+            print '-- Checking dir {}, job_id={}'.format(worker_dir, worker_id)
+            worker_id, worker_status = check_worker(worker_id, worker_dir)
+            print '-- After check, status:',  worker_status
             if worker_status == 'deployed':
                 pass
             elif worker_status == 'del':
                 to_remove.append(worker_dir)
+                id_to_remove.append(job_id)
+                del_worker(job_id)
                 # create new worker
             elif worker_status == 'finished':
                 to_remove.append(worker_dir)
-                # create new worker
+                id_to_remove.append(job_id)
+                del_worker(job_id)
                 pass
             else:
                 Exception('Unkown worker status returned %s.' % worker_status)
-        # remove deleted or finshed jobs from list
-        for item in to_remove:
-            directories.remove(item)
+        # remove deleted or finshed jobs from list and run new ones
+        if len(to_remove) != len(id_to_remove):
+            print 'to_remove:', to_remove
+            print 'id_to_remove', to_remove
+            Exception('Dir and IDs of jobs to remove do not align:')
+
+        for item_dir, item_id in zip(to_remove, id_to_remove):
+            directories.remove(item_dir)
+            worker_ids.remove(id_to_remove)
             directory_num += 1
             dir_name = workers_name + str(directory_num)
+            job_id = run_worker(dir_name)
             directories.append(dir_name)
-            num_workers = run_worker(num_workers, dir_name)
-        print 'directories after deleting and adding:\n', directories
+            worker_ids.append(job_id)
+        # print '-- directories after deleting and adding:\n', directories, '\n'
 
-        if len(directories != num_workers):
+        if len(directories) != len(worker_ids):
+            print 'directories', directories
+            print 'worker_ids', worker_ids
             Exception(
                 'Number of workers does not equal number of worker directories')
         time.sleep(2)
 
-    while(num_workers > 0):
+    while(len(worker_ids) > 0):
         break
         # monitor existing jobs cancel if needed,
         # do no create any new jobs
+    print '---- master deleting workers ----'
+    for worker_dir, worker_id in zip(directories, worker_ids):
+        print 'Deleting \nworker_dir:', worker_dir
+        print 'job_id:', job_id
+        del_worker(job_id)
