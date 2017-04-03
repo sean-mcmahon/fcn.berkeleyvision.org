@@ -58,7 +58,11 @@ def check_worker(num_workers, worker_dir):
     if status == 'R':
         # Job is running
         # this will fail (no matplotlib on HPC)
-        vis_finetune.main(os.path.join(worker_dir, logfilename))
+        try:
+            vis_finetune.main(os.path.join(worker_dir, logfilename))
+        except:
+            print 'could not run vis_finetune.py'
+            print "Error msg: ", sys.exc_info()[0]
         with open(logfilename, 'r') as logfile:
             log = logfile.read()
         # Get loss values
@@ -89,7 +93,12 @@ def check_worker(num_workers, worker_dir):
         worker_status = 'deployed'
     elif status == 'F':
         # this will fail (no matplotlib on HPC)
-        vis_finetune.main(os.path.join(worker_dir, logfilename))
+        try:
+            vis_finetune.main(os.path.join(worker_dir, logfilename))
+        except:
+            print 'could not run vis_finetune.py'
+            print "Error msg: ", sys.exc_info()[0]
+
         worker_status = 'finished'
     else:
         print 'Unexpected status ', status, 'for job', job_id
