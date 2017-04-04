@@ -155,17 +155,20 @@ def del_worker(job_id):
         raise
 
 if __name__ == '__main__':
+    # TODO write a bash script executing this parsing in a different session foldre
+    # and run time 
     jobs_running = False
     intialising_workers = True
     session_folder = 'rgb_workers'
     if not os.path.isdir(session_folder):
         os.mkdir(session_folder)
-    workers_name = session_folder + '/rgb_trail1_'
+    workers_name = session_folder + '/rgb_1_'
     directories = []
     worker_ids = []
     print '---- master creating workers ----'
-    for directory_num in range(3):
+    for directory_num in range(4):
         dir_name = workers_name + str(directory_num)
+        # TODO handle case where dir_name already exists
         directories.append(dir_name)
         job_id = run_worker(dir_name)
         print 'job_id: ', job_id
@@ -173,7 +176,7 @@ if __name__ == '__main__':
     print len(worker_ids), 'workers running!'
     subprocess.call('qstat -u n8307628', shell=True)
 
-    dir_txt = 'rgb_workers/directories.txt'
+    dir_txt = os.path.join(session_folder, 'directories.txt')
     thefile = open(dir_txt, 'w')
     for item in directories:
         thefile.write("%s\n" % item)
@@ -196,7 +199,7 @@ if __name__ == '__main__':
 
     # check in on workes, deleting and adding as needed
     # do this infinitely or for certain time period?
-    timeout = time.time() + 60 * 10  # 1 minute
+    timeout = time.time() + 60 * 60 * 24  # 1 minute
     print '---- master: checking on workers ----'
     while(time.time() < timeout):
         to_remove = []
@@ -248,10 +251,12 @@ if __name__ == '__main__':
             Exception(
                 'Number of workers does not equal number of worker directories')
             raise
-        time.sleep(10)
+        time.sleep(120)
 
     while(len(worker_ids) > 0):
         break
+        # TODO Once master has stop runnning continue to manage workers until end
+
         # monitor existing jobs cancel if needed,
         # do no create any new jobs
     print '\n---- master deleting workers ----\n'
