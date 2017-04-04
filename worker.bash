@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#PBS -N worker
+#PBS -N paramSearch
 #PBS -l ngpus=1
 #PBS -l ncpus=1
 #PBS -l mem=32GB
