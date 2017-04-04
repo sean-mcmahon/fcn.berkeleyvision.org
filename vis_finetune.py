@@ -11,13 +11,13 @@ import re
 import click
 import os
 import matplotlib
+import sys
 if os.path.isdir('/home/n8307628'):
     matplotlib.use('Agg')
 else:
     pass
 from matplotlib import pylab as plt
 # import matplotlib.pyplot
-
 
 
 @click.command()
@@ -62,13 +62,16 @@ def main(files, printouts=True):
     if printouts:
         print files[0]
     fig.savefig(os.path.join(save_dir, log_name + '.pdf'))
-    print 'PDF file ({}.pdf) saved to {}'.format(log_name, save_dir)
+    if printouts:
+        print 'PDF file ({}.pdf) saved to {}'.format(log_name, save_dir)
     try:
         plt.show()
     except:
+        plt.close()
         print '----\nvis_finetune.py (main) plotting has failed\n----'
         print("Error message: ", sys.exc_info()[0])
         raise
+    plt.close()
 
 
 def parse_log(log_file, printouts):
