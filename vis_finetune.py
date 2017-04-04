@@ -67,6 +67,8 @@ def main(files, printouts=True):
         plt.show()
     except:
         print '----\nvis_finetune.py (main) plotting has failed\n----'
+        print("Error message: ", sys.exc_info()[0])
+        raise
 
 
 def parse_log(log_file, printouts):
