@@ -26,6 +26,7 @@ try:
     import vis_finetune
 except ImportError:
     print sys.exc_info()[0]
+    raise
 
 home_dir = expanduser("~")
 # User Input
@@ -33,6 +34,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--mode', default='gpu')
 parser.add_argument('--working_dir', default='rgb_1')
 args = parser.parse_args()
+
 
 def append_dir_to_txt(dir_txt, dir_name):
     with open(dir_txt, "a") as myfile:
@@ -43,7 +45,8 @@ def append_dir_to_txt(dir_txt, dir_name):
 def run_worker(work_dir):
     worker_file = os.path.join(file_location, 'worker.bash')
     if not os.path.isfile(worker_file):
-        raise Exception("Could not find solve_any.py at {}".format(worker_file))
+        raise Exception(
+            "Could not find solve_any.py at {}".format(worker_file))
     if not os.path.isdir(work_dir):
         os.mkdir(work_dir)
     qsub_call = "qsub -v MY_TRAIN_DIR={} {}".format(work_dir, worker_file)
@@ -79,16 +82,20 @@ def check_worker(id_, worker_dir):
             print '***'
             return 'deployed'
         try:
-            # this will fail (no matplotlib on HPC)
-            vis_finetune.main(os.path.join(worker_dir, logfilename))
+            vis_finetune.main((os.path.join(worker_dir, logfilename),),
+                              printouts=False)
         except:
-            print 'Could not run vis_finetune.py. ', "Error msg: ", sys.exc_info()[0]
+            print 'Could not run vis_finetune.py. '
+            print 'input: "{}"'.format(os.path.join(worker_dir, logfilename))
+            print("Error msg: ", sys.exc_info()[0])
+            raise
         try:
             with open(logfilename, 'r') as logfile:
                 log = logfile.read()
         except:
             print 'logfilename = {}.'.format(logfilename)
-            subprocess.call('ls -l %s' % os.path.dirname(logfilename), shell=True)
+            subprocess.call('ls -l %s' %
+                            os.path.dirname(logfilename), shell=True)
             print sys.exc_info()[0]
             raise
         # Get loss values
@@ -98,19 +105,25 @@ def check_worker(id_, worker_dir):
         all_losses = re.findall(loss_pattern, log)
         # Check for insufficient number of iterations
         if len(all_losses) < 6 or loss_0_match is None or not loss_0_match:
-            print 'Insufficient train iterations to perform check.',
+            # print 'Insufficient train iterations to perform check.',
             '\n{}\n'.format(all_losses)
             return 'deployed'
-        init_loss = float(loss_0_match[0])  # should be 1 match
-        print 'check_worker:: init_loss=', init_loss
-        last_5 = all_losses[-5, :]
-        last_5 = [float(i) for i in last_5]
-        print 'last 5 losses = ', last_5
+        try:
+            init_loss = float(loss_0_match[0][0])  # should be 1 match
+        except TypeError:
+            print 'loss_0_match[0]:', loss_0_match[0]
+            print 'shape loss_0_match: ', np.shape(loss_0_match)
+            print "Error msg: ", sys.exc_info()[0]
+            raise
+        # print 'check_worker:: init_loss=', init_loss
+        last_5 = [float(i[1]) for i in all_losses[-5:]]
+        # print 'last 5 losses = ', all_losses[-5:][0:1]
         if np.sum(last_5 > (init_loss / 2)) > 1:
             # more than 1 of the last 5 losses greater than half initial loss
+            print 'Deleting: last 5 losses = ', all_losses[-5:][0:1]
             worker_status = 'del'
-            print 'Deleted job {} (ID: {})'.format(os.path.basename(worker_dir),
-                                                   job_id)
+            print 'job {} (ID: {})'.format(os.path.basename(worker_dir),
+                                           job_id)
         else:
             worker_status = 'deployed'
     elif status == 'Q':
@@ -119,9 +132,13 @@ def check_worker(id_, worker_dir):
     elif status == 'F':
         # this will fail (no matplotlib on HPC)
         try:
-            vis_finetune.main(os.path.join(worker_dir, logfilename))
+            vis_finetune.main((os.path.join(worker_dir, logfilename),),
+                              printouts=False)
         except:
-            print 'Could not run vis_finetune.py. ', "Error msg: ", sys.exc_info()[0]
+            print 'Could not run vis_finetune.py. '
+            print 'input: "{}"'.format(os.path.join(worker_dir, logfilename))
+            print("Error msg: ", sys.exc_info()[0])
+            raise
 
         worker_status = 'finished'
     else:
@@ -194,9 +211,9 @@ if __name__ == '__main__':
         for worker_dir, job_id in zip(directories, worker_ids):
             # check status (train loss hasn't exploded)
             # create plots of all running jobs
-            print '-- Checking dir {}, job_id={}'.format(worker_dir, job_id)
+            # print '-- Checking dir {}, job_id={}'.format(worker_dir, job_id)
             worker_status = check_worker(job_id, worker_dir)
-            print '-- After check, status:',  worker_status
+            # print '-- After check, status:',  worker_status
             if worker_status == 'deployed':
                 pass
             elif worker_status == 'del':
@@ -228,7 +245,8 @@ if __name__ == '__main__':
             directories.append(dir_name)
             worker_ids.append(job_id)
             append_dir_to_txt(dir_txt, dir_name)
-        # print '-- directories after deleting and adding:\n', directories, '\n'
+        # print '-- directories after deleting and adding:\n', directories,
+        # '\n'
 
         if len(directories) != len(worker_ids):
             print 'directories', directories
