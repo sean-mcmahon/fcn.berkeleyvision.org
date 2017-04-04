@@ -82,14 +82,6 @@ def check_worker(id_, worker_dir):
             print '***'
             return 'deployed'
         try:
-            vis_finetune.main((os.path.join(worker_dir, logfilename),),
-                              printouts=False)
-        except:
-            print 'Could not run vis_finetune.py. '
-            print 'input: "{}"'.format(os.path.join(worker_dir, logfilename))
-            print("Error msg: ", sys.exc_info()[0])
-            raise
-        try:
             with open(logfilename, 'r') as logfile:
                 log = logfile.read()
         except:
@@ -115,6 +107,8 @@ def check_worker(id_, worker_dir):
             print 'shape loss_0_match: ', np.shape(loss_0_match)
             print "Error msg: ", sys.exc_info()[0]
             raise
+        vis_finetune.main((logfilename,),
+                          printouts=False)
         # print 'check_worker:: init_loss=', init_loss
         last_5 = [float(i[1]) for i in all_losses[-5:]]
         # print 'last 5 losses = ', all_losses[-5:][0:1]
@@ -130,15 +124,15 @@ def check_worker(id_, worker_dir):
         # job qued return
         worker_status = 'deployed'
     elif status == 'F':
-        # this will fail (no matplotlib on HPC)
         try:
-            vis_finetune.main((os.path.join(worker_dir, logfilename),),
-                              printouts=False)
-        except:
-            print 'Could not run vis_finetune.py. '
-            print 'input: "{}"'.format(os.path.join(worker_dir, logfilename))
-            print("Error msg: ", sys.exc_info()[0])
-            raise
+            logfilename = glob.glob(os.path.join(worker_dir, '*.log'))[0]
+        except IndexError:
+            print '*** \nError finding logfilenames at', os.path.join(worker_dir,
+                                                                      '*.log')
+            print '***'
+            return 'deployed'
+        vis_finetune.main((logfilename,),
+                          printouts=False)
 
         worker_status = 'finished'
     else:
