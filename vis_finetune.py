@@ -9,29 +9,41 @@ https://groups.google.com/forum/#!searchin/caffe-users/vis_finetune.py%7Csort:re
 import numpy as np
 import re
 import click
+import os
 import matplotlib
-matplotlib.use('Agg')
+if os.path.isdir('/home/n8307628'):
+    matplotlib.use('Agg')
+else:
+    pass
 from matplotlib import pylab as plt
 # import matplotlib.pyplot
-import os
+
 
 
 @click.command()
 @click.argument('files', nargs=-1, type=click.Path(exists=True))
-def main(files):
+def main_click(files):
+    print '---------------\n'
+    print files
+    print '\n---------------\n'
+    main(files)
+
+
+def main(files, printouts=True):
     plt.style.use('ggplot')
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
     ax1.set_xlabel('iteration')
     ax1.set_ylabel('loss')
     ax2.set_ylabel('trip accuracy %')
-    print type(files), 'shape ', np.shape(files)
-    print files
+    if printouts:
+        print type(files), 'shape ', np.shape(files)
+        print files
     for i, log_file in enumerate(files):
         loss_iterations, losses, val_acc_iterations, val_accuracies, \
             val_acc_iteration_checkpoints_ind, val_loss_iterations, val_losses,  \
             train_acc_iterations, train_acc, train_acc_iteration_checkpoints_ind = parse_log(
-                log_file)
+                log_file, printouts)
         disp_results(fig, ax1, ax2, loss_iterations, losses, val_acc_iterations,
                      val_accuracies, val_acc_iteration_checkpoints_ind,
                      val_loss_iterations, val_losses,
@@ -47,7 +59,8 @@ def main(files):
         save_dir = os.path.realpath(os.path.join(
             os.getcwd(), os.path.dirname(__file__)))
         fig.suptitle(log_name, fontsize=7, fontweight='bold')
-    print files[0]
+    if printouts:
+        print files[0]
     fig.savefig(os.path.join(save_dir, log_name + '.pdf'))
     print 'PDF file ({}.pdf) saved to {}'.format(log_name, save_dir)
     try:
@@ -56,7 +69,7 @@ def main(files):
         print '----\nvis_finetune.py (main) plotting has failed\n----'
 
 
-def parse_log(log_file):
+def parse_log(log_file, printouts):
     with open(log_file, 'r') as log_file:
         log = log_file.read()
 
@@ -81,8 +94,9 @@ def parse_log(log_file):
 
     val_loss_iterations = np.array(val_loss_iterations)
     val_losses = np.array(val_losses)
-    print 'Number of train loss iter {}, Number of train losses {}'.format(
-        np.shape(val_loss_iterations), np.shape(val_losses))
+    if printouts:
+        print 'Number of train loss iter {}, Number of train losses {}'.format(
+            np.shape(val_loss_iterations), np.shape(val_losses))
 
     # accuracy_pattern = r"Iteration (?P<iter_num>\d+), Testing net \(#0\)\n.*
     # accuracy = (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
@@ -150,7 +164,7 @@ def disp_results(fig, ax1, ax2, loss_iterations, losses, val_acc_iterations,
              color=plt.rcParams['axes.color_cycle'][(color_ind * 2 + 1) % modula])
 
     train_a_h, = ax2.plot(train_acc_iterations, train_acc, plt.rcParams[
-        'axes.color_cycle'][(color_ind * 2 + 1) % modula],linestyle=':',
+        'axes.color_cycle'][(color_ind * 2 + 1) % modula], linestyle=':',
         label='val accuracy')
     ax2.plot(train_acc_iterations[train_acc_iteration_checkpoints_ind], train_acc[
              train_acc_iteration_checkpoints_ind], 'o',
@@ -166,4 +180,4 @@ def disp_results(fig, ax1, ax2, loss_iterations, losses, val_acc_iterations,
     #     fig.legend((train_l_h), ('Train Loss'), loc='upper right')
 
 if __name__ == '__main__':
-    main()
+    main_click()
