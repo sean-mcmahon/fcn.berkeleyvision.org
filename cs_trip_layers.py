@@ -68,7 +68,10 @@ class CStripSegDataLayer(caffe.Layer):
         print '***********************'
 
         # TODO: Find means of images in CS dataset
-        self.mean_bgr = np.array((0, 0, 0), dtype=np.float32)
+        self.mean_bgr = np.array(
+            (0.34829637, 0.33886415, 0.31283921), dtype=np.float32)
+        # [ 0.34829637  0.33886415  0.31283921]
+        print 'self.mean_bgr =', self.mean_bgr
         self.mean_hha = np.array(
             (0.28977805, 0.44051939, 0.26969752), dtype=np.float32)
         self.mean_hha2 = np.array(
