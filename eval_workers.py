@@ -56,7 +56,7 @@ def parse_val(logfilename):
             iter_l = iteration_loss
     if 'r_a' not in locals() or 'r_l' not in locals():
         print 'No matches for logfile: ', logfilename
-        return {'val_loss': [0, 0], 'val_acc': [0, 0],
+        return {'val_loss': [0, float(9e8)], 'val_acc': [0, 0],
                 'logfile': logfilename}
 
     # print 'iter acc {}, accuracy {}\n iter loss {}, loss {}'.format(
@@ -75,9 +75,14 @@ def parse_val(logfilename):
 
 
 def sort_n_write(results, sort_key):
-    sort_dict = sorted(results, key=lambda k: k[sort_key])
+    if 'acc' in sort_key or 'accuracy' in sort_key:
+        sort_dict = sorted(results, key=lambda k: k[sort_key][1], reverse=True)
+    elif 'loss' in sort_key:
+        sort_dict = sorted(results, key=lambda k: k[sort_key][1])
+    else:
+        raise(Exception('Invalid sort_key: {}'.format(sort_key)))
 
-    print 'sort_n_write:: sort_dict[0:4]: \n', sort_dict[0:4]
+    # print 'sort_n_write:: sort_dict[0:4]: \n', sort_dict[0:4]
 
     with open('top_{}.txt'.format(sort_key), 'w') as myfile:
         for res in sort_dict[0:4]:
@@ -90,7 +95,7 @@ def sort_n_write(results, sort_key):
                                              res['val_loss'][0],
                                              res['logfile'])
             print 'sort_n_write:: adding string: \n', res_str
-            myfile.write(res_str)
+            myfile.write(res_str + '\n')
     return sort_dict
 
 
@@ -108,8 +113,10 @@ def main(worker_parent_dir):
         print 'parsing log {}/{}'.format(count, len(logfiles))
         results = parse_val(log)
         results_list.append(results)
-    sort_res_acc = sort_n_write(results, 'val_acc')
-    sort_res_loss = sort_n_write(results, 'val_loss')
+
+    sort_res_acc = sort_n_write(results_list, 'val_acc')
+    print '---------'
+    sort_res_loss = sort_n_write(results_list, 'val_loss')
 
     return sort_res_acc, sort_res_loss
 
