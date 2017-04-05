@@ -65,17 +65,22 @@ def parse_val(logfilename):
 
     return results_dict
 
+
 def sort_n_write(results, sort_key):
     sort_dict = sorted(results, key=lambda k: k[sort_key])
 
+    print 'sort_n_write:: sort_dict[0:4]: \n', sort_dict[0:4]
+
     with open('top_{}.txt'.format(sort_key), 'w') as myfile:
         for res in sort_dict[0:4]:
+            # TODO check formatting of this string, source of error!
             res_str = ("Best accuracy {} @ iter {}. "
                        "Best Loss {} @ iter {}. "
                        "Filename {}").format(res['val_acc'][1], res['val_acc'][0],
-                                             res['val_loss'][1], res['val_loss'][0],
+                                             res['val_loss'][1], res[
+                                                 'val_loss'][0],
                                              res['logfile'])
-            print 'adding string: \n', res_str
+            print 'sort_n_write:: adding string: \n', res_str
             myfile.write(res_str)
     return sort_dict
 
@@ -93,18 +98,8 @@ def main(worker_parent_dir):
     for log in logfiles:
         results = parse_val(log)
         results_list.append(results)
-    sort_res_acc = sorted(results_list, key=lambda k: k['val_acc'])
-    sort_res_loss = sorted(results_list, key=lambda k: k['val_loss'])
-
-    with open('top_val_loss.txt', 'w') as myfile:
-        for res in sort_res_loss[0:4]:
-            res_str = ("Best accuracy {} @ iter {}. "
-                       "Best Loss {} @ iter {}. "
-                       "Filename {}").format(res['val_acc'][1], res['val_acc'][0],
-                                             res['val_loss'][1], res['val_loss'][0],
-                                             res['logfile'])
-            print 'adding string: \n', res_str
-            myfile.write(res_str)
+    sort_res_acc = sort_n_write(results, 'val_acc')
+    sort_res_loss = sort_n_write(results, 'val_loss')
 
     return sort_res_acc, sort_res_loss
 
