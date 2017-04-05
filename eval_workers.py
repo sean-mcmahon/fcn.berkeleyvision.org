@@ -34,31 +34,39 @@ def parse_val(logfilename):
         logfile = files.read()
 
     # TODO check if splitting string across lines does not void literal string
-    val_acc_pattern = r"Iteration (?P<iter_num>\d+) val trip accuracy " + \
-        "(?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
-    val_loss_pattern = r"Iteration (?P<iter_num>\d+) val set loss " + \
-        "= (?P<loss_val>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
+    val_acc_pattern = r"Iteration (?P<iter_num>\d+) val trip accuracy"" (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
+    val_loss_pattern = r"Iteration (?P<iter_num>\d+) val set loss = (?P<loss_val>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
 
-    v_l = 1e8
+    v_l = float(5e8)
     iter_l = -1
     v_a = 0
     iter_a = -1
     for r_a, r_l in zip(re.findall(val_acc_pattern, logfile),
                         re.findall(val_loss_pattern, logfile)):
         iteration_acc = int(r_a[0])
-        accuracy_acc = float(r_a[1]) * 100
-        if accuracy_acc > v_a:
-            v_a = accuracy_acc
+        accuracy = float(r_a[1])
+        if accuracy > v_a:
+            v_a = accuracy
             iter_a = iteration_acc
 
         iteration_loss = int(r_l[0])
-        accuracy_loss = float(r_l[1]) * 100
-        if accuracy_loss < v_l:
-            v_l = accuracy_loss
+        loss = float(r_l[1])
+        if loss < v_l:
+            v_l = loss
             iter_l = iteration_loss
+    if 'r_a' not in locals() or 'r_l' not in locals():
+        print 'No matches for logfile: ', logfilename
+        return {'val_loss': [0, 0], 'val_acc': [0, 0],
+                'logfile': logfilename}
+
+    # print 'iter acc {}, accuracy {}\n iter loss {}, loss {}'.format(
+    #     iteration_acc, accuracy, iteration_loss, loss)
+
     if iter_a == -1 or iter_l == -1:
         raise(Exception(
-            'Max acc or min loss not found! \nLogfile {}'.format(logfilename)))
+            ("Max acc or min loss not found! (iter_a {}, iter_l {}) "
+             "\n- Logfile {}").format(iter_a,
+                                      iter_l, logfilename)))
 
     results_dict = {'val_loss': [iter_l, v_l], 'val_acc': [iter_a, v_a],
                     'logfile': logfilename}
@@ -76,9 +84,10 @@ def sort_n_write(results, sort_key):
             # TODO check formatting of this string, source of error!
             res_str = ("Best accuracy {} @ iter {}. "
                        "Best Loss {} @ iter {}. "
-                       "Filename {}").format(res['val_acc'][1], res['val_acc'][0],
-                                             res['val_loss'][1], res[
-                                                 'val_loss'][0],
+                       "Filename {}").format(round(res['val_acc'][1], 3),
+                                             res['val_acc'][0],
+                                             round(res['val_loss'][1], 3),
+                                             res['val_loss'][0],
                                              res['logfile'])
             print 'sort_n_write:: adding string: \n', res_str
             myfile.write(res_str)
@@ -87,7 +96,7 @@ def sort_n_write(results, sort_key):
 
 def main(worker_parent_dir):
     # find logfile in sub_dir, if none look in dir
-    sub_dirs = next(os.walk('.'))[1]
+    sub_dirs = next(os.walk(worker_parent_dir))[1]
     logfiles = []
     results_list = []
     for sub_dir in sub_dirs:
@@ -95,7 +104,8 @@ def main(worker_parent_dir):
             worker_parent_dir, sub_dir, '*.log'))
         for filename in filenames:
             logfiles.append(filename)
-    for log in logfiles:
+    for count, log in enumerate(logfiles):
+        print 'parsing log {}/{}'.format(count, len(logfiles))
         results = parse_val(log)
         results_list.append(results)
     sort_res_acc = sort_n_write(results, 'val_acc')
@@ -120,7 +130,10 @@ def main_cl(logfile):
             print 'results', res
 
 if __name__ == '__main__':
-    main_cl()
+    # main_cl()
+    parent_dir = '/home/sean/hpc-home/Fully-Conv-Network/Resources/FCN_paramsearch/rgb_workers'
+
+    main(parent_dir)
 
     # loop over worker jobs
 
