@@ -28,13 +28,43 @@ def run_test(solver, data_set, output_dir):
                     data_set, layer='score')
 
 
+def test_nets(results_txt_name):
+    # pass text file of best performers
+    # run test on the best and the best after 50 iter for both loss and acc
+    # baselines
+    txt_basename = os.path.basename(results_txt_name)
+    if 'acc' in txt_basename or 'accuracy' in txt_basename:
+        baseline_ind = 'accuracy'
+    elif 'loss' in txt_basename:
+        baseline_ind = 'Loss'
+    else:
+        raise(Exception('invalid text file name, must have "acc" or "loss"'))
+
+search_pattern = r"Best accuracy (?P<acc>(\d+\.\d*?|\.\d+)>?)" + \
+    r" @ iter (?P<iter_a_num>\d+)\. " + \
+    r"Best Loss (?P<loss_val>[+-]?(\d+\.\d*?|\.\d+)([eE][+-]?\d+)?) " + \
+                 r"@ iter (?P<iter_l_num>\d+)\. Filename (.*)"
+
+    with open(results_txt_name, 'r') as res:
+        results = res.read()
+    top_res = re.findall(search_pattern, results)[0]
+    acc = float(top_res[0])
+    acc_iter = int(top_res[2])
+    loss = float(top_res[3])
+    loss_iter = int(top_res[6])
+    logfilename = top_res[-1]
+    if loss_iter <= 50 or acc_iter <= 50:
+        for match in re.findall(search_pattern, results):
+            if match
+
+
 def parse_val(logfilename):
 
     with open(logfilename, 'r') as files:
         logfile = files.read()
 
     # TODO check if splitting string across lines does not void literal string
-    val_acc_pattern = r"Iteration (?P<iter_num>\d+) val trip accuracy"" (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
+    val_acc_pattern = r"Iteration (?P<iter_num>\d+) val trip accuracy (?P<accuracy>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
     val_loss_pattern = r"Iteration (?P<iter_num>\d+) val set loss = (?P<loss_val>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)"
 
     v_l = float(5e8)
@@ -107,6 +137,14 @@ def main(worker_parent_dir):
     for sub_dir in sub_dirs:
         filenames = glob.glob(os.path.join(
             worker_parent_dir, sub_dir, '*.log'))
+        if not filenames:
+            # search in parent dir
+            filenames = glob.glob(os.path.join(worker_parent_dir, '*.log'))
+        if not filenames:
+            # no logfiles in child or parent directories
+            raise(
+                Exception('Could not find any logfiles within {}'.format(
+                    worker_parent_dir)))
         for filename in filenames:
             logfiles.append(filename)
     for count, log in enumerate(logfiles):
