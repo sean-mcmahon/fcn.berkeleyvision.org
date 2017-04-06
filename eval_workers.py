@@ -23,27 +23,20 @@ filename, path, desc = imp.find_module('caffe', [caffe_root + '/python/'])
 caffe = imp.load_module('caffe', filename, path, desc)
 
 
-def run_test(solver, data_set, output_dir):
-    score.seg_tests(solver, output_dir,
-                    data_set, layer='score')
+def run_test(logFilename, iteration):
+    test_proto = os.path.join(os.path.dirname(logFilename), 'text.prototxt')
 
 
-def test_nets(results_txt_name):
+def test_best_nets(results_txt_name):
     # pass text file of best performers
     # run test on the best and the best after 50 iter for both loss and acc
     # baselines
-    txt_basename = os.path.basename(results_txt_name)
-    if 'acc' in txt_basename or 'accuracy' in txt_basename:
-        baseline_ind = 'accuracy'
-    elif 'loss' in txt_basename:
-        baseline_ind = 'Loss'
-    else:
-        raise(Exception('invalid text file name, must have "acc" or "loss"'))
 
-search_pattern = r"Best accuracy (?P<acc>(\d+\.\d*?|\.\d+)>?)" + \
-    r" @ iter (?P<iter_a_num>\d+)\. " + \
-    r"Best Loss (?P<loss_val>[+-]?(\d+\.\d*?|\.\d+)([eE][+-]?\d+)?) " + \
-                 r"@ iter (?P<iter_l_num>\d+)\. Filename (.*)"
+
+    search_pattern = r"Best accuracy (?P<acc>(\d+\.\d*?|\.\d+)>?)" + \
+        r" @ iter (?P<iter_a_num>\d+)\. " + \
+        r"Best Loss (?P<loss_val>[+-]?(\d+\.\d*?|\.\d+)([eE][+-]?\d+)?) " + \
+                     r"@ iter (?P<iter_l_num>\d+)\. Filename (.*)"
 
     with open(results_txt_name, 'r') as res:
         results = res.read()
@@ -52,10 +45,23 @@ search_pattern = r"Best accuracy (?P<acc>(\d+\.\d*?|\.\d+)>?)" + \
     acc_iter = int(top_res[2])
     loss = float(top_res[3])
     loss_iter = int(top_res[6])
-    logfilename = top_res[-1]
-    if loss_iter <= 50 or acc_iter <= 50:
-        for match in re.findall(search_pattern, results):
-            if match
+    logfilename = [top_res[-1]]
+    txt_basename = os.path.basename(results_txt_name)
+    if 'acc' in txt_basename or 'accuracy' in txt_basename:
+        if acc_iter <= 50:
+            # search for next best iter <50
+            # for match in re.findall(search_pattern, results):
+            #     if match[2] > 50:
+
+            pass
+    elif 'loss' in txt_basename:
+        if loss_iter <= 50:
+            # search for next best iter <50
+            pass
+    else:
+        raise(Exception('invalid text file name, must have "acc" or "loss"'))
+
+    # Intialise networks and test, saving performance results to text file
 
 
 def parse_val(logfilename):
