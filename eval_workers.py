@@ -189,6 +189,15 @@ def main(worker_parent_dir):
     print '---------'
     sort_res_loss = sort_n_write(results_list, 'val_loss')
 
+    run_test(sort_res_acc[0]['logfile'], sort_res_acc[0]['val_acc'][1])
+    for res in sort_res_acc:
+        if res['val_acc'][1] > 50:
+            run_test(res['logfile'], res['val_acc'][1])
+
+    run_test(sort_res_loss[0]['logfile'], sort_res_loss[0]['val_loss'][1])
+    for res in sort_res_loss:
+        if res['val_acc'][1] > 50:
+            run_test(res['logfile'], res['val_loss'][1])
     return sort_res_acc, sort_res_loss
 
 
