@@ -68,27 +68,6 @@ def test_best_nets(results_txt_name):
     with open(results_txt_name, 'r') as res:
         results = res.read()
     top_res = re.findall(search_pattern, results)[0]
-    acc = float(top_res[0])
-    acc_iter = int(top_res[2])
-    loss = float(top_res[3])
-    loss_iter = int(top_res[6])
-    logfilename = [top_res[-1]]
-    txt_basename = os.path.basename(results_txt_name)
-    if 'acc' in txt_basename or 'accuracy' in txt_basename:
-        if acc_iter <= 50:
-            # search for next best iter <50
-            # for match in re.findall(search_pattern, results):
-            #     if match[2] > 50:
-
-            pass
-    elif 'loss' in txt_basename:
-        if loss_iter <= 50:
-            # search for next best iter <50
-            pass
-    else:
-        raise(Exception('invalid text file name, must have "acc" or "loss"'))
-
-    # Intialise networks and test, saving performance results to text file
 
 
 def parse_val(logfilename):
