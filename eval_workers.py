@@ -24,14 +24,41 @@ caffe = imp.load_module('caffe', filename, path, desc)
 
 
 def run_test(logFilename, iteration):
+    file_location = os.path.realpath(os.path.join(
+        os.getcwd(), os.path.dirname(__file__)))
     test_proto = os.path.join(os.path.dirname(logFilename), 'text.prototxt')
+    weight_path = os.path.join(logFilename,
+                               'snapshots', '*{}.caffemodel'.format(iteration))
+    weights = glob.glob(weight_path)[0]
+    net = caffe.Net(test_proto, weights, caffe.TEST)
+    test_text = np.loadtxt(os.path.join(file_location,
+                                        'data/cs-trip/test.txt', dtype=str))
+    res_dic = score.do_seg_tests(net, iteration, None, test_text)
+    write_hist(logFilename, iteration, res_dic['Hist'], res_dic['FlagMetric'])
+
+
+def write_hist(filedir, iteration, hist, FlagMetric):
+    precision = hist[1, 1] / hist.sum(0)[1]
+    # hist[1,1] / (hist[0,1] + hist[1,1])
+    recall = hist[1, 1] / hist.sum(1)[1]
+    Fone = ((recall * precision) / (recall + precision)) * 2
+    iu = np.diag(hist) / (hist.sum(1) + hist.sum(0) - np.diag(hist))
+    trip_iou = iu[1]
+    txtfilename = os.path.join(
+        filedir, 'test_results_iter_{}.txt'.format(iteration))
+    with open(txtfilename, 'w') as myfile:
+        myfile.write('Precision:   {}\n'.format(precision))
+        myfile.write('Recall:      {}\n'.format(recall))
+        myfile.write('Fscore:      {}\n'.format(Fone))
+        myfile.write('Trip IOU     {}\n'.format(trip_iou))
+        myfile.write('Flag Metric: {}\n'.format(FlagMetric))
+    myfile.close()
 
 
 def test_best_nets(results_txt_name):
     # pass text file of best performers
     # run test on the best and the best after 50 iter for both loss and acc
     # baselines
-
 
     search_pattern = r"Best accuracy (?P<acc>(\d+\.\d*?|\.\d+)>?)" + \
         r" @ iter (?P<iter_a_num>\d+)\. " + \
