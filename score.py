@@ -293,4 +293,4 @@ def do_seg_tests(net, iter, save_format, dataset, layer='score', gt='label',
     print '>>>', datetime.now(), 'Iteration', iter, 'Flag Metric Acc', Fmetric_acc, \
         '\nFlags= ', Flags
 
-    return hist
+    return {'Hist': hist, 'FlagMetric': Fmetric_acc}
