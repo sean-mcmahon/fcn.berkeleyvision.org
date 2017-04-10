@@ -26,15 +26,21 @@ caffe = imp.load_module('caffe', filename, path, desc)
 def run_test(logFilename, iteration):
     file_location = os.path.realpath(os.path.join(
         os.getcwd(), os.path.dirname(__file__)))
-    test_proto = os.path.join(os.path.dirname(logFilename), 'text.prototxt')
-    weight_path = os.path.join(logFilename,
-                               'snapshots', '*{}.caffemodel'.format(iteration))
-    weights = glob.glob(weight_path)[0]
-    net = caffe.Net(test_proto, weights, caffe.TEST)
     test_text = np.loadtxt(os.path.join(file_location,
-                                        'data/cs-trip/test.txt', dtype=str))
+                                        'data/cs-trip/test.txt'), dtype=str)
+    log_dir = os.path.dirname(logFilename)
+    test_proto = os.path.join(log_dir, 'test.prototxt')
+    weight_path = os.path.join(log_dir,
+                               'snapshots', '*{}.caffemodel'.format(iteration))
+    try:
+        weights = glob.glob(weight_path)[0]
+    except IndexError:
+        print ">> Error finding: ", weight_path
+        raise(sys.exc_info()[0])
+    net = caffe.Net(test_proto, weights, caffe.TEST)
+
     res_dic = score.do_seg_tests(net, iteration, None, test_text)
-    write_hist(logFilename, iteration, res_dic['Hist'], res_dic['FlagMetric'])
+    write_hist(log_dir, iteration, res_dic['Hist'], res_dic['FlagMetric'])
 
 
 def write_hist(filedir, iteration, hist, FlagMetric):
@@ -168,7 +174,7 @@ def main(worker_parent_dir):
     print '---------'
     sort_res_loss = sort_n_write(results_list, 'val_loss')
 
-    run_test(sort_res_acc[0]['logfile'], sort_res_acc[0]['val_acc'][1])
+    run_test(sort_res_acc[0]['logfile'], sort_res_acc[0]['val_acc'][0])
     for res in sort_res_acc:
         if res['val_acc'][1] > 50:
             run_test(res['logfile'], res['val_acc'][1])
