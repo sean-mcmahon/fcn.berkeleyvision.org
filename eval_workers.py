@@ -37,6 +37,7 @@ def run_test(logFilename, iteration):
     except IndexError:
         print ">> Error finding: ", weight_path
         raise(sys.exc_info()[0])
+    caffe.set_mode_gpu()
     net = caffe.Net(test_proto, weights, caffe.TEST)
 
     res_dic = score.do_seg_tests(net, iteration, None, test_text)
@@ -176,13 +177,13 @@ def main(worker_parent_dir):
 
     run_test(sort_res_acc[0]['logfile'], sort_res_acc[0]['val_acc'][0])
     for res in sort_res_acc:
-        if res['val_acc'][1] > 50:
-            run_test(res['logfile'], res['val_acc'][1])
+        if res['val_acc'][0] > 50:
+            run_test(res['logfile'], res['val_acc'][0])
 
-    run_test(sort_res_loss[0]['logfile'], sort_res_loss[0]['val_loss'][1])
+    run_test(sort_res_loss[0]['logfile'], sort_res_loss[0]['val_loss'][0])
     for res in sort_res_loss:
-        if res['val_acc'][1] > 50:
-            run_test(res['logfile'], res['val_loss'][1])
+        if res['val_loss'][0] > 50:
+            run_test(res['logfile'], res['val_loss'][0])
     return sort_res_acc, sort_res_loss
 
 
@@ -203,7 +204,8 @@ def main_cl(logfile):
 
 if __name__ == '__main__':
     # main_cl()
-    parent_dir = '/home/sean/hpc-home/Fully-Conv-Network/Resources/FCN_paramsearch/rgb_workers'
+    # parent_dir = '/home/sean/hpc-home/Fully-Conv-Network/Resources/FCN_paramsearch/rgb_workers'
+    parent_dir = '/home/n8307628/Fully-Conv-Network/Resources/FCN_paramsearch/rgb_workers'
 
     main(parent_dir)
 

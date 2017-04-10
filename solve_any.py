@@ -122,6 +122,8 @@ def run_solver(params_dict, work_dir):
     # for engine: 1 CAFFE 2 CUDNN; CUDNN non-deterministic, but is quicker than CAFFE.
     # Basically use CAFFE for exact repeatable results and CUDNN for faster
     # run time
+    networks.print_net(work_dir, split='test',
+                       net_type=params_dict['type'])
     val_name = 'val2'
     val_net_name = networks.createNet(val_name, net_type=params_dict['type'],
                                       f_multi=0, engine=0)
@@ -157,7 +159,8 @@ def run_solver(params_dict, work_dir):
         print '------------------------------'
         solver.step(50)
 
-        val_trip_acc, val_loss = score.seg_loss_tests(solver, val, layer='score')
+        val_trip_acc, val_loss = score.seg_loss_tests(
+            solver, val, layer='score')
         train_trip_acc, train_loss = score.seg_loss_train_test(
             solver, trainset, layer='score')
         # print 'Checking validation acc. Acc={}, baseline={}'.format(
@@ -181,8 +184,7 @@ def run_solver(params_dict, work_dir):
     # and 'export CUDA_VISIBLE_DEVICES=1'
     # print '\n>>>> Validation <<<<\n'
     print '\n completed colour only train'
-    networks.print_net(work_dir, split='test',
-                       net_type=params_dict['type'])
+
 
 if __name__ == '__main__':
     work_path = args.working_dir
