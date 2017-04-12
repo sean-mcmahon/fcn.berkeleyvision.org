@@ -37,28 +37,56 @@ def run_test(logFilename, iteration):
     except IndexError:
         print ">> Error finding: ", weight_path
         raise(sys.exc_info()[0])
+    try:
+        paramsfilename = os.path.join(log_dir, 'params.txt')
+        with open(paramsfilename, 'r') as par:
+            params_str = par.read()
+    except IOError:
+        print 'Could not open params file: ', paramsfilename
+        params_str = None
+        raise(sys.exc_info()[0])
+
     caffe.set_mode_gpu()
     net = caffe.Net(test_proto, weights, caffe.TEST)
 
     res_dic = score.do_seg_tests(net, iteration, None, test_text)
-    write_hist(log_dir, iteration, res_dic['Hist'], res_dic['FlagMetric'])
+    txtfilename = os.path.join(
+        log_dir, 'test_results_iter_{}.txt'.format(iteration))
+    write_hist(txtfilename, res_dic['Hist'], res_dic[
+               'FlagMetric'], paramStr=params_str)
+
+    # writing to parent directory
+    # parent_dir = os.path.abspath(os.path.join(log_dir, os.pardir))
+    parent_dir = os.path.dirname(log_dir)
+    worker_name = os.path.basename(os.path.dirname(logFilename))
+    if worker_name == '':
+        raise(Exception("Could not get worker dir from " +
+                        os.path.dirname(logFilename)))
+    parentFileName = os.path.join(
+        parent_dir, '{}_iter_{}_test_res.txt'.format(worker_name, iteration))
+    print 'Saving results to', parentFileName
+    write_hist(parentFileName, res_dic['Hist'], res_dic[
+               'FlagMetric'], paramStr=params_str)
 
 
-def write_hist(filedir, iteration, hist, FlagMetric):
+def write_hist(txtfilename, hist, FlagMetric, paramStr=None):
     precision = hist[1, 1] / hist.sum(0)[1]
     # hist[1,1] / (hist[0,1] + hist[1,1])
     recall = hist[1, 1] / hist.sum(1)[1]
     Fone = ((recall * precision) / (recall + precision)) * 2
     iu = np.diag(hist) / (hist.sum(1) + hist.sum(0) - np.diag(hist))
     trip_iou = iu[1]
-    txtfilename = os.path.join(
-        filedir, 'test_results_iter_{}.txt'.format(iteration))
+
     with open(txtfilename, 'w') as myfile:
         myfile.write('Precision:   {}\n'.format(precision))
         myfile.write('Recall:      {}\n'.format(recall))
         myfile.write('Fscore:      {}\n'.format(Fone))
         myfile.write('Trip IOU     {}\n'.format(trip_iou))
         myfile.write('Flag Metric: {}\n'.format(FlagMetric))
+        if paramStr is not None:
+            myfile.write('-' * 20 + '\n')
+            myfile.write('Hyperparameters:\n')
+            myfile.write(paramStr)
     myfile.close()
 
 
