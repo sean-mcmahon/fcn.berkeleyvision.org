@@ -153,7 +153,7 @@ def run_solver(params_dict, work_dir):
     val_trip_acc_baseline = 0.45
     val_loss_buf = 4000000.0
 
-    for _ in range(80):
+    for _ in range(100):
         print '------------------------------'
         print 'Running solver.step iter {}'.format(_)
         print '------------------------------'
@@ -177,7 +177,7 @@ def run_solver(params_dict, work_dir):
         if val_loss < val_loss_buf:
             val_loss_buf = val_loss
             if solver.iter > 60:
-                print 'minimum val loss @ iter {}, saving'.format(_)
+                print 'minimum val loss @ iter {}, saving'.format(solver.iter)
                 solver.snapshot()
     # if getting issues on HPC try
     # export MKL_CBWR=AUTO
@@ -194,7 +194,7 @@ if __name__ == '__main__':
         work_dir = work_path
 
     dropout_regularisation = round(np.random.uniform(0.2, 0.9), 3)
-    learning_rate = round(10 ** np.random.uniform(-13, -9), 16)
+    learning_rate = round(10 ** np.random.uniform(-13, -10), 16)
     final_learning_multiplier = np.random.randint(1, 10)
     freeze_lower_layers = bool(np.random.randint(0, 1))
     params_dict = {'base_lr': learning_rate, 'solverType': 'SGD',
