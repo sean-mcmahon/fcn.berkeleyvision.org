@@ -36,7 +36,7 @@ def run_test(logFilename, iteration):
         weights = glob.glob(weight_path)[0]
     except IndexError:
         print ">> Error finding: ", weight_path
-        raise(sys.exc_info()[0])
+        raise(Exception(sys.exc_info()[0]))
     try:
         paramsfilename = os.path.join(log_dir, 'params.txt')
         with open(paramsfilename, 'r') as par:
@@ -44,7 +44,7 @@ def run_test(logFilename, iteration):
     except IOError:
         print 'Could not open params file: ', paramsfilename
         params_str = None
-        raise(sys.exc_info()[0])
+        raise(Exception(sys.exc_info()[0]))
 
     caffe.set_mode_gpu()
     net = caffe.Net(test_proto, weights, caffe.TEST)
@@ -84,7 +84,7 @@ def write_hist(txtfilename, hist, FlagMetric, paramStr=None):
         myfile.write('Trip IOU     {}\n'.format(trip_iou))
         myfile.write('Flag Metric: {}\n'.format(FlagMetric))
         if paramStr is not None:
-            myfile.write('-' * 20 + '\n')
+            myfile.write('-' * 27 + '\n')
             myfile.write('Hyperparameters:\n')
             myfile.write(paramStr)
     myfile.close()
@@ -151,7 +151,7 @@ def parse_val(logfilename):
     return results_dict
 
 
-def sort_n_write(results, sort_key):
+def sort_n_write(sav_dir, results, sort_key):
     if 'acc' in sort_key or 'accuracy' in sort_key:
         sort_dict = sorted(results, key=lambda k: k[sort_key][1], reverse=True)
     elif 'loss' in sort_key:
@@ -161,7 +161,8 @@ def sort_n_write(results, sort_key):
 
     # print 'sort_n_write:: sort_dict[0:4]: \n', sort_dict[0:4]
 
-    with open('top_{}.txt'.format(sort_key), 'w') as myfile:
+    with open(os.path.join(sav_dir,
+                           'top_{}.txt'.format(sort_key)), 'w') as myfile:
         for res in sort_dict[0:4]:
             # TODO check formatting of this string, source of error!
             res_str = ("Best accuracy {} @ iter {}. "
@@ -173,7 +174,27 @@ def sort_n_write(results, sort_key):
                                              res['logfile'])
             print 'sort_n_write:: adding string: \n', res_str
             myfile.write(res_str + '\n')
-    return sort_dict
+    return sort_dict[0:4]
+
+
+def append_all_txt(dir_, outname):
+    textfiles = sorted(glob.glob(os.path.join(dir_, '*.txt')), reverse=True)
+    if len(textfiles) == 0:
+        raise(Exception("Could not find any .txt files at: " + textfiles))
+    with open(outname, 'w') as apfile:
+        for tfile in textfiles:
+            if os.path.basename(tfile) == "directories.txt" or tfile == outname:
+                t_str = ' '
+            else:
+                with open(tfile, 'r') as t:
+                    t_str = t.read()
+                    t.close()
+            if not t_str:
+                raise(Exception('could not read text from: ' + tfile))
+            if t_str != ' ':
+                apfile.write('+++ {} +++\n'.format(os.path.basename(tfile)))
+            apfile.write(t_str + '\n')
+    apfile.close()
 
 
 def main(worker_parent_dir):
@@ -199,9 +220,9 @@ def main(worker_parent_dir):
         results = parse_val(log)
         results_list.append(results)
 
-    sort_res_acc = sort_n_write(results_list, 'val_acc')
+    sort_res_acc = sort_n_write(worker_parent_dir, results_list, 'val_acc')
     print '---------'
-    sort_res_loss = sort_n_write(results_list, 'val_loss')
+    sort_res_loss = sort_n_write(worker_parent_dir, results_list, 'val_loss')
 
     run_test(sort_res_acc[0]['logfile'], sort_res_acc[0]['val_acc'][0])
     for res in sort_res_acc:
@@ -236,6 +257,7 @@ if __name__ == '__main__':
     parent_dir = '/home/n8307628/Fully-Conv-Network/Resources/FCN_paramsearch/rgb_workers'
 
     main(parent_dir)
+    append_all_txt(parent_dir, os.path.join(parent_dir, 'all_res.txt'))
 
     # loop over worker jobs
 
