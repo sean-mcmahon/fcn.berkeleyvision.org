@@ -2,7 +2,7 @@
 """
 trip trainer, designed to work with any modality
 
-By Sean McMahpn
+By Sean McMahon
 
 """
 # import caffe
@@ -258,13 +258,36 @@ if __name__ == '__main__':
             raise
         time.sleep(120)
 
-    while(len(worker_ids) > 0):
-        break
-        # TODO Once master has stop runnning continue to manage workers until end
-
-        # monitor existing jobs cancel if needed,
-        # do no create any new jobs
-    print '\n---- master deleting workers ----\n'
+    print '\n---- master waiting for jobs to finish ----\n'
+    try:
+        while(len(worker_ids) > 0):
+            worker_status = check_worker(job_id, worker_dir)
+            # print '-- After check, status:',  worker_status
+            if worker_status == 'deployed':
+                pass
+            elif worker_status == 'del':
+                to_remove.append(worker_dir)
+                id_to_remove.append(job_id)
+                del_worker(job_id)
+            elif worker_status == 'finished':
+                to_remove.append(worker_dir)
+                id_to_remove.append(job_id)
+                # del_worker(job_id)
+            else:
+                Exception('Unkown worker status returned %s.' % worker_status)
+                raise
+            for item_dir, item_id in zip(to_remove, id_to_remove):
+                directories.remove(item_dir)
+                worker_ids.remove(item_id)
+            # monitor existing jobs cancel if needed,
+            # do no create any new jobs
+    except:
+        print '\n---- master deleting workers ----\n'
+        for worker_dir, job_id in zip(directories, worker_ids):
+            print 'Deleting \nworker_dir:', worker_dir
+            print 'job_id:', job_id
+            del_worker(job_id)
+        raise(Exception(sys.exc_info()[0]))
     for worker_dir, job_id in zip(directories, worker_ids):
         print 'Deleting \nworker_dir:', worker_dir
         print 'job_id:', job_id
