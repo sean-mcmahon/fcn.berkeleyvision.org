@@ -156,7 +156,7 @@ def del_worker(job_id):
 
 if __name__ == '__main__':
     # TODO write a bash script executing this parsing in a different session foldre
-    # and run time 
+    # and run time
     jobs_running = False
     intialising_workers = True
     session_folder = 'rgb_workers'
@@ -169,12 +169,17 @@ if __name__ == '__main__':
     for directory_num in range(4):
         dir_name = workers_name + str(directory_num)
         # TODO handle case where dir_name already exists
+        while(os.path.isdir(dir_name)):
+            directory_num += 1
+            dir_name = workers_name + str(directory_num)
+        print 'Creatng worker @ ', dir_name
         directories.append(dir_name)
         job_id = run_worker(dir_name)
         print 'job_id: ', job_id
         worker_ids.append(job_id)
     print len(worker_ids), 'workers running!'
     subprocess.call('qstat -u n8307628', shell=True)
+    print 'directory_num=', directory_num
 
     dir_txt = os.path.join(session_folder, 'directories.txt')
     thefile = open(dir_txt, 'w')
