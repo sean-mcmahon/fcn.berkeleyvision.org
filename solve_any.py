@@ -13,6 +13,7 @@ from os.path import expanduser
 import imp
 import argparse
 import tempfile
+import glob
 
 # add '../' directory to path for importing score.py, surgery.py and
 # pycaffe layer
@@ -188,12 +189,17 @@ def run_solver(params_dict, work_dir):
 
 if __name__ == '__main__':
     work_path = args.working_dir
+    print 'Solver given working dir: ', work_path
     if '/home' not in work_path:
         work_dir = os.path.join(file_location, work_path)
     else:
         work_dir = work_path
     if os.path.isdir(work_dir):
-        raise(Exception('work directoy: \n"{}"\nalready exists, quitting'.format(work_dir)))
+        logfilename = glob.glob(os.path.join(work_dir, '*.log'))
+        if len(logfilename) > 1:
+            raise(
+                Exception(
+                    'work directoy: \n"{}"\nalready has logfile, quitting'.format(work_dir)))
 
     dropout_regularisation = round(np.random.uniform(0.2, 0.9), 3)
     learning_rate = round(10 ** np.random.uniform(-13, -10), 16)
@@ -205,6 +211,7 @@ if __name__ == '__main__':
                    'freeze_layers': freeze_lower_layers,
                    'type': 'rgb', 'weight_init': 'NYU_rgb',
                    'rand_seed': 3711}
+    print 'Solver writing to dir: ', work_dir
     write_dict(params_dict, work_dir)
 
     run_solver(params_dict, work_dir)

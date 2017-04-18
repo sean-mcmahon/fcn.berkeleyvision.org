@@ -72,13 +72,13 @@ if [[ -z "$set_mode" ]]; then
   set_mode='gpu'
 fi
 echo "train_folder_="$train_folder_
-mkdir -p $working_dir$train_folder_
+mkdir -p $train_folder_
 
 jobID=$PBS_JOBID
 echo 'Job ID: '$PBS_JOBID
-echo 'Job ID: '$PBS_JOBID >> $working_dir$train_folder_'/'$PBS_JOBID'.txt'
+echo 'Job ID: '$PBS_JOBID >> $train_folder_'/'$PBS_JOBID'.txt'
 
-log_filename=$working_dir$train_folder_'/logfile'$current_date'.log'
+log_filename=$train_folder_'/logfile'$current_date'.log'
 echo 'log_filename '$log_filename
-python $python_script --mode $set_mode --working_dir $working_dir$train_folder_  2>&1 | tee $log_filename
+python $python_script --mode $set_mode --working_dir $train_folder_  2>&1 | tee $log_filename
 echo 'Saved to '$log_filename

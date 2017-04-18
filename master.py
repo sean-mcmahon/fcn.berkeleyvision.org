@@ -159,16 +159,17 @@ if __name__ == '__main__':
     # and run time
     jobs_running = False
     intialising_workers = True
-    session_folder = os.path.join(file_location, 'rgb_workers')
+    # session_folder = os.path.join(file_location, 'rgb_workers')
+    session_folder = '/home/n8307628/Fully-Conv-Network/Resources' + \
+        '/FCN_paramsearch/rgb_workers'
     if not os.path.isdir(session_folder):
         os.mkdir(session_folder)
     workers_name = os.path.join(session_folder, 'rgb_1_')
     directories = []
     worker_ids = []
     print '---- master creating workers ----'
-    for directory_num in range(4):
+    for directory_num in range(3):
         dir_name = workers_name + str(directory_num)
-        # TODO handle case where dir_name already exists
         while(os.path.isdir(dir_name)):
             directory_num += 1
             dir_name = workers_name + str(directory_num)
@@ -209,6 +210,7 @@ if __name__ == '__main__':
     while(time.time() < timeout):
         to_remove = []
         id_to_remove = []
+        # subprocess.call('qstat -u n8307628', shell=True)
         print '\n--- Directories in use:\n', directories
         for worker_dir, job_id in zip(directories, worker_ids):
             # check status (train loss hasn't exploded)
