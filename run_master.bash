@@ -1,8 +1,9 @@
 #!/bin/bash -l
 #PBS -N master
 #PBS -l ncpus=1
-#PBS -l mem=32GB
-#PBS -l walltime=48:00:00
+#PBS -l mem=4GB
+#PBS -l walltime=110:00:00
+
 module load python/2.7.11-foss-2016a
 
 hpc_dir='/home/n8307628'
