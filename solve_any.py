@@ -192,6 +192,8 @@ if __name__ == '__main__':
         work_dir = os.path.join(file_location, work_path)
     else:
         work_dir = work_path
+    if os.path.isdir(work_dir):
+        raise(Exception('work directoy: \n"{}"\nalready exists, quitting'.format(work_dir)))
 
     dropout_regularisation = round(np.random.uniform(0.2, 0.9), 3)
     learning_rate = round(10 ** np.random.uniform(-13, -10), 16)

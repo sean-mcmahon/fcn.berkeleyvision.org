@@ -159,10 +159,10 @@ if __name__ == '__main__':
     # and run time
     jobs_running = False
     intialising_workers = True
-    session_folder = 'rgb_workers'
+    session_folder = os.path.join(file_location, 'rgb_workers')
     if not os.path.isdir(session_folder):
         os.mkdir(session_folder)
-    workers_name = session_folder + '/rgb_1_'
+    workers_name = os.path.join(session_folder, 'rgb_1_')
     directories = []
     worker_ids = []
     print '---- master creating workers ----'
