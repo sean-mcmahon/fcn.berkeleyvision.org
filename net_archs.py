@@ -97,7 +97,8 @@ def fcn(data_split, tops, dropout_prob=0.5, final_multi=1, engineNum=0, freeze=F
     return n
 
 
-def fcn_early(data_split, tops, dropout_prob=0.5, final_multi=1, engineNum=0, freeze=False):
+def fcn_early(data_split, tops, dropout_prob=0.5, conv1_1_lr_multi=4,
+              final_multi=1, engineNum=0, freeze=False):
     n = caffe.NetSpec()
     if tops[1] != 'depth' and tops[1] != 'hha2' and tops[1] != 'hha':
         raise(
@@ -105,7 +106,7 @@ def fcn_early(data_split, tops, dropout_prob=0.5, final_multi=1, engineNum=0, fr
                       tops + '" tops given'))
 
     n.color, n[tops[1]],  n.label = L.Python(module='cs_trip_layers',
-                                             layer='CStripSegDataLayer', ntop=2,
+                                             layer='CStripSegDataLayer', ntop=3,
                                              param_str=str(dict(
                                                  cstrip_dir='/Construction_Site/' +
                                                  'Springfield/12Aug16/K2',
@@ -114,19 +115,19 @@ def fcn_early(data_split, tops, dropout_prob=0.5, final_multi=1, engineNum=0, fr
     n.data = L.Concat(n.color, n[tops[1]])
     # the base net
     if freeze:
-        lr_multi = 0
+        mid_lr_multi = 0
     else:
-        lr_multi = 1
+        mid_lr_multi = 1
     n['conv1_1_bgr' + tops[1]], n.relu1_1 = conv_relu(
-        n.data, 64, engineNum, pad=100, lr=lr_multi)
-    n = mid_fcn_layers(n, 'relu1_1', engineNum, lr_multi)
+        n.data, 64, engineNum, pad=100, lr=conv1_1_lr_multi)
+    n = mid_fcn_layers(n, 'relu1_1', engineNum, mid_lr_multi)
 
     # fully conv
     n.fc6, n.relu6 = conv_relu(
-        n.pool5, 4096, engineNum,  ks=7, pad=0, lr=lr_multi)
+        n.pool5, 4096, engineNum,  ks=7, pad=0, lr=mid_lr_multi)
     n.drop6 = L.Dropout(n.relu6, dropout_ratio=dropout_prob, in_place=True)
     n.fc7, n.relu7 = conv_relu(
-        n.drop6, 4096, engineNum, ks=1, pad=0, lr=lr_multi)
+        n.drop6, 4096, engineNum, ks=1, pad=0, lr=mid_lr_multi)
     n.drop7 = L.Dropout(n.relu7, dropout_ratio=dropout_prob, in_place=True)
 
     n.score_fr_trip = L.Convolution(n.drop7, num_output=2, kernel_size=1,
@@ -172,4 +173,4 @@ def print_fcn_early():
         f.write(str(fcn_early('test', tops).to_proto()))
 
 if __name__ == '__main__':
-    print_rgb_nets()
+    print_fcn_early()
