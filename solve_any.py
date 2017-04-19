@@ -2,7 +2,7 @@
 """
 trip trainer, designed to work with any modality
 
-By Sean McMahpn
+By Sean McMahon
 
 """
 # import caffe
@@ -22,7 +22,7 @@ CAFFE_eng = 1
 CUDNN_eng = 2
 file_location = os.path.realpath(os.path.join(
     os.getcwd(), os.path.dirname(__file__)))
-sys.path.append(file_location[:file_location.rfind('/')])
+sys.path.append(file_location)
 home_dir = expanduser("~")
 # User Input
 parser = argparse.ArgumentParser()
