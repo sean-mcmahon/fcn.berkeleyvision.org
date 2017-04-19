@@ -1,3 +1,9 @@
+"""
+file to house all the architectures being used, could get quite large
+
+By Sean McMahon
+
+"""
 import caffe
 from caffe import layers as L, params as P
 from caffe.coord_map import crop
@@ -20,6 +26,32 @@ def max_pool(bottom, engineNum=defEngine, ks=2, engineNumks=2, stride=2):
                      engine=engineNum)
 
 
+def mid_fcn_layers(net_spec, convRelu1, engNum, lr_multi):
+    n = net_spec
+    n.conv1_2, n.relu1_2 = conv_relu(n[convRelu1], 64, engNum, lr=lr_multi)
+    n.pool1 = max_pool(n.relu1_2, engNum)
+
+    n.conv2_1, n.relu2_1 = conv_relu(n.pool1, 128, engNum, lr=lr_multi)
+    n.conv2_2, n.relu2_2 = conv_relu(n.relu2_1, 128, engNum, lr=lr_multi)
+    n.pool2 = max_pool(n.relu2_2, engNum)
+
+    n.conv3_1, n.relu3_1 = conv_relu(n.pool2, 256, engNum, lr=lr_multi)
+    n.conv3_2, n.relu3_2 = conv_relu(n.relu3_1, 256, engNum, lr=lr_multi)
+    n.conv3_3, n.relu3_3 = conv_relu(n.relu3_2, 256, engNum, lr=lr_multi)
+    n.pool3 = max_pool(n.relu3_3, engNum)
+
+    n.conv4_1, n.relu4_1 = conv_relu(n.pool3, 512, engNum, lr=lr_multi)
+    n.conv4_2, n.relu4_2 = conv_relu(n.relu4_1, 512, engNum, lr=lr_multi)
+    n.conv4_3, n.relu4_3 = conv_relu(n.relu4_2, 512, engNum, lr=lr_multi)
+    n.pool4 = max_pool(n.relu4_3, engNum)
+
+    n.conv5_1, n.relu5_1 = conv_relu(n.pool4, 512, engNum, lr=lr_multi)
+    n.conv5_2, n.relu5_2 = conv_relu(n.relu5_1, 512, engNum, lr=lr_multi)
+    n.conv5_3, n.relu5_3 = conv_relu(n.relu5_2, 512, engNum, lr=lr_multi)
+    n.pool5 = max_pool(n.relu5_3, engNum)
+    return n
+
+
 def fcn_rgb(split, tops, dropout_prob=0.5, final_multi=1, engineNum=0, freeze=False):
     n = caffe.NetSpec()
     n.data, n.label = L.Python(module='cs_trip_layers',
@@ -36,27 +68,7 @@ def fcn_rgb(split, tops, dropout_prob=0.5, final_multi=1, engineNum=0, freeze=Fa
         lr_multi = 1
     n.conv1_1, n.relu1_1 = conv_relu(
         n.data, 64, engineNum, pad=100, lr=lr_multi)
-    n.conv1_2, n.relu1_2 = conv_relu(n.relu1_1, 64, engineNum, lr=lr_multi)
-    n.pool1 = max_pool(n.relu1_2, engineNum)
-
-    n.conv2_1, n.relu2_1 = conv_relu(n.pool1, 128, engineNum, lr=lr_multi)
-    n.conv2_2, n.relu2_2 = conv_relu(n.relu2_1, 128, engineNum, lr=lr_multi)
-    n.pool2 = max_pool(n.relu2_2, engineNum)
-
-    n.conv3_1, n.relu3_1 = conv_relu(n.pool2, 256, engineNum, lr=lr_multi)
-    n.conv3_2, n.relu3_2 = conv_relu(n.relu3_1, 256, engineNum, lr=lr_multi)
-    n.conv3_3, n.relu3_3 = conv_relu(n.relu3_2, 256, engineNum, lr=lr_multi)
-    n.pool3 = max_pool(n.relu3_3, engineNum)
-
-    n.conv4_1, n.relu4_1 = conv_relu(n.pool3, 512, engineNum, lr=lr_multi)
-    n.conv4_2, n.relu4_2 = conv_relu(n.relu4_1, 512, engineNum, lr=lr_multi)
-    n.conv4_3, n.relu4_3 = conv_relu(n.relu4_2, 512, engineNum, lr=lr_multi)
-    n.pool4 = max_pool(n.relu4_3, engineNum)
-
-    n.conv5_1, n.relu5_1 = conv_relu(n.pool4, 512, engineNum, lr=lr_multi)
-    n.conv5_2, n.relu5_2 = conv_relu(n.relu5_1, 512, engineNum, lr=lr_multi)
-    n.conv5_3, n.relu5_3 = conv_relu(n.relu5_2, 512, engineNum, lr=lr_multi)
-    n.pool5 = max_pool(n.relu5_3, engineNum)
+    n = mid_fcn_layers(n, 'relu1_1', engineNum, lr_multi)
 
     # fully conv
     n.fc6, n.relu6 = conv_relu(
@@ -85,41 +97,16 @@ def fcn_rgb(split, tops, dropout_prob=0.5, final_multi=1, engineNum=0, freeze=Fa
     return n
 
 
-def createNet(split, net_type='rgb', f_multi=5, dropout_prob=0.5,
-              engine=1, freeze=False):
-
-    if net_type == 'rgb' or net_type == 'RGB':
-        tops = ['color', 'label']
-        net = fcn_rgb(split, tops, engineNum=engine, final_multi=f_multi,
-                      dropout_prob=dropout_prob, freeze=freeze)
-    else:
-        raise(Exception('net_type "' + net_type +
-                        '" unrecognised, create case for new network here.'))
-    with tempfile.NamedTemporaryFile(delete=False) as f:
-        f.write(str(net.to_proto()))
-        return f.name
-
-
-def print_net(path, split='test', net_type='rgb'):
-    if net_type == 'rgb' or net_type == 'RGB':
-        tops = ['color', 'label']
-        with open(os.path.join(path, split + '.prototxt'), 'w') as f:
-            f.write(str(fcn_rgb(split, tops).to_proto()))
-    else:
-        raise(Exception('net_type "' + net_type +
-                        '" unrecognised, create case for new network here.'))
-
-
-def print_all_nets():
+def print_rgb_nets():
     tops = ['color', 'label']
-    with open('trainval.prototxt', 'w') as f:
+    with open('trainval2.prototxt', 'w') as f:
         f.write(str(fcn_rgb('train', tops).to_proto()))
 
-    with open('val.prototxt', 'w') as f:
+    with open('val2.prototxt', 'w') as f:
         f.write(str(fcn_rgb('val', tops).to_proto()))
 
-    with open('test.prototxt', 'w') as f:
+    with open('test2.prototxt', 'w') as f:
         f.write(str(fcn_rgb('test', tops).to_proto()))
 
 if __name__ == '__main__':
-    print_all_nets()
+    print_rgb_nets()
