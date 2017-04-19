@@ -204,7 +204,7 @@ if __name__ == '__main__':
     dropout_regularisation = round(np.random.uniform(0.2, 0.9), 3)
     learning_rate = round(10 ** np.random.uniform(-13, -10), 16)
     final_learning_multiplier = np.random.randint(1, 10)
-    freeze_lower_layers = bool(np.random.randint(0, 1))
+    freeze_lower_layers = bool(np.random.randint(0, 2))
     params_dict = {'base_lr': learning_rate, 'solverType': 'SGD',
                    'f_multi': final_learning_multiplier,
                    'dropout': dropout_regularisation,
