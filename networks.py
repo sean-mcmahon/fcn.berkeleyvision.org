@@ -26,13 +26,13 @@ def createNet(split, net_type='rgb', f_multi=5, dropout_prob=0.5,
     elif net_type == 'rgbd_early' or net_type == 'RGBD_early':
         tops = ['color', 'depth', 'label']
         net = net_archs.fcn_early(split, tops, engineNum=engine,
-                                  conv1_1_lr_multi=conv11_multi
+                                  conv1_1_lr_multi=conv11_multi,
                                   final_multi=f_multi, dropout_prob=dropout_prob,
                                   freeze=freeze)
     elif net_type == 'rgbhha2_early' or net_type == 'rgbHHA2_early':
         tops = ['color', 'hha2', 'label']
         net = net_archs.fcn_early(split, tops, engineNum=engine,
-                                  conv1_1_lr_multi=conv11_multi
+                                  conv1_1_lr_multi=conv11_multi,
                                   final_multi=f_multi, dropout_prob=dropout_prob,
                                   freeze=freeze)
     else:
