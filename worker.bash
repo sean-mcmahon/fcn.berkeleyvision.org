@@ -63,7 +63,7 @@ current_date=`date +%Y-%m-%d_%H-%M-%S`
 train_folder_="$1"
 if [[ -z "$train_folder_" ]]; then
   if [ -z ${MY_TRAIN_DIR+x} ]; then
-    train_folder_='rgb_1'$current_date;
+    train_folder_='worker_test_'$current_date;
   else train_folder_=$MY_TRAIN_DIR
   fi
 fi
