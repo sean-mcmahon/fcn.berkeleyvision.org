@@ -136,7 +136,8 @@ def check_worker(id_, worker_dir):
 
         worker_status = 'finished'
     else:
-        print '++++\nUnexpected status ', status, 'for job', job_id, '\n++++'
+        print '++++\nUnexpected status ', status, 'for job', job_id,  \
+            '\ndir: ', worker_dir, '\n++++'
         worker_status = 'deployed'
 
     return worker_status
@@ -164,7 +165,7 @@ if __name__ == '__main__':
         '/FCN_paramsearch/rgb_workers'
     if not os.path.isdir(session_folder):
         os.mkdir(session_folder)
-    workers_name = os.path.join(session_folder, 'rgb_1_')
+    workers_name = os.path.join(session_folder, 'rgb_2_')
     directories = []
     worker_ids = []
     print '---- master creating workers ----'
