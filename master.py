@@ -205,7 +205,7 @@ if __name__ == '__main__':
 
     # check in on workes, deleting and adding as needed
     # do this infinitely or for certain time period?
-    timeout = time.time() + 60 * 60 * 24  # 1 minute
+    timeout = time.time() + 60 * 60 * 72  # 1 minute
     print '---- master: checking on workers ----'
     while(time.time() < timeout):
         to_remove = []
