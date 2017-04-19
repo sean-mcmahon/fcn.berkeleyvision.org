@@ -52,14 +52,14 @@ def mid_fcn_layers(net_spec, convRelu1, engNum, lr_multi):
     return n
 
 
-def fcn_rgb(split, tops, dropout_prob=0.5, final_multi=1, engineNum=0, freeze=False):
+def fcn(data_split, tops, dropout_prob=0.5, final_multi=1, engineNum=0, freeze=False):
     n = caffe.NetSpec()
     n.data, n.label = L.Python(module='cs_trip_layers',
                                layer='CStripSegDataLayer', ntop=2,
                                param_str=str(dict(
                                    cstrip_dir='/Construction_Site/' +
                                    'Springfield/12Aug16/K2',
-                                   split=split, tops=tops,
+                                   split=data_split, tops=tops,
                                    seed=1337)))
     # the base net
     if freeze:
@@ -97,16 +97,79 @@ def fcn_rgb(split, tops, dropout_prob=0.5, final_multi=1, engineNum=0, freeze=Fa
     return n
 
 
+def fcn_early(data_split, tops, dropout_prob=0.5, final_multi=1, engineNum=0, freeze=False):
+    n = caffe.NetSpec()
+    if tops[1] != 'depth' and tops[1] != 'hha2' and tops[1] != 'hha':
+        raise(
+            Exception('Must have hha, hha2, or depth for top[1]; "' +
+                      tops + '" tops given'))
+
+    n.color, n[tops[1]],  n.label = L.Python(module='cs_trip_layers',
+                                             layer='CStripSegDataLayer', ntop=2,
+                                             param_str=str(dict(
+                                                 cstrip_dir='/Construction_Site/' +
+                                                 'Springfield/12Aug16/K2',
+                                                 split=data_split, tops=tops,
+                                                 seed=1337)))
+    n.data = L.Concat(n.color, n[tops[1]])
+    # the base net
+    if freeze:
+        lr_multi = 0
+    else:
+        lr_multi = 1
+    n['conv1_1_bgr' + tops[1]], n.relu1_1 = conv_relu(
+        n.data, 64, engineNum, pad=100, lr=lr_multi)
+    n = mid_fcn_layers(n, 'relu1_1', engineNum, lr_multi)
+
+    # fully conv
+    n.fc6, n.relu6 = conv_relu(
+        n.pool5, 4096, engineNum,  ks=7, pad=0, lr=lr_multi)
+    n.drop6 = L.Dropout(n.relu6, dropout_ratio=dropout_prob, in_place=True)
+    n.fc7, n.relu7 = conv_relu(
+        n.drop6, 4096, engineNum, ks=1, pad=0, lr=lr_multi)
+    n.drop7 = L.Dropout(n.relu7, dropout_ratio=dropout_prob, in_place=True)
+
+    n.score_fr_trip = L.Convolution(n.drop7, num_output=2, kernel_size=1,
+                                    pad=0, engine=engineNum,
+                                    weight_filler=dict(type='xavier'),
+                                    param=[dict(lr_mult=final_multi, decay_mult=1),
+                                           dict(lr_mult=final_multi * 2, decay_mult=0)])
+    n.upscore_trip = L.Deconvolution(n.score_fr_trip,
+                                     convolution_param=dict(num_output=2,
+                                                            kernel_size=64,
+                                                            stride=32,
+                                                            bias_term=False),
+                                     param=[dict(lr_mult=0)])
+    n.score = crop(n.upscore_trip, n.data)
+    # n.softmax_score = L.Softmax(n.score)
+    n.loss = L.SoftmaxWithLoss(n.score, n.label,
+                               loss_param=dict(normalize=False))
+
+    return n
+
+
 def print_rgb_nets():
     tops = ['color', 'label']
-    with open('trainval2.prototxt', 'w') as f:
-        f.write(str(fcn_rgb('train', tops).to_proto()))
+    with open('trainval_rgb.prototxt', 'w') as f:
+        f.write(str(fcn('train', tops).to_proto()))
 
-    with open('val2.prototxt', 'w') as f:
-        f.write(str(fcn_rgb('val', tops).to_proto()))
+    with open('val_rgb.prototxt', 'w') as f:
+        f.write(str(fcn('val', tops).to_proto()))
 
-    with open('test2.prototxt', 'w') as f:
-        f.write(str(fcn_rgb('test', tops).to_proto()))
+    with open('test_rgb.prototxt', 'w') as f:
+        f.write(str(fcn('test', tops).to_proto()))
+
+
+def print_fcn_early():
+    tops = ['color', 'depth',  'label']
+    with open('trainval_early.prototxt', 'w') as f:
+        f.write(str(fcn_early('train', tops).to_proto()))
+
+    with open('val_early.prototxt', 'w') as f:
+        f.write(str(fcn_early('val', tops).to_proto()))
+
+    with open('test_early.prototxt', 'w') as f:
+        f.write(str(fcn_early('test', tops).to_proto()))
 
 if __name__ == '__main__':
     print_rgb_nets()
