@@ -109,11 +109,13 @@ def run_solver(params_dict, work_dir):
 
     if params_dict['weight_init'] == "NYU_rgb":
         weights = os.path.join(
-            weights_path, 'pretrained_weights/nyud-fcn32s-color-heavy.caffemodel')
+            weights_path,
+            'pretrained_weights/nyud-fcn32s-color-heavy.caffemodel')
         print 'Pretrain on NYU weights'
     elif params_dict['weight_init'] == "CS_rgb":
         weights = os.path.join(
-            weights_path, 'cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel')
+            weights_path,
+            'cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel')
         print 'Pretrain on CS weights (_iter_2000.caffemodel)'
     else:
         Exception('Unrecognised pretrain weights option given ({})'.format(
@@ -139,9 +141,36 @@ def run_solver(params_dict, work_dir):
     solver_name = createSolver(params_dict,
                                train_net_name, val_net_name, work_dir)
     solver = caffe.get_solver(solver_name)
-    solver.net.copy_from(weights)
 
-    # surgeries
+    # Weight Initialisation
+    solver.net.copy_from(weights)
+    # for early, need to initialise conv1_1 and then specify pre-training
+    # for rest of the network
+    if 'early' in params_dict['type']:
+        default_weights_depth = '/home/n8307628//Fully-Conv-Network/' + \
+            'Resources/FCN_models/FCN_models/pretrained_weights/' + \
+            'nyud-fcn32s-hha-heavy.caffemodel'
+        weights_depth = params_dict.get('weight_init_depth',
+                                        default_weights_depth)
+        print 'Using Depth weights from {}'.format(weights_depth)
+        # depth or HHA base network shouldn't matter, the dimensions should be
+        # set by the weights. No data actually fed into this network
+        base_depth_name = networks.createNet('val', net_type='depth', f_multi=0,
+                                             engine=0)
+        base_net_depth = caffe.Net(base_depth_name, weights_depth,
+                                   caffe.TEST)
+        print 'copying Depth params from conv1_1  ->  conv1_1_bgrd'
+        try:
+            depth_filters = base_net_depth.params['conv1_1'][0].data
+            solver.net.params['conv1_1_bgrd'][0].data[:, 3] = np.squeeze(
+                depth_filters)
+        except ValueError:
+            # probs 3 channel, just average the weights and combine
+            solver.net.params['conv1_1_bgrd'][0].data[:, 3] = np.mean(
+                base_net_depth.params['conv1_1'][0].data, axis=1)
+        del base_net_depth
+
+    # surgeries -> Create weights for deconv (bilinear upsampling)
     interp_layers = [k for k in solver.net.params.keys() if 'up' in k]
     print 'performing surgery on {}'.format(interp_layers)
     surgery.interp(solver.net, interp_layers)  # calc deconv filter weights
@@ -199,7 +228,8 @@ if __name__ == '__main__':
         if len(logfilename) > 1:
             raise(
                 Exception(
-                    'work directoy: \n"{}"\nalready has logfile, quitting'.format(work_dir)))
+                    'work directoy: ' +
+                    '\n"{}"\nalready has logfile, quitting'.format(work_dir)))
 
     dropout_regularisation = round(np.random.uniform(0.2, 0.9), 3)
     learning_rate = round(10 ** np.random.uniform(-13, -10), 16)
