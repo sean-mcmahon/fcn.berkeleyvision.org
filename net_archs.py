@@ -26,30 +26,75 @@ def max_pool(bottom, engineNum=defEngine, ks=2, engineNumks=2, stride=2):
                      engine=engineNum)
 
 
-def mid_fcn_layers(net_spec, convRelu1, engNum, lr_multi):
+def mid_fcn_layers(net_spec, convRelu1, engNum, lr_multi, modality=''):
     n = net_spec
-    n.conv1_2, n.relu1_2 = conv_relu(n[convRelu1], 64, engNum, lr=lr_multi)
-    n.pool1 = max_pool(n.relu1_2, engNum)
-
-    n.conv2_1, n.relu2_1 = conv_relu(n.pool1, 128, engNum, lr=lr_multi)
-    n.conv2_2, n.relu2_2 = conv_relu(n.relu2_1, 128, engNum, lr=lr_multi)
-    n.pool2 = max_pool(n.relu2_2, engNum)
-
-    n.conv3_1, n.relu3_1 = conv_relu(n.pool2, 256, engNum, lr=lr_multi)
-    n.conv3_2, n.relu3_2 = conv_relu(n.relu3_1, 256, engNum, lr=lr_multi)
-    n.conv3_3, n.relu3_3 = conv_relu(n.relu3_2, 256, engNum, lr=lr_multi)
-    n.pool3 = max_pool(n.relu3_3, engNum)
-
-    n.conv4_1, n.relu4_1 = conv_relu(n.pool3, 512, engNum, lr=lr_multi)
-    n.conv4_2, n.relu4_2 = conv_relu(n.relu4_1, 512, engNum, lr=lr_multi)
-    n.conv4_3, n.relu4_3 = conv_relu(n.relu4_2, 512, engNum, lr=lr_multi)
-    n.pool4 = max_pool(n.relu4_3, engNum)
-
-    n.conv5_1, n.relu5_1 = conv_relu(n.pool4, 512, engNum, lr=lr_multi)
-    n.conv5_2, n.relu5_2 = conv_relu(n.relu5_1, 512, engNum, lr=lr_multi)
-    n.conv5_3, n.relu5_3 = conv_relu(n.relu5_2, 512, engNum, lr=lr_multi)
-    n.pool5 = max_pool(n.relu5_3, engNum)
+    n['conv1_2' + modality], n['relu1_2' + modality] = conv_relu(n[convRelu1],
+                                                                 64, engNum,
+                                                                 lr=lr_multi)
+    n['pool1' + modality] = max_pool(n['relu1_2' + modality], engNum)
+    # 2nd set of conv before pool
+    n['conv2_1' + modality], n['relu2_1' + modality] = conv_relu(n['pool1' +
+                                                                   modality],
+                                                                 128, engNum,
+                                                                 lr=lr_multi)
+    n['conv2_2' + modality], n['relu2_2' + modality] = conv_relu(n['relu2_1' +
+                                                                   modality],
+                                                                 128, engNum,
+                                                                 lr=lr_multi)
+    n['pool2' + modality] = max_pool(n['relu2_2' + modality], engNum)
+    # 3rd set of conv before pool
+    n['conv3_1' + modality], n['relu3_1' + modality] = conv_relu(n['pool2' +
+                                                                   modality],
+                                                                 256, engNum,
+                                                                 lr=lr_multi)
+    n['conv3_2' + modality], n['relu3_2' + modality] = conv_relu(n['relu3_1' +
+                                                                   modality],
+                                                                 256, engNum,
+                                                                 lr=lr_multi)
+    n['conv3_3' + modality], n['relu3_3' + modality] = conv_relu(n['relu3_2' +
+                                                                   modality],
+                                                                 256, engNum,
+                                                                 lr=lr_multi)
+    n['pool3' + modality] = max_pool(n['relu3_3' + modality], engNum)
+    # 4th set of conv before pool
+    n['conv4_1' + modality], n['relu4_1' + modality] = conv_relu(n['pool3' +
+                                                                   modality],
+                                                                 512, engNum,
+                                                                 lr=lr_multi)
+    n['conv4_2' + modality], n['relu4_2' + modality] = conv_relu(n['relu4_1' +
+                                                                   modality],
+                                                                 512, engNum,
+                                                                 lr=lr_multi)
+    n['conv4_3' + modality], n['relu4_3' + modality] = conv_relu(n['relu4_2' +
+                                                                   modality],
+                                                                 512, engNum,
+                                                                 lr=lr_multi)
+    n['pool4' + modality] = max_pool(n['relu4_3' + modality], engNum)
+    # 5th set of conv before pool
+    n['conv5_1' + modality], n['relu5_1' + modality] = conv_relu(n['pool4' +
+                                                                   modality],
+                                                                 512, engNum,
+                                                                 lr=lr_multi)
+    n['conv5_2' + modality], n['relu5_2' + modality] = conv_relu(n['relu5_1' +
+                                                                   modality],
+                                                                 512, engNum,
+                                                                 lr=lr_multi)
+    n['conv5_3' + modality], n['relu5_3' + modality] = conv_relu(n['relu5_2' +
+                                                                   modality],
+                                                                 512, engNum,
+                                                                 lr=lr_multi)
+    n['pool5' + modality] = max_pool(n['relu5_3' + modality], engNum)
     return n
+
+
+def modality_conv_layers(net_spec, data, engNum, lr_multi, modality=''):
+    # creates FCN VGG from conv1_1 to pool 5.
+    n = net_spec
+    # the base net
+    convRelu1_n = 'relu1_1' + modality
+    n['conv1_1' + modality], n[convRelu1_n] = conv_relu(n[data], 64,
+                                                        pad=100)
+    return mid_fcn_layers(n, convRelu1_n, engNum, lr_multi, modality=modality)
 
 
 def fcn(data_split, tops, dropout_prob=0.5, final_multi=1, engineNum=0,
