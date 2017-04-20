@@ -52,7 +52,8 @@ def mid_fcn_layers(net_spec, convRelu1, engNum, lr_multi):
     return n
 
 
-def fcn(data_split, tops, dropout_prob=0.5, final_multi=1, engineNum=0, freeze=False):
+def fcn(data_split, tops, dropout_prob=0.5, final_multi=1, engineNum=0,
+        freeze=False):
     n = caffe.NetSpec()
     n.data, n.label = L.Python(module='cs_trip_layers',
                                layer='CStripSegDataLayer', ntop=2,
@@ -81,8 +82,10 @@ def fcn(data_split, tops, dropout_prob=0.5, final_multi=1, engineNum=0, freeze=F
     n.score_fr_trip = L.Convolution(n.drop7, num_output=2, kernel_size=1,
                                     pad=0, engine=engineNum,
                                     weight_filler=dict(type='xavier'),
-                                    param=[dict(lr_mult=final_multi, decay_mult=1),
-                                           dict(lr_mult=final_multi * 2, decay_mult=0)])
+                                    param=[dict(lr_mult=final_multi,
+                                                decay_mult=1),
+                                           dict(lr_mult=final_multi * 2,
+                                                decay_mult=0)])
     n.upscore_trip = L.Deconvolution(n.score_fr_trip,
                                      convolution_param=dict(num_output=2,
                                                             kernel_size=64,
@@ -108,8 +111,8 @@ def fcn_early(data_split, tops, dropout_prob=0.5, conv1_1_lr_multi=4,
     n.color, n[tops[1]],  n.label = L.Python(module='cs_trip_layers',
                                              layer='CStripSegDataLayer', ntop=3,
                                              param_str=str(dict(
-                                                 cstrip_dir='/Construction_Site/' +
-                                                 'Springfield/12Aug16/K2',
+                                                 cstrip_dir='/Construction_' +
+                                                 'Site/Springfield/12Aug16/K2',
                                                  split=data_split, tops=tops,
                                                  seed=1337)))
     n.data = L.Concat(n.color, n[tops[1]])
@@ -125,10 +128,12 @@ def fcn_early(data_split, tops, dropout_prob=0.5, conv1_1_lr_multi=4,
                                                pad=100, engine=engineNum,
                                                weight_filler=dict(
                                                    type='xavier'),
-                                               param=[dict(lr_mult=conv1_1_lr_multi,
-                                                           decay_mult=1),
-                                                      dict(lr_mult=conv1_1_lr_multi * 2,
-                                                           decay_mult=0)])
+                                               param=[dict(
+                                                   lr_mult=conv1_1_lr_multi,
+                                                   decay_mult=1),
+                                                   dict(
+                                                   lr_mult=conv1_1_lr_multi * 2,
+                                                   decay_mult=0)])
     n.relu1_1 = L.ReLU(n['conv1_1_bgr' + tops[1]],
                        in_place=True, engine=engineNum)
     n = mid_fcn_layers(n, 'relu1_1', engineNum, mid_lr_multi)
@@ -144,8 +149,10 @@ def fcn_early(data_split, tops, dropout_prob=0.5, conv1_1_lr_multi=4,
     n.score_fr_trip = L.Convolution(n.drop7, num_output=2, kernel_size=1,
                                     pad=0, engine=engineNum,
                                     weight_filler=dict(type='xavier'),
-                                    param=[dict(lr_mult=final_multi, decay_mult=1),
-                                           dict(lr_mult=final_multi * 2, decay_mult=0)])
+                                    param=[dict(lr_mult=final_multi,
+                                                decay_mult=1),
+                                           dict(lr_mult=final_multi * 2,
+                                                decay_mult=0)])
     n.upscore_trip = L.Deconvolution(n.score_fr_trip,
                                      convolution_param=dict(num_output=2,
                                                             kernel_size=64,
