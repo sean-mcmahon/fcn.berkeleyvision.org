@@ -242,12 +242,12 @@ if __name__ == '__main__':
     dropout_regularisation = round(np.random.uniform(0.2, 0.9), 3)
     learning_rate = round(10 ** np.random.uniform(-13, -10), 16)
     final_learning_multiplier = np.random.randint(1, 10)
-    freeze_lower_layers = bool(np.random.randint(0, 2))
+    freeze_lower_layers = bool(np.random.randint(0, 1))  # always false bra
     params_dict = {'base_lr': learning_rate, 'solverType': 'SGD',
                    'f_multi': final_learning_multiplier,
                    'dropout': dropout_regularisation,
                    'freeze_layers': freeze_lower_layers,
-                   'type': 'rgbd_early', 'weight_init': 'NYU_rgb',
+                   'type': 'rgbhha2_early', 'weight_init': 'NYU_rgb',
                    'rand_seed': 3711}
     print 'Solver writing to dir: ', work_dir
     write_dict(params_dict, work_dir)
