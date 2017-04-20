@@ -118,8 +118,19 @@ def fcn_early(data_split, tops, dropout_prob=0.5, conv1_1_lr_multi=4,
         mid_lr_multi = 0
     else:
         mid_lr_multi = 1
-    n['conv1_1_bgr' + tops[1]], n.relu1_1 = conv_relu(
-        n.data, 64, engineNum, pad=100, lr=conv1_1_lr_multi)
+    # n['conv1_1_bgr' + tops[1]], n.relu1_1 = conv_relu(
+    #     n.data, 64, engineNum, pad=100, lr=conv1_1_lr_multi)
+    n['conv1_1_bgr' + tops[1]] = L.Convolution(n.data, kernel_size=3,
+                                               stride=1, num_output=64,
+                                               pad=100, engine=engineNum,
+                                               weight_filler=dict(
+                                                   type='xavier'),
+                                               param=[dict(lr_mult=conv1_1_lr_multi,
+                                                           decay_mult=1),
+                                                      dict(lr_mult=conv1_1_lr_multi * 2,
+                                                           decay_mult=0)])
+    n.relu1_1 = L.ReLU(n['conv1_1_bgr' + tops[1]],
+                       in_place=True, engine=engineNum)
     n = mid_fcn_layers(n, 'relu1_1', engineNum, mid_lr_multi)
 
     # fully conv
