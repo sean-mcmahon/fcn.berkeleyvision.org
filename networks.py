@@ -48,6 +48,15 @@ def print_net(path, split='test', net_type='rgb'):
         tops = ['color', 'label']
         with open(os.path.join(path, split + '.prototxt'), 'w') as f:
             f.write(str(net_archs.fcn(split, tops).to_proto()))
+    elif '_early' in net_type:
+        if 'd' in net_type or 'D' in net_type:
+            tops = ['color', 'depth', 'label']
+        elif 'hha2' in net_type or 'HHA2' in net_type:
+            tops = ['color', 'hha2', 'label']
+        else:
+            raise(Exception('Unkown modality for early fusion: ' + net_type))
+        with open(os.path.join(path, split + '.prototxt'), 'w') as f:
+            f.write(str(net_archs.fcn_early(split, tops).to_proto()))
     else:
         raise(Exception('net_type "' + net_type +
                         '" unrecognised, create case for new network here.'))
