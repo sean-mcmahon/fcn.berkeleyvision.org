@@ -212,6 +212,49 @@ def fcn_early(data_split, tops, dropout_prob=0.5, conv1_1_lr_multi=4,
     return n
 
 
+def fcn_conv(data_split, tops, dropout_prob=0.5, conv1_1_lr_multi=4,
+             final_multi=1, engineNum=0, freeze=True):
+    n = caffe.NetSpec()
+    if tops[1] != 'depth' and tops[1] != 'hha2' and tops[1] != 'hha':
+        raise(
+            Exception('Must have hha, hha2, or depth for top[1]; "' +
+                      tops + '" tops given'))
+
+    n.color, n[tops[1]],  n.label = L.Python(module='cs_trip_layers',
+                                             layer='CStripSegDataLayer', ntop=3,
+                                             param_str=str(dict(
+                                                 cstrip_dir='/Construction_' +
+                                                 'Site/Springfield/12Aug16/K2',
+                                                 split=data_split, tops=tops,
+                                                 seed=1337)))
+    if freeze:
+        conv_multi = 0
+    else:
+        conv_multi = 1
+    n = modality_conv_layers(n, 'color', engineNum,
+                             conv_multi, modality='color')
+    n = modality_conv_layers(
+        n, tops[1], engineNum, conv_multi, modality=tops[1])
+
+    n['fc6color'], n['relu6color'] = conv_relu(
+        n['pool5color'], 4096, ks=7, pad=0)
+    n['drop6color'] = L.Dropout(n['relu6color'],
+                                dropout_ratio=0.5, in_place=True)
+    n['fc6' + tops[1]], n['relu6' + tops[1]] = conv_relu(
+        n['pool5' + tops[1]], 4096, ks=7, pad=0)
+    n['drop6' + tops[1]] = L.Dropout(n['relu6' + tops[1]],
+                                     dropout_ratio=0.5, in_place=True)
+    n.fc6_concat = L.Concat(n['drop6color'], n['drop6' + tops[1]])
+
+    n.fc7fuse, n.relu7fuse = conv_relu(n.fc6_concat, 4096, ks=1, pad=0)
+    n.drop7fuse = L.Dropout(
+        n.relu7fuse, dropout_ratio=0.5, in_place=True)
+    n.score_fr_tripfuse = L.Convolution(
+        n.drop7fuse, num_output=2, kernel_size=1, pad=0,
+        param=[dict(lr_mult=1, decay_mult=1), dict(lr_mult=2, decay_mult=0)],
+        weight_filler=dict(type='msra'))
+
+
 def print_rgb_nets():
     tops = ['color', 'label']
     with open('trainval_rgb.prototxt', 'w') as f:
