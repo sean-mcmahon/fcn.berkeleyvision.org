@@ -152,7 +152,7 @@ def run_solver(params_dict, work_dir):
             'nyud-fcn32s-hha-heavy.caffemodel'
         weights_depth = params_dict.get('weight_init_depth',
                                         default_weights_depth)
-        print 'Using Depth weights from {}'.format(weights_depth)
+        print 'Early Fusion: using depth weights from {}'.format(weights_depth)
         # depth or HHA base network shouldn't matter, the dimensions should be
         # set by the weights. No data actually fed into this network
         base_depth_name = networks.createNet('val', net_type='depth', f_multi=0,
