@@ -146,27 +146,35 @@ def run_solver(params_dict, work_dir):
     solver.net.copy_from(weights)
     # for early, need to initialise conv1_1 and then specify pre-training
     # for rest of the network
-    if 'early' in params_dict['type']:
-        default_weights_depth = '/home/n8307628//Fully-Conv-Network/' + \
-            'Resources/FCN_models/FCN_models/pretrained_weights/' + \
-            'nyud-fcn32s-hha-heavy.caffemodel'
+    if '_early' in params_dict['type']:
+        if 'hha2' in params_dict['type'] or 'HHA2' in params_dict['type']:
+            d_top = 'hha2'
+            default_weights_depth = '/home/n8307628/Fully-Conv-Network/' + \
+                'Resources/FCN_models/pretrained_weights/' + \
+                'nyud-fcn32s-hha-heavy.caffemodel'
+        elif 'rgbd' in params_dict['type'] or 'RGBD' in params_dict['type']:
+            d_top = 'depth'
+            default_weights_depth = '/home/n8307628/Fully-Conv-Network/' + \
+                'Resources/FCN_models/cstrip-fcn32s-depth/' + \
+                'DepthSnapshot/negOneNull_mean_sub_iter_8000.caffemodel'
+        else:
+            raise(Exception('"type" param given contains unkown modality: ' +
+                            params_dict['type']))
         weights_depth = params_dict.get('weight_init_depth',
                                         default_weights_depth)
         print 'Early Fusion: using depth weights from {}'.format(weights_depth)
-        # depth or HHA base network shouldn't matter, the dimensions should be
-        # set by the weights. No data actually fed into this network
-        base_depth_name = networks.createNet('val', net_type='depth', f_multi=0,
+        base_depth_name = networks.createNet('val', net_type=d_top, f_multi=0,
                                              engine=0)
         base_net_depth = caffe.Net(base_depth_name, weights_depth,
                                    caffe.TEST)
-        print 'copying Depth params from conv1_1  ->  conv1_1_bgrd'
+        print 'copying Depth params from conv1_1  ->  conv1_1_bgr' + d_top
         try:
             depth_filters = base_net_depth.params['conv1_1'][0].data
-            solver.net.params['conv1_1_bgrd'][0].data[:, 3] = np.squeeze(
+            solver.net.params['conv1_1_bgr' + d_top][0].data[:, 3] = np.squeeze(
                 depth_filters)
         except ValueError:
-            # probs 3 channel, just average the weights and combine
-            solver.net.params['conv1_1_bgrd'][0].data[:, 3] = np.mean(
+            # probs 3 channel, average the weights and combine
+            solver.net.params['conv1_1_bgr' + d_top][0].data[:, 3] = np.mean(
                 base_net_depth.params['conv1_1'][0].data, axis=1)
         del base_net_depth
 
@@ -239,7 +247,7 @@ if __name__ == '__main__':
                    'f_multi': final_learning_multiplier,
                    'dropout': dropout_regularisation,
                    'freeze_layers': freeze_lower_layers,
-                   'type': 'rgb', 'weight_init': 'NYU_rgb',
+                   'type': 'rgbd_early', 'weight_init': 'NYU_rgb',
                    'rand_seed': 3711}
     print 'Solver writing to dir: ', work_dir
     write_dict(params_dict, work_dir)
