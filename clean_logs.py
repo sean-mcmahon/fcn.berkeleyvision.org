@@ -33,7 +33,7 @@ if __name__ == '__main__':
         # find 'I0's not at the start of a line
         idx_match = re.finditer(io_pattern, logfile)
         for match in idx_match:
-            print match
+            print match[0]
 
         # find all 'I0's
         # find those without '\n' before it?
