@@ -33,10 +33,28 @@ if __name__ == '__main__':
         # find 'I0's not at the start of a line
         idx_match = re.finditer(io_pattern, logfile)
         for match in idx_match:
-            print match[0]
+            # print logfile[match.start(0)]
+            first_nl = logfile.rfind('\n',
+                                     match.start(0) - 200, match.start(0) + 1)
+            print repr(logfile[first_nl: match.end(0) + 5])
+            line_beg = logfile[first_nl + 1: match.end(0) + 5]
+            # find next line without I0
+            # non_io_pattern = '^[^I0]'
+            # non_io_match = re.finditer(non_io_match, logfile[match.end(0):])
+            newlines = logfile.find('\n', match.end(0))
+            while True:
+                if 'I0' not in logfile[newlines:newlines + 3]:
+                    print 'First non I0 line found'
+                    print repr(logfile[newlines:newlines + 15])
+                    break
+                else:
+                    # print repr(logfile[newlines:newlines + 3])
+                    pass
+                newlines = logfile.find('\n', newlines + 1)
 
-        # find all 'I0's
-        # find those without '\n' before it?
+                # find all 'I0's
+                # find those without '\n' before it?
 
-        # copy and remove text before matched 'I0' and then add '\n' at start
-        # put copied text (remove \n) at start of next line after 'I0's
+                # copy and remove text before matched 'I0' and then add '\n' at start
+                # put copied text (remove \n) at start of next line after
+                # 'I0's
