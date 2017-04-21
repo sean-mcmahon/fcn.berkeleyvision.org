@@ -80,5 +80,6 @@ echo 'Job ID: '$PBS_JOBID >> $train_folder_'/'$PBS_JOBID'.txt'
 
 log_filename=$train_folder_'/logfile'$current_date'.log'
 echo 'log_filename '$log_filename
-python $python_script --mode $set_mode --working_dir $train_folder_  2>&1 | tee $log_filename
+python $python_script --mode $set_mode --working_dir $train_folder_  >> $log_filename
+# 2>&1 | tee $log_filename
 echo 'Saved to '$log_filename

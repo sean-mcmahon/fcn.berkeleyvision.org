@@ -117,6 +117,10 @@ def run_solver(params_dict, work_dir):
             weights_path,
             'cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel')
         print 'Pretrain on CS weights (_iter_2000.caffemodel)'
+    elif params_dict['weight_init'] == "NYU_hha":
+        weights = '/home/n8307628/Fully-Conv-Network/' + \
+            'Resources/FCN_models/pretrained_weights/' + \
+            'nyud-fcn32s-hha-heavy.caffemodel'
     else:
         Exception('Unrecognised pretrain weights option given ({})'.format(
             params_dict['weight_init']))
@@ -143,10 +147,27 @@ def run_solver(params_dict, work_dir):
     solver = caffe.get_solver(solver_name)
 
     # Weight Initialisation
-    solver.net.copy_from(weights)
+    if params_dict['type'] == 'depth' or params_dict['type'] == 'Depth':
+        if 'hha' in params_dict['weight_init']:
+            init_net_name = networks.createNet(val_name, net_type='hha2',
+                                               f_multi=0, engine=0)
+        elif 'rgb' in params_dict['weight_init']:
+            init_net_name = networks.createNet(val_name, net_type='rgb',
+                                               f_multi=0, engine=0)
+        else:
+            raise(Exception('Do not know how to initialise depth weights.' +
+                            '\nUnkown weight_init ({})\n'.format(
+                                params_dict['weight_init'])))
+        init_net = caffe.Net(init_net_name, weights, caffe.TEST)
+        surgery.transplant(solver.net, init_net)
+        del init_net
+    else:
+        solver.net.copy_from(weights)
     # for early, need to initialise conv1_1 and then specify pre-training
     # for rest of the network
     if '_early' in params_dict['type']:
+        # TODO check if net.copy_from workers properly early fuson networks
+        # have different sized conv1_1 layers
         if 'hha2' in params_dict['type'] or 'HHA2' in params_dict['type']:
             d_top = 'hha2'
             default_weights_depth = '/home/n8307628/Fully-Conv-Network/' + \
@@ -242,12 +263,12 @@ if __name__ == '__main__':
     dropout_regularisation = round(np.random.uniform(0.2, 0.9), 3)
     learning_rate = round(10 ** np.random.uniform(-13, -10), 16)
     final_learning_multiplier = np.random.randint(1, 10)
-    freeze_lower_layers = bool(np.random.randint(0, 1))  # always false bra
+    freeze_lower_layers = bool(np.random.randint(0, 2))  # always false bra
     params_dict = {'base_lr': learning_rate, 'solverType': 'SGD',
                    'f_multi': final_learning_multiplier,
                    'dropout': dropout_regularisation,
                    'freeze_layers': freeze_lower_layers,
-                   'type': 'rgb', 'weight_init': 'NYU_rgb',
+                   'type': 'depth', 'weight_init': 'NYU_hha',
                    'rand_seed': 3711}
     # TODO check if con1_1 lr can be set for early fusion!
     print 'Solver writing to dir: ', work_dir

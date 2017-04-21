@@ -48,6 +48,14 @@ def print_net(path, split='test', net_type='rgb'):
         tops = ['color', 'label']
         with open(os.path.join(path, split + '.prototxt'), 'w') as f:
             f.write(str(net_archs.fcn(split, tops).to_proto()))
+    elif net_type == 'depth' or net_type == 'Depth':
+        tops = ['depth', 'label']
+        with open(os.path.join(path, split + '.prototxt'), 'w') as f:
+            f.write(str(net_archs.fcn(split, tops).to_proto()))
+    elif net_type == 'hha2' or net_type == 'HHA2':
+        tops = ['hha2', 'label']
+        with open(os.path.join(path, split + '.prototxt'), 'w') as f:
+            f.write(str(net_archs.fcn(split, tops).to_proto()))
     elif '_early' in net_type:
         if 'd' in net_type or 'D' in net_type:
             tops = ['color', 'depth', 'label']

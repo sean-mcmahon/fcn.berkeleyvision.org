@@ -166,14 +166,14 @@ if __name__ == '__main__':
     intialising_workers = True
     # session_folder = os.path.join(file_location, 'rgb_workers')
     session_folder = '/home/n8307628/Fully-Conv-Network/Resources' + \
-        '/FCN_paramsearch/rgb_workers'
+        '/FCN_paramsearch/depth_workers'
     if not os.path.isdir(session_folder):
         os.mkdir(session_folder)
-    workers_name = os.path.join(session_folder, 'rgb_2_')
+    workers_name = os.path.join(session_folder, 'depth_1_')
     directories = []
     worker_ids = []
     print '---- master creating workers ----'
-    for directory_num in range(3):
+    for directory_num in range(2):
         dir_name = workers_name + str(directory_num)
         while(os.path.isdir(dir_name)):
             directory_num += 1
@@ -210,7 +210,7 @@ if __name__ == '__main__':
 
     # check in on workes, deleting and adding as needed
     # do this infinitely or for certain time period?
-    timeout = time.time() + 60 * 60 * 72  # 1 minute
+    timeout = time.time() + 60 * 60 * 48  # 1 minute
     print '---- master: checking on workers ----'
     while(time.time() < timeout):
         to_remove = []
