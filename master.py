@@ -15,6 +15,7 @@ import subprocess
 import glob
 import re
 import time
+import argparse
 
 # add '../' directory to path for importing score.py, surgery.py and
 # pycaffe layer
@@ -29,11 +30,6 @@ except ImportError:
     raise
 
 home_dir = expanduser("~")
-# User Input
-parser = argparse.ArgumentParser()
-parser.add_argument('--mode', default='gpu')
-parser.add_argument('--working_dir', default='rgb_1')
-args = parser.parse_args()
 
 
 def append_dir_to_txt(dir_txt, dir_name):
@@ -42,8 +38,8 @@ def append_dir_to_txt(dir_txt, dir_name):
     myfile.close()
 
 
-def run_worker(work_dir):
-    worker_file = os.path.join(file_location, 'worker_live.bash')
+def run_worker(work_dir, worker_name):
+    worker_file = os.path.join(file_location, worker_name + '.bash')
     if not os.path.isfile(worker_file):
         raise Exception(
             "Could not find solve_any.py at {}".format(worker_file))
@@ -158,6 +154,14 @@ def del_worker(job_id):
 if __name__ == '__main__':
     # TODO write a bash script executing this parsing in a different session foldre
     # and run time
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--worker_name', default='worker')
+    args = parser.parse_args()
+    worker_name_ = args.worker_name
+    print '-'*50
+    print 'worker_name = ', worker_name_
+    print '-'*50
+
     jobs_running = False
     intialising_workers = True
     # session_folder = os.path.join(file_location, 'rgb_workers')
@@ -176,7 +180,7 @@ if __name__ == '__main__':
             dir_name = workers_name + str(directory_num)
         print 'Creatng worker @ ', dir_name
         directories.append(dir_name)
-        job_id = run_worker(dir_name)
+        job_id = run_worker(dir_name, worker_name_)
         print 'job_id: ', job_id
         worker_ids.append(job_id)
     print len(worker_ids), 'workers running!'
@@ -246,7 +250,7 @@ if __name__ == '__main__':
             worker_ids.remove(item_id)
             directory_num += 1
             dir_name = workers_name + str(directory_num)
-            job_id = run_worker(dir_name)
+            job_id = run_worker(dir_name, worker_name_)
             directories.append(dir_name)
             worker_ids.append(job_id)
             append_dir_to_txt(dir_txt, dir_name)
