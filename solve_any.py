@@ -247,7 +247,7 @@ if __name__ == '__main__':
                    'f_multi': final_learning_multiplier,
                    'dropout': dropout_regularisation,
                    'freeze_layers': freeze_lower_layers,
-                   'type': 'rgbhha2_early', 'weight_init': 'NYU_rgb',
+                   'type': 'rgb', 'weight_init': 'NYU_rgb',
                    'rand_seed': 3711}
     print 'Solver writing to dir: ', work_dir
     write_dict(params_dict, work_dir)
