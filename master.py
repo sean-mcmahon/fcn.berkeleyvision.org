@@ -43,7 +43,7 @@ def append_dir_to_txt(dir_txt, dir_name):
 
 
 def run_worker(work_dir):
-    worker_file = os.path.join(file_location, 'worker.bash')
+    worker_file = os.path.join(file_location, 'worker_live.bash')
     if not os.path.isfile(worker_file):
         raise Exception(
             "Could not find solve_any.py at {}".format(worker_file))
