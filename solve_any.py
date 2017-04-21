@@ -249,6 +249,7 @@ if __name__ == '__main__':
                    'freeze_layers': freeze_lower_layers,
                    'type': 'rgb', 'weight_init': 'NYU_rgb',
                    'rand_seed': 3711}
+    # TODO check if con1_1 lr can be set for early fusion!
     print 'Solver writing to dir: ', work_dir
     write_dict(params_dict, work_dir)
 
