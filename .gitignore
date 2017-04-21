@@ -19,3 +19,5 @@ hpc-logs/*
 rgb_workers_trails/*
 rgb_workers/*
 rgb_workers
+solve_any_live.py
+worker_live.bash
