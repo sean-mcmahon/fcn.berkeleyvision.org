@@ -21,3 +21,6 @@ rgb_workers/*
 rgb_workers
 solve_any_live*
 worker_live.bash
+depth_workers/
+hha2_workers/
+worker_live*
