@@ -63,7 +63,7 @@ current_date=`date +%Y-%m-%d_%H-%M-%S`
 train_folder_="$1"
 if [[ -z "$train_folder_" ]]; then
   if [ -z ${MY_TRAIN_DIR+x} ]; then
-    train_folder_='worker_test_'$current_date;
+    train_folder_=$working_dir'worker_test_'$current_date;
   else train_folder_=$MY_TRAIN_DIR
   fi
 fi
@@ -80,6 +80,5 @@ echo 'Job ID: '$PBS_JOBID >> $train_folder_'/'$PBS_JOBID'.txt'
 
 log_filename=$train_folder_'/logfile'$current_date'.log'
 echo 'log_filename '$log_filename
-python $python_script --mode $set_mode --working_dir $train_folder_  >> $log_filename
-# 2>&1 | tee $log_filename
+python $python_script --mode $set_mode --working_dir $train_folder_ 2>&1 | tee $log_filename
 echo 'Saved to '$log_filename
