@@ -212,17 +212,17 @@ def fcn_early(data_split, tops, dropout_prob=0.5, conv1_1_lr_multi=4,
     return n
 
 
-def fcn_conv(data_split, tops, dropout_prob=0.5, conv1_1_lr_multi=4,
+def fcn_conv(data_split, tops, dropout_prob=0.5,
              final_multi=1, engineNum=0, freeze=True):
     n = caffe.NetSpec()
     if tops[1] != 'depth' and tops[1] != 'hha2' and tops[1] != 'hha':
         raise(
             Exception('Must have hha, hha2, or depth for top[1]; "' +
                       tops + '" tops given'))
-        if freeze:
-            conv_multi = 0
-        else:
-            conv_multi = 1
+    if freeze:
+        conv_multi = 0
+    else:
+        conv_multi = 1
 
     n.color, n[tops[1]],  n.label = L.Python(module='cs_trip_layers',
                                              layer='CStripSegDataLayer', ntop=3,
@@ -233,8 +233,8 @@ def fcn_conv(data_split, tops, dropout_prob=0.5, conv1_1_lr_multi=4,
                                                  seed=1337)))
     n = modality_conv_layers(n, 'color', engineNum,
                              conv_multi, modality='color')
-    n = modality_conv_layers(
-        n, tops[1], engineNum, conv_multi, modality=tops[1])
+    n = modality_conv_layers(n, tops[1], engineNum,
+                             conv_multi, modality=tops[1])
 
     for modal in ['color', tops[1]]:
         n['fc6' + modal], n['relu6' + modal] = conv_relu(n['pool5' + modal],
@@ -243,6 +243,8 @@ def fcn_conv(data_split, tops, dropout_prob=0.5, conv1_1_lr_multi=4,
                                        dropout_ratio=0.5, in_place=True)
 
     # Let the conv fusion begin! Mwahahaha!!
+    # I want these layers to be randomly initialised, as pre-trained colour
+    # features tend to make the network only learn colour features
     n.fc6_concat = L.Concat(n['drop6color'], n['drop6' + tops[1]])
     n.fc7fuse = L.Convolution(n.fc6_concat, kernel_size=1, stride=1,
                               num_output=4096, pad=0, engine=engineNum,
@@ -251,11 +253,14 @@ def fcn_conv(data_split, tops, dropout_prob=0.5, conv1_1_lr_multi=4,
                               weight_filler=dict(type='msra'))
     n.relu7fuse = L.ReLU(n.fc7fuse, in_place=True, engine=engineNum)
     n.drop7fuse = L.Dropout(
-        n.relu7fuse, dropout_ratio=0.5, in_place=True)
-    n.score_fr_tripfuse = L.Convolution(
-        n.drop7fuse, num_output=2, kernel_size=1, pad=0,
-        param=[dict(lr_mult=1, decay_mult=1), dict(lr_mult=2, decay_mult=0)],
-        weight_filler=dict(type='msra'))
+        n.relu7fuse, dropout_ratio=dropout_prob, in_place=True)
+    n.score_fr_tripfuse = L.Convolution(n.drop7fuse, num_output=2,
+                                        kernel_size=1, pad=0,
+                                        param=[dict(lr_mult=final_multi,
+                                                    decay_mult=1),
+                                               dict(lr_mult=final_multi * 2,
+                                                    decay_mult=0)],
+                                        weight_filler=dict(type='msra'))
     # Upscale scores
     n.upscore_trip = L.Deconvolution(n.score_fr_tripfuse,
                                      convolution_param=dict(num_output=2,
@@ -263,10 +268,13 @@ def fcn_conv(data_split, tops, dropout_prob=0.5, conv1_1_lr_multi=4,
                                                             stride=32,
                                                             bias_term=False),
                                      param=[dict(lr_mult=0)])
-    n.score = crop(n.upscore_trip, n.data)
+    n.score = crop(n.upscore_trip, n.color)
     # n.softmax_score = L.Softmax(n.score)
     n.loss = L.SoftmaxWithLoss(n.score, n.label,
                                loss_param=dict(normalize=False))
+    return n
+
+# test code!
 
 
 def print_rgb_nets():
@@ -292,5 +300,17 @@ def print_fcn_early():
     with open('test_early.prototxt', 'w') as f:
         f.write(str(fcn_early('test', tops).to_proto()))
 
+
+def print_fcn_conv():
+    tops = ['color', 'depth',  'label']
+    with open('trainval_conv.prototxt', 'w') as f:
+        f.write(str(fcn_conv('train', tops).to_proto()))
+
+    with open('val_conv.prototxt', 'w') as f:
+        f.write(str(fcn_conv('val', tops).to_proto()))
+
+    with open('test_conv.prototxt', 'w') as f:
+        f.write(str(fcn_conv('test', tops).to_proto()))
+
 if __name__ == '__main__':
-    print_fcn_early()
+    print_fcn_conv()
