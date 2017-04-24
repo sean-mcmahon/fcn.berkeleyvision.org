@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#PBS -N master_depth
+#PBS -N master_hha2
 #PBS -l ncpus=1
 #PBS -l mem=4GB
 #PBS -l walltime=28:00:00
@@ -14,17 +14,17 @@ python_script=$dir_'master.py'
 # Because using MKL Blas on HPC
 export MKL_CBWR=AUTO
 
-solver_name='solve_any_live_depth'
-worker_name='worker_live_depth'
+data_type='hha2'
+sess_=$data_type'_workers'
+workers_=$data_type'_2_'
+job_time_=24
+num_wrks_=2
+
+solver_name='solve_any_live_'$data_type
+worker_name='worker_live_'$data_type
 cp $dir_'worker.bash' $dir_$worker_name'.bash'
 sed -i -e 's/solve_any/'$solver_name'/g' $dir_$worker_name'.bash'
 cp $dir_'solve_any.py' $dir_$solver_name'.py'
-
-data_type='depth'
-sess_=$data_type'_workers'
-workers_=$data_type'_1_'
-job_time_=24
-num_wrks_=2
 
 python $python_script --worker_name $worker_name --session_dir $sess_ --worker_id_dir $workers_ --run_time $job_time_ --max_workers $num_wrks_
 mv $dir_$solver_name'.py' $dir_$sess_'/'

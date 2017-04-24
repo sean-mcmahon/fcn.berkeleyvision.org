@@ -281,7 +281,7 @@ if __name__ == '__main__':
                    'f_multi': final_learning_multiplier,
                    'dropout': dropout_regularisation,
                    'freeze_layers': freeze_lower_layers,
-                   'type': 'depth', 'weight_init': 'NYU_hha',
+                   'type': 'hha2', 'weight_init': 'NYU_hha',
                    'rand_seed': 3711}
     # TODO check if con1_1 lr can be set for early fusion!
     print 'Solver writing to dir: ', work_dir
