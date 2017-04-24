@@ -24,3 +24,4 @@ worker_live.bash
 depth_workers/
 hha2_workers/
 worker_live*
+worker_test_2017*
