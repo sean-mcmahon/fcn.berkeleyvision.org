@@ -162,13 +162,19 @@ def run_solver(params_dict, work_dir):
         init_net = caffe.Net(init_net_name, weights, caffe.TEST)
         surgery.transplant(solver.net, init_net)
         del init_net
-    else:
-        solver.net.copy_from(weights)
-    # for early, need to initialise conv1_1 and then specify pre-training
-    # for rest of the network
-    if '_early' in params_dict['type']:
+    elif '_early' in params_dict['type']:
+        # for early, need to initialise conv1_1 and then specify pre-training
+        # for rest of the network
         # TODO check if net.copy_from workers properly early fuson networks
         # have different sized conv1_1 layers
+
+        # Copy layers half of conv1_1_ and rest from another network
+        base_net_name = networks.createNet('val', net_type='rgb', engine=0)
+        base_net = caffe.Net(base_net_name, weights, caffe.TEST)
+        surgery.transplant(solver.net, base_net)
+        del base_net
+
+        # Iniitlias conv1_1 layer
         if 'hha2' in params_dict['type'] or 'HHA2' in params_dict['type']:
             d_top = 'hha2'
             default_weights_depth = '/home/n8307628/Fully-Conv-Network/' + \
@@ -189,7 +195,7 @@ def run_solver(params_dict, work_dir):
                                              engine=0)
         base_net_depth = caffe.Net(base_depth_name, weights_depth,
                                    caffe.TEST)
-        print 'copying Depth params from conv1_1  ->  conv1_1_bgr' + d_top
+        print 'copying Depth params from conv1_1 -> conv1_1_bgr' + d_top
         try:
             depth_filters = base_net_depth.params['conv1_1'][0].data
             solver.net.params['conv1_1_bgr' + d_top][0].data[:, 3] = np.squeeze(
@@ -199,6 +205,10 @@ def run_solver(params_dict, work_dir):
             solver.net.params['conv1_1_bgr' + d_top][0].data[:, 3] = np.mean(
                 base_net_depth.params['conv1_1'][0].data, axis=1)
         del base_net_depth
+    elif '_conv' in params_dict['type']:
+        raise(Exception("Have not written code to initialise conv fusion"))
+    else:
+        solver.net.copy_from(weights)
 
     # surgeries -> Create weights for deconv (bilinear upsampling)
     interp_layers = [k for k in solver.net.params.keys() if 'up' in k]
