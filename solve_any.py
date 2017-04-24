@@ -28,6 +28,7 @@ home_dir = expanduser("~")
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', default='gpu')
 parser.add_argument('--working_dir', default='rgb_1')
+parser.add_argument('--network_modality', default='rgb')
 args = parser.parse_args()
 # import support functions
 if 'n8307628' in home_dir:
@@ -247,6 +248,8 @@ def run_solver(params_dict, work_dir):
 
 if __name__ == '__main__':
     work_path = args.working_dir
+    net_modal = args.network_modality
+    # TODO incorporate net_modal into params dict
     print 'Solver given working dir: ', work_path
     if '/home' not in work_path:
         work_dir = os.path.join(file_location, work_path)
@@ -263,7 +266,7 @@ if __name__ == '__main__':
     dropout_regularisation = round(np.random.uniform(0.2, 0.9), 3)
     learning_rate = round(10 ** np.random.uniform(-13, -10), 16)
     final_learning_multiplier = np.random.randint(1, 10)
-    freeze_lower_layers = bool(np.random.randint(0, 2))  # always false bra
+    freeze_lower_layers = bool(np.random.randint(0, 2))  # sometimes false bra
     params_dict = {'base_lr': learning_rate, 'solverType': 'SGD',
                    'f_multi': final_learning_multiplier,
                    'dropout': dropout_regularisation,
