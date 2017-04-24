@@ -156,24 +156,34 @@ if __name__ == '__main__':
     # and run time
     parser = argparse.ArgumentParser()
     parser.add_argument('--worker_name', default='worker')
+    parser.add_argument('--run_time', default=24)
+    parser.add_argument('--max_workers', default=2)
+    parser.add_argument('--session_dir', default='depth_workers')
+    parser.add_argument('--worker_id_dir', default='depth_1_')
     args = parser.parse_args()
     worker_name_ = args.worker_name
+    run_time_ = int(args.run_time)
+    session_dir_ = args.session_dir
+    worker_dir_name = args.worker_id_dir
+    max_workers = int(args.max_workers)
     print '-'*50
     print 'worker_name = ', worker_name_
+    print 'run_time_ = ', run_time_
+    print 'max_workers= ', max_workers
     print '-'*50
 
     jobs_running = False
     intialising_workers = True
     # session_folder = os.path.join(file_location, 'rgb_workers')
     session_folder = '/home/n8307628/Fully-Conv-Network/Resources' + \
-        '/FCN_paramsearch/depth_workers'
+        '/FCN_paramsearch/' + session_dir_
     if not os.path.isdir(session_folder):
         os.mkdir(session_folder)
-    workers_name = os.path.join(session_folder, 'depth_1_')
+    workers_name = os.path.join(session_folder, worker_dir_name)
     directories = []
     worker_ids = []
     print '---- master creating workers ----'
-    for directory_num in range(2):
+    for directory_num in range(max_workers):
         dir_name = workers_name + str(directory_num)
         while(os.path.isdir(dir_name)):
             directory_num += 1
@@ -184,7 +194,7 @@ if __name__ == '__main__':
         print 'job_id: ', job_id
         worker_ids.append(job_id)
     print len(worker_ids), 'workers running!'
-    subprocess.call('qstat -u n8307628', shell=True)
+    # subprocess.call('qstat -u n8307628', shell=True)
     print 'directory_num=', directory_num
 
     dir_txt = os.path.join(session_folder, 'directories.txt')
@@ -210,7 +220,7 @@ if __name__ == '__main__':
 
     # check in on workes, deleting and adding as needed
     # do this infinitely or for certain time period?
-    timeout = time.time() + 60 * 60 * 48  # 1 minute
+    timeout = time.time() + 60 * 60 * run_time_  # 1 minute
     print '---- master: checking on workers ----'
     while(time.time() < timeout):
         to_remove = []

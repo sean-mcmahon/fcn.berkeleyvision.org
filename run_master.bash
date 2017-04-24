@@ -20,5 +20,12 @@ cp $dir_'worker.bash' $dir_$worker_name'.bash'
 sed -i -e 's/solve_any/'$solver_name'/g' $dir_$worker_name'.bash'
 cp $dir_'solve_any.py' $dir_$solver_name'.py'
 
-python $python_script --worker_name $worker_name
-# rm $dir_$solver_name'.py'
+data_type='depth'
+sess_=$data_type'_workers'
+workers_=$data_type'_1_'
+job_time_=48
+num_wrks_=2
+
+python $python_script --worker_name $worker_name --session_dir $sess_ --worker_id_dir $workers_ --run_time $job_time_ --max_workers $num_wrks_
+mv $dir_$solver_name'.py' $dir_$sess_'/'
+mv $dir_$worker_name'.bash' $dir_$sess_'/'
