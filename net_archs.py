@@ -219,6 +219,10 @@ def fcn_conv(data_split, tops, dropout_prob=0.5, conv1_1_lr_multi=4,
         raise(
             Exception('Must have hha, hha2, or depth for top[1]; "' +
                       tops + '" tops given'))
+        if freeze:
+            conv_multi = 0
+        else:
+            conv_multi = 1
 
     n.color, n[tops[1]],  n.label = L.Python(module='cs_trip_layers',
                                              layer='CStripSegDataLayer', ntop=3,
@@ -227,32 +231,42 @@ def fcn_conv(data_split, tops, dropout_prob=0.5, conv1_1_lr_multi=4,
                                                  'Site/Springfield/12Aug16/K2',
                                                  split=data_split, tops=tops,
                                                  seed=1337)))
-    if freeze:
-        conv_multi = 0
-    else:
-        conv_multi = 1
     n = modality_conv_layers(n, 'color', engineNum,
                              conv_multi, modality='color')
     n = modality_conv_layers(
         n, tops[1], engineNum, conv_multi, modality=tops[1])
 
-    n['fc6color'], n['relu6color'] = conv_relu(
-        n['pool5color'], 4096, ks=7, pad=0)
-    n['drop6color'] = L.Dropout(n['relu6color'],
-                                dropout_ratio=0.5, in_place=True)
-    n['fc6' + tops[1]], n['relu6' + tops[1]] = conv_relu(
-        n['pool5' + tops[1]], 4096, ks=7, pad=0)
-    n['drop6' + tops[1]] = L.Dropout(n['relu6' + tops[1]],
-                                     dropout_ratio=0.5, in_place=True)
-    n.fc6_concat = L.Concat(n['drop6color'], n['drop6' + tops[1]])
+    for modal in ['color', tops[1]]:
+        n['fc6' + modal], n['relu6' + modal] = conv_relu(n['pool5' + modal],
+                                                         4096, ks=7, pad=0)
+        n['drop6' + modal] = L.Dropout(n['relu6' + modal],
+                                       dropout_ratio=0.5, in_place=True)
 
-    n.fc7fuse, n.relu7fuse = conv_relu(n.fc6_concat, 4096, ks=1, pad=0)
+    # Let the conv fusion begin! Mwahahaha!!
+    n.fc6_concat = L.Concat(n['drop6color'], n['drop6' + tops[1]])
+    n.fc7fuse = L.Convolution(n.fc6_concat, kernel_size=1, stride=1,
+                              num_output=4096, pad=0, engine=engineNum,
+                              param=[dict(lr_mult=final_multi, decay_mult=1),
+                                     dict(lr_mult=final_multi * 2, decay_mult=0)],
+                              weight_filler=dict(type='msra'))
+    n.relu7fuse = L.ReLU(n.fc7fuse, in_place=True, engine=engineNum)
     n.drop7fuse = L.Dropout(
         n.relu7fuse, dropout_ratio=0.5, in_place=True)
     n.score_fr_tripfuse = L.Convolution(
         n.drop7fuse, num_output=2, kernel_size=1, pad=0,
         param=[dict(lr_mult=1, decay_mult=1), dict(lr_mult=2, decay_mult=0)],
         weight_filler=dict(type='msra'))
+    # Upscale scores
+    n.upscore_trip = L.Deconvolution(n.score_fr_tripfuse,
+                                     convolution_param=dict(num_output=2,
+                                                            kernel_size=64,
+                                                            stride=32,
+                                                            bias_term=False),
+                                     param=[dict(lr_mult=0)])
+    n.score = crop(n.upscore_trip, n.data)
+    # n.softmax_score = L.Softmax(n.score)
+    n.loss = L.SoftmaxWithLoss(n.score, n.label,
+                               loss_param=dict(normalize=False))
 
 
 def print_rgb_nets():
