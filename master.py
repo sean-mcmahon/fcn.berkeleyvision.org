@@ -126,7 +126,7 @@ def check_worker(id_, worker_dir):
             print '*** \nError finding logfilenames at', os.path.join(worker_dir,
                                                                       '*.log')
             print '***'
-            return 'deployed'
+            return 'finished'
         vis_finetune.main((logfilename,),
                           printouts=False)
 
