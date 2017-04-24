@@ -2,7 +2,7 @@
 #PBS -N master_depth
 #PBS -l ncpus=1
 #PBS -l mem=4GB
-#PBS -l walltime=58:00:00
+#PBS -l walltime=28:00:00
 
 module load python/2.7.11-foss-2016a
 
@@ -23,7 +23,7 @@ cp $dir_'solve_any.py' $dir_$solver_name'.py'
 data_type='depth'
 sess_=$data_type'_workers'
 workers_=$data_type'_1_'
-job_time_=48
+job_time_=24
 num_wrks_=2
 
 python $python_script --worker_name $worker_name --session_dir $sess_ --worker_id_dir $workers_ --run_time $job_time_ --max_workers $num_wrks_
