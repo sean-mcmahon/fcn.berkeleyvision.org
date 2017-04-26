@@ -68,6 +68,15 @@ def add_txt(logfile_in, insertion_p, new_txt):
     return log_bef + new_txt + log_after
 
 
+def save_log_backup(logfile, logfile_name, debug=False):
+    log_dr, base_name = os.path.split(logfile_name)
+    name, ext = os.path.splitext(base_name)
+    save_name = os.path.join(log_dr, name + '_BACKUP.txt')
+    with open(save_name, 'w') as f:
+        f.write(logfile)
+    if debug:
+        print 'saved backup to: ', save_name
+
 def main(log_dir):
     print 'walkin...'
     walk_start = time.time()
@@ -80,6 +89,7 @@ def main(log_dir):
         # regex matching!
         with open(logfile_name, 'r') as f:
             logfile = f.read()
+        save_log_backup(logfile, logfile_name)
         # print '+'*30, '\n', logfile, '\n', '+'*30
         io_pattern = '[^\n]I0'
         # have read the entire logfile into memory as a string
@@ -102,10 +112,10 @@ def main(log_dir):
             logfile = replace_txt(new_log, first_nl, match.start(0), line_beg)
 
         print '{} matches found in {}'.format(count, os.path.basename(logfile_name))
-        log_dr, base_name = os.path.split(logfile_name)
-        with open(logfile_name + 'FIXED', 'w') as f:
+        save_name = logfile_name
+        with open(save_name, 'w') as f:
             f.write(logfile)
-        print 'saved ', logfile_name + 'FIXED'
+        print 'saved to: ', save_name
 
 
 @click.command()
@@ -122,7 +132,7 @@ def main_click(log_dir):
 
     start_t = time.time()
     print 'input = \n', log_dir
-    print '='*50
+    print '=' * 50
     if isinstance(log_dir, tuple):
         for dir_ in log_dir:
             main(dir_)
