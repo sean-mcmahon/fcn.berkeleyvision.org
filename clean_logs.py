@@ -16,6 +16,7 @@ if __name__ == '__main__':
     # walk through directory and find .log files.
     dir_ = '/home/sean/hpc-home/Fully-Conv-Network/Resources/' + \
         'FCN_paramsearch/rgb_workers/rgb_1_23/'
+    # dir_ = '/home/sean/Dropbox/Uni/Code/FCN_models'
 
     folders = os.walk(dir_)
     logfile_names = []
@@ -28,21 +29,23 @@ if __name__ == '__main__':
         # regex matching!
         with open(logfile_name, 'r') as f:
             logfile = f.read()
+        # print '+'*30, '\n', logfile, '\n', '+'*30
         io_pattern = '[^\n]I0'
         # have read the entire logfile into memory as a string
         # find 'I0's not at the start of a line
         idx_match = re.finditer(io_pattern, logfile)
-        for match in idx_match:
+        for count, match in enumerate(idx_match):
             # print logfile[match.start(0)]
             first_nl = logfile.rfind('\n',
                                      match.start(0) - 200, match.start(0) + 1)
             print '---> First {} before "{}" match'.format(r'\n', r'[^\n]I0')
             print repr(logfile[first_nl: match.end(0) + 5])
-            line_beg = logfile[first_nl + 1: match.start(0)+1]
-            print '  {}'.format(repr(line_beg))
+            line_beg = logfile[first_nl: match.start(0) + 1]
+            print '{}'.format(repr(line_beg))
 
             # Find next line without I0
-            # End of the c++ print (first after line after match not starting with I0)
+            # End of the c++ print (first after line after match not starting
+            # with I0)
             newlines = logfile.find('\n', match.end(0))
             while True:
                 if 'I0' not in logfile[newlines:newlines + 3]:
@@ -52,3 +55,17 @@ if __name__ == '__main__':
                 else:
                     pass
                 newlines = logfile.find('\n', newlines + 1)
+
+            # add line_beg text to next non I0 line
+            log_bef = logfile[:newlines]
+            log_after = logfile[newlines + 1:]
+            new_log = log_bef + line_beg + log_after
+            # remove text at line_beg. Make sure there are no other matches
+            logfile = new_log.replace(line_beg, "\n", 1)
+            # line begin should start with a "\n"
+            # print '+' * 30
+            # print new_log2
+        break
+    print '{} matches found (out of 17)'.format(count)
+    with open('/home/sean/Dropbox/Uni/Code/FCN_models/new_logfile.log', 'w') as f:
+        f.write(logfile)
