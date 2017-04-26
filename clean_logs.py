@@ -15,9 +15,10 @@ import time
 
 if __name__ == '__main__':
     # walk through directory and find .log files.
-    dir_ = '/home/sean/hpc-home/Fully-Conv-Network/Resources/' + \
-        'FCN_paramsearch/rgb_workers/rgb_1_23/'
+    # dir_ = '/home/sean/hpc-home/Fully-Conv-Network/Resources/' + \
+    #     'FCN_paramsearch/rgb_workers/rgb_1_23/'
     # dir_ = '/home/sean/Dropbox/Uni/Code/FCN_models'
+    dir_ = '/home/sean/Documents/logfix_test/'
 
     print 'walkin...'
     walk_start = time.time()
@@ -49,6 +50,7 @@ if __name__ == '__main__':
         # have read the entire logfile into memory as a string
         # find 'I0's not at the start of a line
         idx_match = re.finditer(io_pattern, logfile)
+        count = 0
         for count, match in enumerate(idx_match):
             # print logfile[match.start(0)]
             first_nl = logfile.rfind('\n',
@@ -88,9 +90,10 @@ if __name__ == '__main__':
             # line begin should start with a "\n"
             # print '+' * 30
             # print new_log2
-        break
+        print '{} matches found in {}'.format(count, os.path.basename(logfile_name))
+        log_dr, base_name = os.path.split(logfile_name)
+        with open(logfile_name + 'FIXED', 'w') as f:
+            f.write(logfile)
+        print 'saved ', logfile_name + 'FIXED'
     duration = time.time() - start_t
-    print '{} matches found (out of 17). Log fixing took {} seconds'.format(
-        count, duration)
-    with open('/home/sean/Dropbox/Uni/Code/FCN_models/new_logfile.log', 'w') as f:
-        f.write(logfile)
+    print ' Log fixing took {} seconds'.format(duration)
