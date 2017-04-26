@@ -13,6 +13,42 @@ import click
 import re
 import time
 
+
+def log_search(walk_iterator, pattern):
+    logfile_names = []
+
+    print 'Searchin for logs'
+    search_time = time.time()
+    for root, dirs, files in walk_iterator:
+        for f in fnmatch.filter(files, pattern):
+            logfile_names.append(os.path.join(root, f))
+            # print os.path.join(root, f)
+    if len(logfile_names) > 10:
+        print 'Search found {} logs, and took {} seconds'.format(
+            len(logfile_names), time.time() - search_time)
+    else:
+        print 'Search found \n- {}\nAnd took {} seconds'.format(
+            "\n- ".join(logfile_names), time.time() - search_time)
+    print '-' * 20
+    return logfile_names
+
+def find_next_py_line(logfile, beg, debug=False):
+    # Find next line without I0
+    # End of the c++ print (first after line after match not starting
+    # with I0)
+    next_py_line = logfile.find('\n', beg)
+    while True:
+        if 'I0' not in logfile[next_py_line:next_py_line + 3]:
+            if debug:
+                print '---> First non I0 line found after', r'[^\n]I0', 'match'
+                print repr(logfile[next_py_line:next_py_line + 15])
+            break
+        else:
+            pass
+        next_py_line = logfile.find('\n', next_py_line + 1)
+    return next_py_line
+
+
 if __name__ == '__main__':
     # walk through directory and find .log files.
     # dir_ = '/home/sean/hpc-home/Fully-Conv-Network/Resources/' + \
@@ -24,21 +60,8 @@ if __name__ == '__main__':
     walk_start = time.time()
     folders = os.walk(dir_)
     print 'Walk took {} seconds'.format(time.time() - walk_start)
-    logfile_names = []
 
-    print 'Searchin for logs'
-    search_time = time.time()
-    for root, dirs, files in folders:
-        for f in fnmatch.filter(files, '*.log'):
-            logfile_names.append(os.path.join(root, f))
-            # print os.path.join(root, f)
-    if len(logfile_names) > 10:
-        print 'Search found {} logs, and took {} seconds'.format(
-            len(logfile_names), time.time() - search_time)
-    else:
-        print 'Search found \n- {}\nAnd took {} seconds'.format(
-            "\n- ".join(logfile_names), time.time() - search_time)
-    print '-' * 20
+    logfile_names = log_search(folders, '*.log')
 
     start_t = time.time()
     for logfile_name in logfile_names:
@@ -60,18 +83,7 @@ if __name__ == '__main__':
             line_beg = logfile[first_nl: match.start(0) + 1]
             # print '{}'.format(repr(line_beg))
 
-            # Find next line without I0
-            # End of the c++ print (first after line after match not starting
-            # with I0)
-            newlines = logfile.find('\n', match.end(0))
-            while True:
-                if 'I0' not in logfile[newlines:newlines + 3]:
-                    # print '---> First non I0 line found after', r'[^\n]I0', 'match'
-                    # print repr(logfile[newlines:newlines + 15])
-                    break
-                else:
-                    pass
-                newlines = logfile.find('\n', newlines + 1)
+            newlines = find_next_py_line(logfile, match.end(0))
 
             # add line_beg text to next non I0 line
             log_bef = logfile[:newlines]
