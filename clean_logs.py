@@ -39,7 +39,7 @@ if __name__ == '__main__':
             print '---> First {} before "{}" match'.format(r'\n', r'[^\n]I0')
             print repr(logfile[first_nl: match.end(0) + 5])
             line_beg = logfile[first_nl + 1: match.start(0)+1]
-            print repr(line_beg)
+            print '  {}'.format(repr(line_beg))
 
             # Find next line without I0
             # End of the c++ print (first after line after match not starting with I0)
