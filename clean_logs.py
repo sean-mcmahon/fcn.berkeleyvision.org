@@ -109,15 +109,25 @@ def main(log_dir):
 
 
 @click.command()
-@click.argument('log_dir', nargs=1, type=click.Path(exists=True))
+@click.argument('log_dir', nargs=-1, type=click.Path(exists=True))
 def main_click(log_dir):
+    if not log_dir:
+        log_dir = '/home/sean/Documents/logfix_test/'
+
     # walk through directory and find .log files.
     # dir_ = '/home/sean/hpc-home/Fully-Conv-Network/Resources/' + \
     #     'FCN_paramsearch/rgb_workers/rgb_1_23/'
     # dir_ = '/home/sean/Dropbox/Uni/Code/FCN_models'
     # dir_ = '/home/sean/Documents/logfix_test/'
+
     start_t = time.time()
-    main(log_dir)
+    print 'input = \n', log_dir
+    print '='*50
+    if isinstance(log_dir, tuple):
+        for dir_ in log_dir:
+            main(dir_)
+    else:
+        main(log_dir)
     duration = time.time() - start_t
     print ' Log fixing took {} seconds'.format(duration)
 
