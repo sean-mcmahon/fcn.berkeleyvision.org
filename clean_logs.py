@@ -52,14 +52,15 @@ def find_next_py_line(logfile, beg, debug=False):
 
 def replace_txt(logfile_in, beg_id, end_id, pattern, new_txt="\n"):
     # add a margin arounf the ids
-    begin = beg_id - 5
-    end = end_id + 6
+    begin = beg_id - len(pattern)
+    end = end_id + len(pattern)
     removal_area = logfile_in[begin: end]
-    bef_rem = logfile_in[:begin]
-    after_rem = logfile_in[end:]
-    removed_area = removal_area.replace(pattern, new_txt, 1)
+    # bef_rem = logfile_in[:begin]
+    # after_rem = logfile_in[end:]
+    # removed_area = removal_area.replace(pattern, new_txt, 1)
 
-    return bef_rem + removed_area + after_rem
+    # return bef_rem + removed_area + after_rem
+    return logfile_in[:begin] + removal_area.replace(pattern, new_txt, 1) + logfile_in[end:]
 
 
 def add_txt(logfile_in, insertion_p, new_txt):
@@ -77,13 +78,14 @@ def save_log_backup(logfile, logfile_name, debug=False):
     if debug:
         print 'saved backup to: ', save_name
 
+
 def main(log_dir):
     print 'walkin...'
     walk_start = time.time()
     folders = os.walk(log_dir)
     print 'Walk took {} seconds'.format(time.time() - walk_start)
 
-    logfile_names = log_search(folders, '*10.log')
+    logfile_names = log_search(folders, '*.log')
     # print logfile_names
     # raise(Exception('quiting early'))
     # logfile_names = logfile_names[:5]
@@ -111,10 +113,9 @@ def main(log_dir):
             newlines = find_next_py_line(logfile, match.end(0))
 
             # add line_beg text to next non I0 line
-            new_log = add_txt(logfile, newlines, line_beg)
+            newlog = add_txt(logfile, newlines, line_beg)
             # remove text at line_beg. Make sure there are no other matches
-            logfile = replace_txt(new_log, first_nl, match.start(0), line_beg)
-            del new_log
+            logfile = replace_txt(newlog, first_nl, match.start(0), line_beg)
 
         print '{} matches found in {}'.format(count, os.path.basename(logfile_name))
         save_name = logfile_name
@@ -127,7 +128,7 @@ def main(log_dir):
 @click.argument('log_dir', nargs=-1, type=click.Path(exists=True))
 def main_click(log_dir):
     if not log_dir:
-        log_dir = '/home/sean/Documents/logfix_test/'
+        log_dir = '/home/sean/Documents/logfix_test/hha2_11'
 
     # walk through directory and find .log files.
     # dir_ = '/home/sean/hpc-home/Fully-Conv-Network/Resources/' + \
