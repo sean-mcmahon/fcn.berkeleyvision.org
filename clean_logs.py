@@ -83,13 +83,17 @@ def main(log_dir):
     folders = os.walk(log_dir)
     print 'Walk took {} seconds'.format(time.time() - walk_start)
 
-    logfile_names = log_search(folders, '*.log')
+    logfile_names = log_search(folders, '*10.log')
+    # print logfile_names
+    # raise(Exception('quiting early'))
+    # logfile_names = logfile_names[:5]
 
-    for logfile_name in logfile_names:
+    for log_count, logfile_name in enumerate(logfile_names):
         # regex matching!
+        print 'loading logfile {}/{}'.format(log_count, len(logfile_names))
         with open(logfile_name, 'r') as f:
             logfile = f.read()
-        save_log_backup(logfile, logfile_name)
+        save_log_backup(logfile, logfile_name, debug=True)
         # print '+'*30, '\n', logfile, '\n', '+'*30
         io_pattern = '[^\n]I0'
         # have read the entire logfile into memory as a string
@@ -110,6 +114,7 @@ def main(log_dir):
             new_log = add_txt(logfile, newlines, line_beg)
             # remove text at line_beg. Make sure there are no other matches
             logfile = replace_txt(new_log, first_nl, match.start(0), line_beg)
+            del new_log
 
         print '{} matches found in {}'.format(count, os.path.basename(logfile_name))
         save_name = logfile_name
