@@ -104,9 +104,9 @@ def clean_string(logfile_str):
 
         # add line_beg text to next non I0 line
         newlog = add_txt(logfile_str, newlines, line_beg)
-        if psutil.swap_memory().percent >= 40.0:
-            raise(Exception('Using too much memory \n{} \n{}'.format(
-                psutil.swap_memory(), psutil.virtual_memory())))
+        if psutil.swap_memory().percent >= 5.0:
+            raise(Exception('Using too much memory fixed {} matches \n{} \n{}'.format(
+                m_count, psutil.swap_memory(), psutil.virtual_memory())))
         # remove text at line_beg. Make sure there are no other matches
         logfile_str = replace_txt(newlog, first_nl, match.start(0), line_beg)
     return logfile_str, m_count
@@ -132,7 +132,7 @@ def main(log_dir):
         print 'len of {} is {}'.format(os.path.basename(logfile_name),
                                        len(logfile))
     logfile = ''
-    raise(Exception("Quitting early"))
+    # raise(Exception("Quitting early"))
 
     for log_count, logfile_name in enumerate(logfile_names):
         # regex matching!
@@ -141,30 +141,27 @@ def main(log_dir):
             logfile = f.read()
 
         if len(logfile) > 700000:
-            first_h = logfile[:len(logfile) / 2]
-            sec_h = logfile[len(logfile) / 2:]
-            logfile = None
-            first_h, mc1 = clean_string(first_h)
-            sec_h, mc2 = clean_string(sec_h)
-            print '{} matches found in {}'.format(mc1 + mc2 + 1,
+            logfile = logfile[:len(logfile) / 3]
+            logfile, match_count = clean_string(logfile)
+            # sec_h, mc2 = clean_string(sec_h)
+            print '{} matches found in {}'.format(match_count + 1,
                                                   os.path.basename(logfile_name))
-            logfile = first_h + sec_h
-            del first_h, sec_h
         else:
             logfile, match_count = clean_string(logfile)
             print '{} matches found in {}'.format(match_count + 1,
                                                   os.path.basename(logfile_name))
         save_name = logfile_name
-        with open(save_name, 'w') as f:
-            f.write(logfile)
+        # with open(save_name, 'w') as f:
+        #     f.write(logfile)
         print 'saved to: ', save_name
+        logfile = None
 
 
 @click.command()
 @click.argument('log_dir', nargs=-1, type=click.Path(exists=True))
 def main_click(log_dir):
     if not log_dir:
-        log_dir = '/home/sean/Documents/logfix_test/'
+        log_dir = '/home/sean/Documents/logfix_test/hha2_11'
 
     # walk through directory and find .log files.
     # dir_ = '/home/sean/hpc-home/Fully-Conv-Network/Resources/' + \
