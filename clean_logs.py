@@ -127,6 +127,7 @@ def main(log_dir):
                                        len(logfile))
     logfile = ''
     del logfile
+    debug = False
 
     for log_count, logfile_name in enumerate(logfile_names):
         print 'loading logfile {}/{}'.format(log_count + 1, len(logfile_names))
@@ -141,21 +142,26 @@ def main(log_dir):
         regexp_start = re.compile(start_io_pattern)
         line_beg = None
         for line in log_list:
-            for m_count, match in enumerate(re.finditer(io_pattern, line)):
-                line_beg = line[match.start(0) + 1:]
-                print '{} matches found '.format(m_count)
             if regexp.search(line):
+                if debug:
+                    print '{}\nmatch found for line \n{}'.format('-'*20, repr(line))
                 if line_beg is not None:
                     raise(Exception('overwriting line_beg'))
-                line_beg = line[match.start(0) + 1:]
+                line_beg = line[:line.index('I0')]
+                if debug:
+                    print 'line beg = {}'.format(repr(line_beg))
                 line = line.replace(line_beg, '')
 
             if line_beg is not None and not regexp_start.search(line):
                 line = line_beg + line
                 line_beg = None
-        save_name = logfile_name
-        # with open(save_name, 'w') as f:
-        #     f.write(logfile)
+                print 'Fixed line = {}'.format(line)
+        path, name = os.path.split(logfile_name)
+        name, ext = os.path.splitext(name)
+        save_name = name + '_Fixed.txt'
+        with open(os.path.join(path, save_name), 'w') as f:
+            for line in log_list:
+                f.write(line)
         print 'saved to: ', save_name
 
 
@@ -163,7 +169,7 @@ def main(log_dir):
 @click.argument('log_dir', nargs=-1, type=click.Path(exists=True))
 def main_click(log_dir):
     if not log_dir:
-        log_dir = '/home/sean/Documents/logfix_test/hha2_11'
+        log_dir = '/home/sean/Documents/logfix_test/hha2_12'
 
     # walk through directory and find .log files.
     # dir_ = '/home/sean/hpc-home/Fully-Conv-Network/Resources/' + \
