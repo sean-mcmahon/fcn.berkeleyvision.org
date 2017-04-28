@@ -132,11 +132,8 @@ def main(log_dir):
         print 'loading logfile {}/{}'.format(log_count + 1, len(logfile_names))
         with open(logfile_name, 'r') as f:
             log_list = f.readlines()
-        with open(logfile_name, 'r') as f:
-            logfile = f.read()
 
         print 'log_list ', sys.getsizeof(log_list), ' len ', len(log_list)
-        print 'Logfile ', sys.getsizeof(logfile)
 
         io_pattern = r'[^\n]I0'
         start_io_pattern = r'\nI0'
@@ -144,12 +141,9 @@ def main(log_dir):
         regexp_start = re.compile(start_io_pattern)
         line_beg = None
         for line in log_list:
-            for match in re.finditer(io_pattern, line):
+            for m_count, match in enumerate(re.finditer(io_pattern, line)):
                 line_beg = line[match.start(0) + 1:]
-                # rm line_beg from line
-                # sift through lines until no I0
-                # add line_beg at beginning of line
-
+                print '{} matches found '.format(m_count)
             if regexp.search(line):
                 if line_beg is not None:
                     raise(Exception('overwriting line_beg'))
@@ -159,24 +153,6 @@ def main(log_dir):
             if line_beg is not None and not regexp_start.search(line):
                 line = line_beg + line
                 line_beg = None
-        # for el in log_list:
-        #     print el
-
-        # if psutil.swap_memory().percent >= 2.0:
-        #     raise(Exception('Logfile too large \n{} \n{}'.format(
-        #         psutil.swap_memory(), psutil.virtual_memory())))
-
-        # if len(logfile) > 700000:
-        #     logfile = logfile[:len(logfile) / 3]
-        #     logfile, match_count = clean_string(logfile)
-        #     # sec_h, mc2 = clean_string(sec_h)
-        #     print '{} matches found in {}'.format(match_count + 1,
-        #                                           os.path.basename(logfile_name))
-        # else:
-        #     logfile, match_count = clean_string(logfile)
-        #     print '{} matches found in {}'.format(match_count + 1,
-        #                                           os.path.basename(logfile_name))
-
         save_name = logfile_name
         # with open(save_name, 'w') as f:
         #     f.write(logfile)
