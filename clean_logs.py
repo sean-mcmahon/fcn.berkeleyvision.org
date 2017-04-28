@@ -13,6 +13,7 @@ import click
 import re
 import time
 import psutil
+import sys
 
 
 def log_search(walk_iterator, pattern):
@@ -116,11 +117,7 @@ def main(log_dir):
     print 'Walk took {} seconds'.format(time.time() - walk_start)
 
     logfile_names = log_search(folders, '*.log')
-    # print logfile_names
-    # raise(Exception('quiting early'))
-    # logfile_names = logfile_names[:5]
     for log_count, logfile_name in enumerate(logfile_names):
-        # regex matching!
         print 'backing-up logfile {}/{}'.format(log_count + 1,
                                                 len(logfile_names))
         with open(logfile_name, 'r') as f:
@@ -129,28 +126,44 @@ def main(log_dir):
         print 'len of {} is {}'.format(os.path.basename(logfile_name),
                                        len(logfile))
     logfile = ''
-    # raise(Exception("Quitting early"))
+    del logfile
+
 
     for log_count, logfile_name in enumerate(logfile_names):
-        # regex matching!
         print 'loading logfile {}/{}'.format(log_count + 1, len(logfile_names))
+        with open(logfile_name, 'r') as f:
+            log_list = f.readlines()
         with open(logfile_name, 'r') as f:
             logfile = f.read()
 
-        # if psutil.swap_memory().percent >= 15.0:
+        print 'log_list ', sys.getsizeof(log_list), ' len ', len(log_list)
+        print 'Logfile ', sys.getsizeof(logfile)
+        io_pattern = '[^\n]I0'
+
+
+        for line in log_list:
+            for match in re.finditer(io_pattern, line):
+                line_beg = line[match.start(0) + 1:]
+                # rm line_beg from line
+                # sift through lines until no I0
+                # add line_beg at beginning of line
+        # for el in log_list:
+        #     print el
+
+        # if psutil.swap_memory().percent >= 2.0:
         #     raise(Exception('Logfile too large \n{} \n{}'.format(
         #         psutil.swap_memory(), psutil.virtual_memory())))
 
-        if len(logfile) > 700000:
-            logfile = logfile[:len(logfile) / 3]
-            logfile, match_count = clean_string(logfile)
-            # sec_h, mc2 = clean_string(sec_h)
-            print '{} matches found in {}'.format(match_count + 1,
-                                                  os.path.basename(logfile_name))
-        else:
-            logfile, match_count = clean_string(logfile)
-            print '{} matches found in {}'.format(match_count + 1,
-                                                  os.path.basename(logfile_name))
+        # if len(logfile) > 700000:
+        #     logfile = logfile[:len(logfile) / 3]
+        #     logfile, match_count = clean_string(logfile)
+        #     # sec_h, mc2 = clean_string(sec_h)
+        #     print '{} matches found in {}'.format(match_count + 1,
+        #                                           os.path.basename(logfile_name))
+        # else:
+        #     logfile, match_count = clean_string(logfile)
+        #     print '{} matches found in {}'.format(match_count + 1,
+        #                                           os.path.basename(logfile_name))
 
         save_name = logfile_name
         # with open(save_name, 'w') as f:
@@ -162,7 +175,7 @@ def main(log_dir):
 @click.argument('log_dir', nargs=-1, type=click.Path(exists=True))
 def main_click(log_dir):
     if not log_dir:
-        log_dir = '/home/sean/Documents/logfix_test/depth_1_19'
+        log_dir = '/home/sean/Documents/logfix_test/hha2_11'
 
     # walk through directory and find .log files.
     # dir_ = '/home/sean/hpc-home/Fully-Conv-Network/Resources/' + \
