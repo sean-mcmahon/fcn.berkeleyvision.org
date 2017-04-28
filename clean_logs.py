@@ -128,7 +128,6 @@ def main(log_dir):
     logfile = ''
     del logfile
 
-
     for log_count, logfile_name in enumerate(logfile_names):
         print 'loading logfile {}/{}'.format(log_count + 1, len(logfile_names))
         with open(logfile_name, 'r') as f:
@@ -138,15 +137,28 @@ def main(log_dir):
 
         print 'log_list ', sys.getsizeof(log_list), ' len ', len(log_list)
         print 'Logfile ', sys.getsizeof(logfile)
-        io_pattern = '[^\n]I0'
 
-
+        io_pattern = r'[^\n]I0'
+        start_io_pattern = r'\nI0'
+        regexp = re.compile(io_pattern)
+        regexp_start = re.compile(start_io_pattern)
+        line_beg = None
         for line in log_list:
             for match in re.finditer(io_pattern, line):
                 line_beg = line[match.start(0) + 1:]
                 # rm line_beg from line
                 # sift through lines until no I0
                 # add line_beg at beginning of line
+
+            if regexp.search(line):
+                if line_beg is not None:
+                    raise(Exception('overwriting line_beg'))
+                line_beg = line[match.start(0) + 1:]
+                line = line.replace(line_beg, '')
+
+            if line_beg is not None and not regexp_start.search(line):
+                line = line_beg + line
+                line_beg = None
         # for el in log_list:
         #     print el
 
