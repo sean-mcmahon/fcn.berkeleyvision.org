@@ -104,9 +104,6 @@ def clean_string(logfile_str):
 
         # add line_beg text to next non I0 line
         newlog = add_txt(logfile_str, newlines, line_beg)
-        if psutil.swap_memory().percent >= 5.0:
-            raise(Exception('Using too much memory fixed {} matches \n{} \n{}'.format(
-                m_count, psutil.swap_memory(), psutil.virtual_memory())))
         # remove text at line_beg. Make sure there are no other matches
         logfile_str = replace_txt(newlog, first_nl, match.start(0), line_beg)
     return logfile_str, m_count
@@ -140,6 +137,10 @@ def main(log_dir):
         with open(logfile_name, 'r') as f:
             logfile = f.read()
 
+        # if psutil.swap_memory().percent >= 15.0:
+        #     raise(Exception('Logfile too large \n{} \n{}'.format(
+        #         psutil.swap_memory(), psutil.virtual_memory())))
+
         if len(logfile) > 700000:
             logfile = logfile[:len(logfile) / 3]
             logfile, match_count = clean_string(logfile)
@@ -150,18 +151,18 @@ def main(log_dir):
             logfile, match_count = clean_string(logfile)
             print '{} matches found in {}'.format(match_count + 1,
                                                   os.path.basename(logfile_name))
+
         save_name = logfile_name
         # with open(save_name, 'w') as f:
         #     f.write(logfile)
         print 'saved to: ', save_name
-        logfile = None
 
 
 @click.command()
 @click.argument('log_dir', nargs=-1, type=click.Path(exists=True))
 def main_click(log_dir):
     if not log_dir:
-        log_dir = '/home/sean/Documents/logfix_test/hha2_11'
+        log_dir = '/home/sean/Documents/logfix_test/depth_1_19'
 
     # walk through directory and find .log files.
     # dir_ = '/home/sean/hpc-home/Fully-Conv-Network/Resources/' + \
