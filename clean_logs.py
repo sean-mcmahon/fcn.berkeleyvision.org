@@ -54,13 +54,18 @@ def replace_txt(logfile_in, beg_id, end_id, pattern, new_txt="\n"):
     # add a margin arounf the ids
     begin = beg_id - len(pattern)
     end = end_id + len(pattern)
-    removal_area = logfile_in[begin: end]
+    removal_area = logfile_in[begin:end]
     # bef_rem = logfile_in[:begin]
     # after_rem = logfile_in[end:]
     # removed_area = removal_area.replace(pattern, new_txt, 1)
 
+    # instead of replace could find the indexes arounfd the text to removed
+    # and create a new string from two sub strings
+    # just add len(pattern) to the indecies.
+
     # return bef_rem + removed_area + after_rem
-    return logfile_in[:begin] + removal_area.replace(pattern, new_txt, 1) + logfile_in[end:]
+    return logfile_in[:begin] + removal_area.replace(pattern,
+                                                     new_txt, 1) + logfile_in[end:]
 
 
 def add_txt(logfile_in, insertion_p, new_txt):
@@ -79,6 +84,30 @@ def save_log_backup(logfile, logfile_name, debug=False):
         print 'saved backup to: ', save_name
 
 
+def clean_string(logfile_str):
+    # print '+'*30, '\n', logfile_str, '\n', '+'*30
+    io_pattern = '[^\n]I0'
+    # have read the entire logfile into memory as a string
+    # find 'I0's not at the start of a line
+    idx_match = re.finditer(io_pattern, logfile_str)
+    m_count = 0
+    for m_count, match in enumerate(idx_match):
+        # print logfile_str[match.start(0)]
+        first_nl = logfile_str.rfind('\n',
+                                     match.start(0) - 200, match.start(0) + 1)
+        # print '---> First {} before "{}" match'.format(r'\n', r'[^\n]I0')
+        # print repr(logfile_str[first_nl: match.end(0) + 5])
+        line_beg = logfile_str[first_nl: match.start(0) + 1]
+
+        newlines = find_next_py_line(logfile_str, match.end(0))
+
+        # add line_beg text to next non I0 line
+        newlog = add_txt(logfile_str, newlines, line_beg)
+        # remove text at line_beg. Make sure there are no other matches
+        logfile_str = replace_txt(newlog, first_nl, match.start(0), line_beg)
+    return logfile_str, m_count
+
+
 def main(log_dir):
     print 'walkin...'
     walk_start = time.time()
@@ -89,35 +118,27 @@ def main(log_dir):
     # print logfile_names
     # raise(Exception('quiting early'))
     # logfile_names = logfile_names[:5]
+    for log_count, logfile_name in enumerate(logfile_names):
+        # regex matching!
+        print 'backing-up logfile {}/{}'.format(log_count + 1,
+                                                len(logfile_names))
+        with open(logfile_name, 'r') as f:
+            logfile = f.read()
+        save_log_backup(logfile, logfile_name, debug=False)
+        print 'len of {} is {}'.format(os.path.basename(logfile_name),
+                                       len(logfile))
+    logfile = ''
+    raise(Exception("Quitting early"))
 
     for log_count, logfile_name in enumerate(logfile_names):
         # regex matching!
-        print 'loading logfile {}/{}'.format(log_count, len(logfile_names))
+        print 'loading logfile {}/{}'.format(log_count + 1, len(logfile_names))
         with open(logfile_name, 'r') as f:
             logfile = f.read()
-        save_log_backup(logfile, logfile_name, debug=True)
-        # print '+'*30, '\n', logfile, '\n', '+'*30
-        io_pattern = '[^\n]I0'
-        # have read the entire logfile into memory as a string
-        # find 'I0's not at the start of a line
-        idx_match = re.finditer(io_pattern, logfile)
-        count = 0
-        for count, match in enumerate(idx_match):
-            # print logfile[match.start(0)]
-            first_nl = logfile.rfind('\n',
-                                     match.start(0) - 200, match.start(0) + 1)
-            # print '---> First {} before "{}" match'.format(r'\n', r'[^\n]I0')
-            # print repr(logfile[first_nl: match.end(0) + 5])
-            line_beg = logfile[first_nl: match.start(0) + 1]
 
-            newlines = find_next_py_line(logfile, match.end(0))
-
-            # add line_beg text to next non I0 line
-            newlog = add_txt(logfile, newlines, line_beg)
-            # remove text at line_beg. Make sure there are no other matches
-            logfile = replace_txt(newlog, first_nl, match.start(0), line_beg)
-
-        print '{} matches found in {}'.format(count, os.path.basename(logfile_name))
+        logfile, match_count = clean_string(logfile)
+        print '{} matches found in {}'.format(match_count + 1,
+                                              os.path.basename(logfile_name))
         save_name = logfile_name
         with open(save_name, 'w') as f:
             f.write(logfile)
@@ -128,7 +149,7 @@ def main(log_dir):
 @click.argument('log_dir', nargs=-1, type=click.Path(exists=True))
 def main_click(log_dir):
     if not log_dir:
-        log_dir = '/home/sean/Documents/logfix_test/hha2_11'
+        log_dir = '/home/sean/Documents/logfix_test/'
 
     # walk through directory and find .log files.
     # dir_ = '/home/sean/hpc-home/Fully-Conv-Network/Resources/' + \
