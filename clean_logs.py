@@ -12,6 +12,7 @@ import os
 import click
 import re
 import time
+import psutil
 
 
 def log_search(walk_iterator, pattern):
@@ -103,6 +104,9 @@ def clean_string(logfile_str):
 
         # add line_beg text to next non I0 line
         newlog = add_txt(logfile_str, newlines, line_beg)
+        if psutil.swap_memory().percent >= 40.0:
+            raise(Exception('Using too much memory \n{} \n{}'.format(
+                psutil.swap_memory(), psutil.virtual_memory())))
         # remove text at line_beg. Make sure there are no other matches
         logfile_str = replace_txt(newlog, first_nl, match.start(0), line_beg)
     return logfile_str, m_count
@@ -136,9 +140,20 @@ def main(log_dir):
         with open(logfile_name, 'r') as f:
             logfile = f.read()
 
-        logfile, match_count = clean_string(logfile)
-        print '{} matches found in {}'.format(match_count + 1,
-                                              os.path.basename(logfile_name))
+        if len(logfile) > 700000:
+            first_h = logfile[:len(logfile) / 2]
+            sec_h = logfile[len(logfile) / 2:]
+            logfile = None
+            first_h, mc1 = clean_string(first_h)
+            sec_h, mc2 = clean_string(sec_h)
+            print '{} matches found in {}'.format(mc1 + mc2 + 1,
+                                                  os.path.basename(logfile_name))
+            logfile = first_h + sec_h
+            del first_h, sec_h
+        else:
+            logfile, match_count = clean_string(logfile)
+            print '{} matches found in {}'.format(match_count + 1,
+                                                  os.path.basename(logfile_name))
         save_name = logfile_name
         with open(save_name, 'w') as f:
             f.write(logfile)
