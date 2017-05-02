@@ -177,7 +177,7 @@ def main(log_dir):
 
         path, name = os.path.split(logfile_name)
         name, ext = os.path.splitext(name)
-        save_name = os.path.join(path, name + '_Fixed.txt')
+        save_name = os.path.join(path, name + '.log')
         with open(save_name, 'w') as f:
             for fixed_line in log_copy:
                 f.write(fixed_line)
