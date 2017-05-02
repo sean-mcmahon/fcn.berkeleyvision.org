@@ -117,6 +117,8 @@ def main(log_dir):
     folders = os.walk(log_dir)
     print 'Walk took {} seconds'.format(time.time() - walk_start)
 
+    debug = False
+
     logfile_names = log_search(folders, '*.log')
     for log_count, logfile_name in enumerate(logfile_names):
         print 'backing-up logfile {}/{}'.format(log_count + 1,
@@ -124,14 +126,15 @@ def main(log_dir):
         with open(logfile_name, 'r') as f:
             logfile = f.read()
         save_log_backup(logfile, logfile_name, debug=False)
-        print 'len of {} is {}'.format(os.path.basename(logfile_name),
-                                       len(logfile))
+        if debug:
+            print 'len of {} is {}'.format(os.path.basename(logfile_name),
+                                           len(logfile))
     logfile = ''
     del logfile
-    debug = True
+    print '\n{}\n'.format('=' * 50)
 
     for log_count, logfile_name in enumerate(logfile_names):
-        print 'loading logfile {}/{}'.format(log_count + 1, len(logfile_names))
+        print 'fixing logfile {}/{}'.format(log_count + 1, len(logfile_names))
         with open(logfile_name, 'r') as f:
             log_list = f.readlines()
 
@@ -142,12 +145,17 @@ def main(log_dir):
         regexp = re.compile(io_pattern)
         regexp_start = re.compile(start_io_pattern)
         line_beg = None
+        num_matches = 0
+        beg_t = time.time()
         log_copy = copy.deepcopy(log_list)
+        print 'deep copy took', time.time() - beg_t, 'seconds'
+        # log_copy = log_list
         for line_idx, line in enumerate(log_list):
             if line_beg is not None and not regexp_start.search(line):
                 # line = line_beg + line
                 log_copy[line_idx] = line_beg + line
                 line_beg = None
+                num_matches += 1
                 if debug:
                     print 'Broken line   = {}'.format(repr(line))
                     print 'Fixed line    = {}'.format(repr(log_copy[line_idx])), \
@@ -172,15 +180,16 @@ def main(log_dir):
         save_name = os.path.join(path, name + '_Fixed.txt')
         with open(save_name, 'w') as f:
             for fixed_line in log_copy:
-                f.write(line)
-        print 'saved to: ', save_name
+                f.write(fixed_line)
+        print '{} matches saved to: {}\n{}'.format(num_matches, save_name,
+                                                   '-' * 20)
 
 
 @click.command()
 @click.argument('log_dir', nargs=-1, type=click.Path(exists=True))
 def main_click(log_dir):
     if not log_dir:
-        log_dir = '/home/sean/Documents/logfix_test/hha2_12'
+        log_dir = '/home/sean/Documents/logfix_test/'
 
     # walk through directory and find .log files.
     # dir_ = '/home/sean/hpc-home/Fully-Conv-Network/Resources/' + \
