@@ -25,3 +25,4 @@ depth_workers/
 hha2_workers/
 worker_live*
 worker_test_2017*
+*_workers/
