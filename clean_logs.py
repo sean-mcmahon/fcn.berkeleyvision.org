@@ -14,6 +14,7 @@ import re
 import time
 import psutil
 import sys
+import copy
 
 
 def log_search(walk_iterator, pattern):
@@ -127,7 +128,7 @@ def main(log_dir):
                                        len(logfile))
     logfile = ''
     del logfile
-    debug = False
+    debug = True
 
     for log_count, logfile_name in enumerate(logfile_names):
         print 'loading logfile {}/{}'.format(log_count + 1, len(logfile_names))
@@ -137,30 +138,40 @@ def main(log_dir):
         print 'log_list ', sys.getsizeof(log_list), ' len ', len(log_list)
 
         io_pattern = r'[^\n]I0'
-        start_io_pattern = r'\nI0'
+        start_io_pattern = r'^I0'
         regexp = re.compile(io_pattern)
         regexp_start = re.compile(start_io_pattern)
         line_beg = None
-        for line in log_list:
+        log_copy = copy.deepcopy(log_list)
+        for line_idx, line in enumerate(log_list):
+            if line_beg is not None and not regexp_start.search(line):
+                # line = line_beg + line
+                log_copy[line_idx] = line_beg + line
+                line_beg = None
+                if debug:
+                    print 'Broken line   = {}'.format(repr(line))
+                    print 'Fixed line    = {}'.format(repr(log_copy[line_idx])), \
+                        '\n', '-' * 20
+
             if regexp.search(line):
                 if debug:
-                    print '{}\nmatch found for line \n{}'.format('-'*20, repr(line))
+                    print '{}\nmatch found for line \n{}'.format('-' * 20, repr(line))
                 if line_beg is not None:
-                    raise(Exception('overwriting line_beg'))
+                    raise(Exception('overwriting line_beg, probable error' +
+                                    ' in you logic statements'))
                 line_beg = line[:line.index('I0')]
                 if debug:
-                    print 'line beg = {}'.format(repr(line_beg))
-                line = line.replace(line_beg, '')
+                    print 'line beg      = {}'.format(repr(line_beg))
+                # line = line.replace(line_beg, '')
+                log_copy[line_idx] = line.replace(line_beg, '')
+                if debug:
+                    print 'Replaced line = {}'.format(repr(log_copy[line_idx]))
 
-            if line_beg is not None and not regexp_start.search(line):
-                line = line_beg + line
-                line_beg = None
-                print 'Fixed line = {}'.format(line)
         path, name = os.path.split(logfile_name)
         name, ext = os.path.splitext(name)
-        save_name = name + '_Fixed.txt'
-        with open(os.path.join(path, save_name), 'w') as f:
-            for line in log_list:
+        save_name = os.path.join(path, name + '_Fixed.txt')
+        with open(save_name, 'w') as f:
+            for fixed_line in log_copy:
                 f.write(line)
         print 'saved to: ', save_name
 
