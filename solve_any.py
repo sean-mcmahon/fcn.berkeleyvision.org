@@ -140,7 +140,10 @@ def run_solver(params_dict, work_dir):
                                         dropout_prob=params_dict['dropout'],
                                         engine=0,
                                         freeze=params_dict.get(
-                                            'freeze_layers', False))
+                                            'freeze_layers', False),
+                                        conv11_multi=params_dict.get(
+                                        'conv11_multi', 2))
+    # createNet only uses conv11_multiwith early fusion!
 
     # init solver
     solver_name = createSolver(params_dict,
@@ -277,13 +280,14 @@ if __name__ == '__main__':
     learning_rate = round(10 ** np.random.uniform(-13, -10), 16)
     final_learning_multiplier = np.random.randint(1, 10)
     freeze_lower_layers = bool(np.random.randint(0, 2))  # sometimes false bra
+    lr_mult_conv11 = np.random.randint(1, 6)  # again will only be used for early fusion
     params_dict = {'base_lr': learning_rate, 'solverType': 'SGD',
                    'f_multi': final_learning_multiplier,
                    'dropout': dropout_regularisation,
                    'freeze_layers': freeze_lower_layers,
-                   'type': 'hha2', 'weight_init': 'NYU_hha',
-                   'rand_seed': 3711}
-    # TODO check if con1_1 lr can be set for early fusion!
+                   'type': 'rgbhha2_early', 'weight_init': 'NYU_hha',
+                   'rand_seed': 3711,
+                   'conv11_multi': lr_mult_conv11}
     print 'Solver writing to dir: ', work_dir
     write_dict(params_dict, work_dir)
 

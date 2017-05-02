@@ -1,8 +1,8 @@
 #!/bin/bash -l
-#PBS -N master_hha2
+#PBS -N m_eRGBhha_nyu
 #PBS -l ncpus=1
 #PBS -l mem=4GB
-#PBS -l walltime=28:00:00
+#PBS -l walltime=78:00:00
 
 module load python/2.7.11-foss-2016a
 
@@ -14,14 +14,15 @@ python_script=$dir_'master.py'
 # Because using MKL Blas on HPC
 export MKL_CBWR=AUTO
 
-data_type='hha2'
+data_type='early_rgbhha'
 sess_=$data_type'_workers'
-workers_=$data_type'_2_'
-job_time_=24
+signifier='nyuHHAinit'
+workers_=$data_type'_1_'$signifier'_'
+job_time_=72
 num_wrks_=2
 
-solver_name='solve_any_live_'$data_type
-worker_name='worker_live_'$data_type
+solver_name='solve_any_live_'$data_type$signifier
+worker_name='worker_live_'$data_type$signifier
 cp $dir_'worker.bash' $dir_$worker_name'.bash'
 sed -i -e 's/solve_any/'$solver_name'/g' $dir_$worker_name'.bash'
 cp $dir_'solve_any.py' $dir_$solver_name'.py'
