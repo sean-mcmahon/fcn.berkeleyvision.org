@@ -329,11 +329,11 @@ if __name__ == '__main__':
     #                'rand_seed': 3711,
     #                'conv11_multi': lr_mult_conv11}
     cv_learning_rate = 1e-10
-    test_set = 'test_' + cv_fold
-    train_set = 'train_' + cv_fold
+    test_set = 'test' #'test_' + cv_fold
+    train_set = 'train' # 'train_' + cv_fold
     cv_lr_mult_conv11 = 4
     cv_final_multi = 5
-    cv_net_type = 'hha2'
+    cv_net_type = 'rgbd_lateMix'
     cv_weight_init = 'NYU_hha'
     params_dict_crossval = {'base_lr': cv_learning_rate, 'solverType': 'SGD',
                             'f_multi': cv_final_multi,

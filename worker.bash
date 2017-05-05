@@ -70,7 +70,7 @@ fi
 cv_fold_idx="$2"
 if [[ -z "$cv_fold_idx" ]]; then
   if [ -z ${MY_CV_FOLD+x} ]; then
-    cv_fold_idx='';
+    cv_fold_idx='o';
   else cv_fold_idx=$MY_CV_FOLD
   fi
 fi
