@@ -45,6 +45,16 @@ def createNet(split, net_type='rgb', f_multi=5, dropout_prob=0.5,
         net = net_archs.fcn_conv(split, tops, engineNum=engine,
                                  final_multi=f_multi, dropout_prob=dropout_prob,
                                  freeze=freeze)
+    elif net_type == 'rgbd_lateMix' or net_type == 'RGBD_lateMix':
+        tops = ['color', 'depth', 'label']
+        net = net_archs.mixfcn(split, tops, engineNum=engine,
+                               final_multi=f_multi, dropout_prob=dropout_prob,
+                               freeze=freeze)
+    elif net_type == 'rgbhha2_lateMix' or net_type == 'rgbHHA2_lateMix':
+        tops = ['color', 'hha2', 'label']
+        net = net_archs.mixfcn(split, tops, engineNum=engine,
+                               final_multi=f_multi, dropout_prob=dropout_prob,
+                               freeze=freeze)
     else:
         raise(Exception('net_type "' + net_type +
                         '" unrecognised, create case for new network here.'))

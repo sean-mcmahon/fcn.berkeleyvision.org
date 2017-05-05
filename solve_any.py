@@ -213,6 +213,35 @@ def run_solver(params_dict, work_dir):
         del base_net_depth
     elif '_conv' in params_dict['type']:
         raise(Exception("Have not written code to initialise conv fusion"))
+    elif '_lateMix' in params_dict['type']:
+        color_weights = '/home/n8307628/Fully-Conv-Network/' + \
+            'Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel'
+        color_proto = '/home/n8307628/Fully-Conv-Network/' + \
+            'Resources/FCN_models' + '/cstrip-fcn32s-color/test.prototxt'
+        hha2_weights = '/home/n8307628/Fully-Conv-Network/' + \
+            'Resources/FCN_models/cstrip-fcn32s-hha2/HHA2snapshot/secondTrain_lowerLR_iter_2000.caffemodel'
+        hha2_proto = '/home/n8307628/Fully-Conv-Network/' + \
+            'Resources/FCN_models' + '/cstrip-fcn32s-hha2/test.prototxt'
+        depth_weights = '/home/n8307628/Fully-Conv-Network/Resources/FCN_models' + \
+            '/cstrip-fcn32s-depth/DepthSnapshot/' + \
+            'stepLR2_lowerLR_neg1N_Msub_iter_6000.caffemodel'
+        depth_proto = '/home/n8307628/Fully-Conv-Network/Resources/FCN_models' \
+            + '/cstrip-fcn32s-depth/test.prototxt'
+        # surgeries
+        color_net = caffe.Net(color_proto, color_weights, caffe.TEST)
+        surgery.transplant(solver.net, color_net, suffix='color')
+        del color_net
+
+        if 'hha2' in params_dict['type'] or 'HHA2' in params_dict['type']:
+            hha2_net = caffe.Net(hha2_proto, hha2_weights, caffe.TEST)
+            surgery.transplant(solver.net, hha2_net, suffix='hha2')
+            del hha2_net
+        elif 'rgbd' in params_dict['type'] or 'RGBD' in params_dict['type']:
+            depth_net = caffe.Net(depth_proto, depth_weights, caffe.TEST)
+            surgery.transplant(solver.net, depth_net, suffix='depth')
+            del depth_net
+        else:
+            raise(Exception('Uknown modality for late mix fusion'))
     else:
         solver.net.copy_from(weights)
 
