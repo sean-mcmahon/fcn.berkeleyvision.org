@@ -89,6 +89,14 @@ def print_net(path, split='test', net_type='rgb'):
         else:
             raise(Exception('Unkown modality for conv fusion: ' + net_type))
         net = net_archs.fcn_conv(split, tops)
+    elif '_lateMix' in net_type:
+        if 'd' in net_type or 'D' in net_type:
+            tops = ['color', 'depth', 'label']
+        elif 'hha2' in net_type or 'HHA2' in net_type:
+            tops = ['color', 'hha2', 'label']
+        else:
+            raise(Exception('Unkown modality for lateMix fusion: ' + net_type))
+        net = net_archs.mixfcn(split, tops)
     else:
         raise(Exception('net_type "' + net_type +
                         '" unrecognised, create case for new network here.'))
