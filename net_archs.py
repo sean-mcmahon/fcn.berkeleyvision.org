@@ -331,26 +331,29 @@ def mixfcn(data_split, tops, dropout_prob=0.5,
         n.score_fr_tripcolor, ntop=2,  slice_param=dict(axis=1))
     n.maxcolor = L.Eltwise(n.score_colora, n.score_colorb,
                            operation=P.Eltwise.MAX)
-    n.score_HHA2a, n.score_HHA2b = L.Slice(
-        n['score_fr_trip'+tops[1]], ntop=2,  slice_param=dict(axis=1))
-    n.maxhha2 = L.Eltwise(n.score_HHA2a, n.score_HHA2b,
-                          operation=P.Eltwise.MAX)
+    n['score_' + tops[1] + 'a'], n['score_' + tops[1] + 'b'] = L.Slice(
+        n['score_fr_trip' + tops[1]], ntop=2,  slice_param=dict(axis=1))
+    n['max' + tops[1]] = L.Eltwise(n['score_' + tops[1] + 'a'],
+                                   n['score_' + tops[1] + 'b'],
+                                   operation=P.Eltwise.MAX)
     # concatinate together and softmax for 'probabilites'
-    n.maxConcat = L.Concat(n.maxcolor, n.maxhha2, concat_param=dict(axis=1))
+    n.maxConcat = L.Concat(n.maxcolor, n['max' + tops[1]],
+                           concat_param=dict(axis=1))
     n.maxSoft = L.Softmax(n.maxConcat)
     # separate color and hha using slice layer
-    n.probColor, n.probHHA2 = L.Slice(
+    n.probColor, n['prob' + tops[1]] = L.Slice(
         n.maxSoft, ntop=2,  slice_param=dict(axis=1))
     # duplicate probabilies using concat layer over dim1 for mulitplication
     n.repProbColor = L.Concat(n.probColor, n.probColor)
-    n.repProbHHA2 = L.Concat(n.probHHA2, n.probHHA2)
+    n['repProb' + tops[1]] = L.Concat(n['prob' + tops[1]], n['prob' + tops[1]])
     # multiply the 'probabilies' with the color and hha scores
     n.weightedColor = L.Eltwise(n.score_fr_tripcolor, n.repProbColor,
                                 operation=P.Eltwise.PROD)
-    n.weightedHHA2 = L.Eltwise(n.score_fr_triphha2, n.repProbHHA2,
-                               operation=P.Eltwise.PROD)
+    n['weighted' + tops[1]] = L.Eltwise(n['score_fr_trip' + tops[1]],
+                                        n['repProb' + tops[1]],
+                                        operation=P.Eltwise.PROD)
     # combine the prob scores with eltwise summation
-    n.score_fused = L.Eltwise(n.weightedColor, n.weightedHHA2,
+    n.score_fused = L.Eltwise(n.weightedColor, n['weighted' + tops[1]],
                               operation=P.Eltwise.SUM, coeff=[1, 1])
     n.upscore = L.Deconvolution(n.score_fused,
                                 convolution_param=dict(num_output=2,
