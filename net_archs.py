@@ -97,6 +97,27 @@ def modality_conv_layers(net_spec, data, engNum, lr_multi, modality=''):
     return mid_fcn_layers(n, convRelu1_n, engNum, lr_multi, modality=modality)
 
 
+def modality_fcn(net_spec, data, modality, engNum, lr_multi, dropout_prob,
+                 final_multi):
+    n = net_spec
+    n = modality_conv_layers(n, data, engNum, lr_multi, modality)
+    # fully conv
+    n['fc6' + modality], n['relu6' + modality] = conv_relu(
+        n['pool5' + modality], 4096, ks=7, pad=0, engNum, lr=lr_multi)
+    n['drop6' + modality] = L.Dropout(
+        n['relu6' + modality], dropout_ratio=dropout_prob, in_place=True)
+    n['fc7' + modality], n['relu7' + modality] = conv_relu(
+        n['drop6' + modality], 4096, ks=1, pad=0, engNum, lr=lr_multi)
+    n['drop7' + modality] = L.Dropout(
+        n['relu7' + modality], dropout_ratio=dropout_prob, in_place=True)
+    n['score_fr_trip' + modality] = L.Convolution(
+        n['drop7' + modality], num_output=2, kernel_size=1, pad=0,
+        param=[dict(lr_mult=final_multi, decay_mult=1),
+               dict(lr_mult=2 * final_multi, decay_mult=0)],
+        weight_filler=dict(type='msra'))
+    return n
+
+
 def fcn(data_split, tops, dropout_prob=0.5, final_multi=1, engineNum=0,
         freeze=False):
     n = caffe.NetSpec()
@@ -275,6 +296,72 @@ def fcn_conv(data_split, tops, dropout_prob=0.5,
     return n
 
 # test code!
+
+
+def mixfcn(data_split, tops, dropout_prob=0.5,
+           final_multi=1, engineNum=0, freeze=True):
+            #  split, tops):
+    n = caffe.NetSpec()
+    if tops[1] != 'depth' and tops[1] != 'hha2' and tops[1] != 'hha':
+        raise(
+            Exception('Must have hha, hha2, or depth for top[1]; "' +
+                      tops + '" tops given'))
+    if freeze:
+        base_lr_multi = 0
+    else:
+        base_lr_multi = 1
+
+    n.color, n[tops[1]],  n.label = L.Python(module='cs_trip_layers',
+                                             layer='CStripSegDataLayer', ntop=3,
+                                             param_str=str(dict(
+                                                 cstrip_dir='/Construction_' +
+                                                 'Site/Springfield/12Aug16/K2',
+                                                 split=data_split, tops=tops,
+                                                 seed=1337)))
+# modality_fcn(net_spec, data, modality, engNum, lr_multi, dropout_prob,
+    #  final_multi)
+    n = modality_fcn(n, 'color', 'color', engineNum, base_lr_multi,
+                     dropout_prob, final_multi)
+    n = modality_fcn(n, tops[1], tops[1], engineNum, base_lr_multi,
+                     dropout_prob, final_multi)
+
+    # find max trip or non trip confidences, cannot use Argmax (no backprop)
+    # using eltwise max with split instead
+    n.score_colora, n.score_colorb = L.Slice(
+        n.score_fr_tripcolor, ntop=2,  slice_param=dict(axis=1))
+    n.maxcolor = L.Eltwise(n.score_colora, n.score_colorb,
+                           operation=P.Eltwise.MAX)
+    n.score_HHA2a, n.score_HHA2b = L.Slice(
+        n['score_fr_trip'+tops[1]], ntop=2,  slice_param=dict(axis=1))
+    n.maxhha2 = L.Eltwise(n.score_HHA2a, n.score_HHA2b,
+                          operation=P.Eltwise.MAX)
+    # concatinate together and softmax for 'probabilites'
+    n.maxConcat = L.Concat(n.maxcolor, n.maxhha2, concat_param=dict(axis=1))
+    n.maxSoft = L.Softmax(n.maxConcat)
+    # separate color and hha using slice layer
+    n.probColor, n.probHHA2 = L.Slice(
+        n.maxSoft, ntop=2,  slice_param=dict(axis=1))
+    # duplicate probabilies using concat layer over dim1 for mulitplication
+    n.repProbColor = L.Concat(n.probColor, n.probColor)
+    n.repProbHHA2 = L.Concat(n.probHHA2, n.probHHA2)
+    # multiply the 'probabilies' with the color and hha scores
+    n.weightedColor = L.Eltwise(n.score_fr_tripcolor, n.repProbColor,
+                                operation=P.Eltwise.PROD)
+    n.weightedHHA2 = L.Eltwise(n.score_fr_triphha2, n.repProbHHA2,
+                               operation=P.Eltwise.PROD)
+    # combine the prob scores with eltwise summation
+    n.score_fused = L.Eltwise(n.weightedColor, n.weightedHHA2,
+                              operation=P.Eltwise.SUM, coeff=[1, 1])
+    n.upscore = L.Deconvolution(n.score_fused,
+                                convolution_param=dict(num_output=2,
+                                                       kernel_size=64,
+                                                       stride=32,
+                                                       bias_term=False),
+                                param=[dict(lr_mult=0)])
+    n.score = crop(n.upscore, n.color)
+    n.loss = L.SoftmaxWithLoss(n.score, n.label,
+                               loss_param=dict(normalize=False))
+    return n.to_proto()
 
 
 def print_rgb_nets():
