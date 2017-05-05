@@ -14,7 +14,7 @@ if __name__ == '__main__':
     n_folds = 4
     fold_idx = range(n_folds)
     fold_idx_str = [str(s + 1) + '_4' for s in fold_idx]
-    # fold_idx_str = ['1_4', '4_4']
+    fold_idx_str = ['1_4', '3_4']
     n_type = 'hha'
     parent_dir = n_type + '_crossval'
     cross_val_dir = os.path.join(file_location, parent_dir)
@@ -27,5 +27,5 @@ if __name__ == '__main__':
         print worker_dir
         job_id = run_worker(worker_dir, 'worker', fold_idx=idx)
         print 'job id = ', job_id
-        time.sleep(5)  # my attempt to fix no cuda capable device error
+        time.sleep(15)  # my attempt to fix no cuda capable device error
         # (when there are cuda capable devices)
