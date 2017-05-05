@@ -92,7 +92,8 @@ def modality_conv_layers(net_spec, data, engNum, lr_multi, modality=''):
     n = net_spec
     # the base net
     convRelu1_n = 'relu1_1' + modality
-    n['conv1_1' + modality], n[convRelu1_n] = conv_relu(n[data], 64,
+    n['conv1_1' + modality], n[convRelu1_n] = conv_relu(n[data], 64, engNum,
+                                                        lr=lr_multi
                                                         pad=100)
     return mid_fcn_layers(n, convRelu1_n, engNum, lr_multi, modality=modality)
 
@@ -111,7 +112,7 @@ def modality_fcn(net_spec, data, modality, engNum, lr_multi, dropout_prob,
     n['drop7' + modality] = L.Dropout(
         n['relu7' + modality], dropout_ratio=dropout_prob, in_place=True)
     if new_final_fc:
-        n['score_fr_trip' + modality+'_new'] = L.Convolution(
+        n['score_fr_trip' + modality + '_new'] = L.Convolution(
             n['drop7' + modality], num_output=2, kernel_size=1, pad=0,
             param=[dict(lr_mult=final_multi, decay_mult=1),
                    dict(lr_mult=2 * final_multi, decay_mult=0)],
@@ -340,7 +341,7 @@ def mixfcn(data_split, tops, dropout_prob=0.5,
                                                             bias_term=False),
                                      param=[dict(lr_mult=0)])
     n.score_color = crop(n.upscorecolor, n.color)
-    n['upscore' + tops[1]] = L.Deconvolution(n['score_fr_trip' + tops[1]+'_new'],
+    n['upscore' + tops[1]] = L.Deconvolution(n['score_fr_trip' + tops[1] + '_new'],
                                              convolution_param=dict(num_output=2,
                                                                     kernel_size=64,
                                                                     stride=32,
