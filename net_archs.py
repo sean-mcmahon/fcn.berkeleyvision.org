@@ -402,5 +402,16 @@ def print_fcn_conv():
     with open('test_conv.prototxt', 'w') as f:
         f.write(str(fcn_conv('test', tops).to_proto()))
 
+
+def print_mixfcn():
+    tops = ['color', 'depth',  'label']
+    with open('trainval_mix.prototxt', 'w') as f:
+        f.write(str(mixfcn('train', tops).to_proto()))
+
+    with open('val_mix.prototxt', 'w') as f:
+        f.write(str(mixfcn('val', tops).to_proto()))
+
+    with open('test_mix.prototxt', 'w') as f:
+        f.write(str(mixfcn('test', tops).to_proto()))
 if __name__ == '__main__':
-    print_fcn_conv()
+    print_mixfcn()
