@@ -50,7 +50,7 @@ def run_worker(work_dir, worker_name, fold_idx=''):
             "Could not find solve_any.py at {}".format(worker_file))
     if not os.path.isdir(work_dir):
         os.mkdir(work_dir)
-    qsub_call = "qsub -v MY_TRAIN_DIR={} MY_CV_FOLD={} {}".format(
+    qsub_call = "qsub -v MY_TRAIN_DIR={},\"MY_CV_FOLD='{}'\" {}".format(
         work_dir, fold_idx, worker_file)
     try:
         jobid_ = subprocess.check_output(qsub_call, shell=True)
