@@ -38,14 +38,20 @@ def append_dir_to_txt(dir_txt, dir_name):
     myfile.close()
 
 
-def run_worker(work_dir, worker_name):
-    worker_file = os.path.join(file_location, worker_name + '.bash')
+def run_worker(work_dir, worker_name, fold_idx=''):
+    try:
+        worker_file = os.path.join(file_location, worker_name + '.bash')
+    except NameError:
+        print 'master.py (run_worker): cannot find file_location!'
+        n_name = '/home/n8307628/Fully-Conv-Network/Resources/FCN_paramsearch'
+        worker_file = os.path.join(n_name, worker_name + '.bash')
     if not os.path.isfile(worker_file):
         raise Exception(
             "Could not find solve_any.py at {}".format(worker_file))
     if not os.path.isdir(work_dir):
         os.mkdir(work_dir)
-    qsub_call = "qsub -v MY_TRAIN_DIR={} {}".format(work_dir, worker_file)
+    qsub_call = "qsub -v MY_TRAIN_DIR={} MY_CV_FOLD={} {}".format(
+        work_dir, fold_idx, worker_file)
     try:
         jobid_ = subprocess.check_output(qsub_call, shell=True)
     except:
@@ -166,11 +172,11 @@ if __name__ == '__main__':
     session_dir_ = args.session_dir
     worker_dir_name = args.worker_id_dir
     max_workers = int(args.max_workers)
-    print '-'*50
+    print '-' * 50
     print 'worker_name = ', worker_name_
     print 'run_time_ = ', run_time_
     print 'max_workers= ', max_workers
-    print '-'*50
+    print '-' * 50
 
     jobs_running = False
     intialising_workers = True

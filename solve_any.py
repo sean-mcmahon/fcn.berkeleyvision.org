@@ -28,6 +28,7 @@ home_dir = expanduser("~")
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', default='gpu')
 parser.add_argument('--working_dir', default='rgb_1')
+parser.add_argument('--traintest_fold', default='1_7')
 parser.add_argument('--network_modality', default='rgb')
 args = parser.parse_args()
 # import support functions
@@ -133,16 +134,18 @@ def run_solver(params_dict, work_dir):
     networks.print_net(work_dir, split='test',
                        net_type=params_dict['type'])
     val_name = 'val2'
-    val_net_name = networks.createNet(val_name, net_type=params_dict['type'],
+    val_net_name = networks.createNet(params_dict.get('test_set', val_name),
+                                      net_type=params_dict['type'],
                                       f_multi=0, engine=0)
-    train_net_name = networks.createNet('train', net_type=params_dict['type'],
+    train_net_name = networks.createNet(params_dict.get('train_set', 'train'),
+                                        net_type=params_dict['type'],
                                         f_multi=params_dict['f_multi'],
                                         dropout_prob=params_dict['dropout'],
                                         engine=0,
                                         freeze=params_dict.get(
                                             'freeze_layers', False),
                                         conv11_multi=params_dict.get(
-                                        'conv11_multi', 2))
+        'conv11_multi', 2))
     # createNet only uses conv11_multiwith early fusion!
 
     # init solver
@@ -262,6 +265,7 @@ def run_solver(params_dict, work_dir):
 if __name__ == '__main__':
     work_path = args.working_dir
     net_modal = args.network_modality
+    cv_fold = args.traintest_fold
     # TODO incorporate net_modal into params dict
     print 'Solver given working dir: ', work_path
     if '/home' not in work_path:
@@ -280,14 +284,29 @@ if __name__ == '__main__':
     learning_rate = round(10 ** np.random.uniform(-13, -10), 16)
     final_learning_multiplier = np.random.randint(1, 10)
     freeze_lower_layers = bool(np.random.randint(0, 2))  # sometimes false bra
-    lr_mult_conv11 = np.random.randint(1, 6)  # again will only be used for early fusion
-    params_dict = {'base_lr': learning_rate, 'solverType': 'SGD',
-                   'f_multi': final_learning_multiplier,
-                   'dropout': dropout_regularisation,
-                   'freeze_layers': freeze_lower_layers,
-                   'type': 'rgbhha2_early', 'weight_init': 'NYU_hha',
-                   'rand_seed': 3711,
-                   'conv11_multi': lr_mult_conv11}
+    # again will only be used for early fusion
+    lr_mult_conv11 = np.random.randint(1, 6)
+    # params_dict = {'base_lr': learning_rate, 'solverType': 'SGD',
+    #                'f_multi': final_learning_multiplier,
+    #                'dropout': dropout_regularisation,
+    #                'freeze_layers': freeze_lower_layers,
+    #                'type': 'rgbhha2_early', 'weight_init': 'NYU_hha',
+    #                'rand_seed': 3711,
+    #                'conv11_multi': lr_mult_conv11}
+    cv_learning_rate = 1e-10
+    test_set = 'test_' + cv_fold
+    train_set = 'train_' + cv_fold
+    cv_lr_mult_conv11 = 4
+    cv_net_type = 'rgb'
+    cv_weight_init = 'NYU_rgb'
+    params_dict_crossval = {'base_lr': cv_learning_rate, 'solverType': 'SGD',
+                            'f_multi': 5,
+                            'dropout': 0.5,
+                            'freeze_layers': False,
+                            'type': cv_net_type, 'weight_init': cv_weight_init,
+                            'conv11_multi': cv_lr_mult_conv11,
+                            'test_set': test_set,
+                            'train_set': train_set}
     print 'Solver writing to dir: ', work_dir
     write_dict(params_dict, work_dir)
 

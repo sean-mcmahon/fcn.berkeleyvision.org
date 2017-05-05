@@ -67,12 +67,21 @@ if [[ -z "$train_folder_" ]]; then
   else train_folder_=$MY_TRAIN_DIR
   fi
 fi
-set_mode="$2"
+cv_fold_idx="$2"
+if [[ -z "$cv_fold_idx" ]]; then
+  if [ -z ${MY_CV_FOLD+x} ]; then
+    cv_fold_idx='';
+  else cv_fold_idx=$MY_CV_FOLD
+  fi
+fi
+
+set_mode="$3"
 if [[ -z "$set_mode" ]]; then
   set_mode='gpu'
 fi
 echo "train_folder_="$train_folder_
 mkdir -p $train_folder_
+echo "cv_fold_idx="$MY_CV_FOLD
 
 jobID=$PBS_JOBID
 echo 'Job ID: '$PBS_JOBID
@@ -80,5 +89,5 @@ echo 'Job ID: '$PBS_JOBID >> $train_folder_'/'$PBS_JOBID'.txt'
 
 log_filename=$train_folder_'/logfile'$current_date'.log'
 echo 'log_filename '$log_filename
-python $python_script --mode $set_mode --working_dir $train_folder_ 2>&1 | tee $log_filename
+python $python_script --mode $set_mode --working_dir $train_folder_ --traintest_fold $cv_fold_idx 2>&1 | tee $log_filename
 echo 'Saved to '$log_filename
