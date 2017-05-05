@@ -223,7 +223,9 @@ def run_solver(params_dict, work_dir):
 
     # scoring
     val = np.loadtxt(os.path.join(
-        file_location, 'data/cs-trip/' + val_name + '.txt'), dtype=str)
+        file_location, 'data/cs-trip/' + params_dict.get('test_set',
+                                                         val_name) + '.txt'),
+                     dtype=str)
     trainset = np.loadtxt(os.path.join(file_location,
                                        'data/cs-trip/train.txt'), dtype=str)
     val_trip_acc_baseline = 0.45
@@ -252,9 +254,13 @@ def run_solver(params_dict, work_dir):
                 val_trip_acc_baseline = val_trip_acc
         if val_loss < val_loss_buf:
             val_loss_buf = val_loss
-            if solver.iter > 60:
-                print 'minimum val loss @ iter {}, saving'.format(solver.iter)
-                solver.snapshot()
+            print 'Minimum val loss @ iter {}, saving'.format(solver.iter)
+            solver.snapshot()
+            # save the outputs!
+            test_img_save = os.path.join(work_dir,
+                                         'output_iter_{}_'.format(solver.iter) +
+                                         params_dict.get('test_set', val_name))
+            score.seg_tests(solver, test_img_save, val, layer='score')
     # if getting issues on HPC try
     # export MKL_CBWR=AUTO
     # and 'export CUDA_VISIBLE_DEVICES=1'
@@ -284,7 +290,7 @@ if __name__ == '__main__':
     learning_rate = round(10 ** np.random.uniform(-13, -10), 16)
     final_learning_multiplier = np.random.randint(1, 10)
     freeze_lower_layers = bool(np.random.randint(0, 2))  # sometimes false bra
-    # again will only be used for early fusion
+    # again 'lr_mult_conv11' will only be used for early fusion
     lr_mult_conv11 = np.random.randint(1, 6)
     # params_dict = {'base_lr': learning_rate, 'solverType': 'SGD',
     #                'f_multi': final_learning_multiplier,
@@ -308,6 +314,6 @@ if __name__ == '__main__':
                             'test_set': test_set,
                             'train_set': train_set}
     print 'Solver writing to dir: ', work_dir
-    write_dict(params_dict, work_dir)
+    write_dict(params_dict_crossval, work_dir)
 
-    run_solver(params_dict, work_dir)
+    run_solver(params_dict_crossval, work_dir)
