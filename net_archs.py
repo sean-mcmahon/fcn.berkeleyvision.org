@@ -98,23 +98,30 @@ def modality_conv_layers(net_spec, data, engNum, lr_multi, modality=''):
 
 
 def modality_fcn(net_spec, data, modality, engNum, lr_multi, dropout_prob,
-                 final_multi):
+                 final_multi, new_final_fc=False):
     n = net_spec
     n = modality_conv_layers(n, data, engNum, lr_multi, modality)
     # fully conv
     n['fc6' + modality], n['relu6' + modality] = conv_relu(
-        n['pool5' + modality], 4096, ks=7, pad=0, engNum, lr=lr_multi)
+        n['pool5' + modality], 4096, engNum, ks=7, pad=0, lr=lr_multi)
     n['drop6' + modality] = L.Dropout(
         n['relu6' + modality], dropout_ratio=dropout_prob, in_place=True)
     n['fc7' + modality], n['relu7' + modality] = conv_relu(
-        n['drop6' + modality], 4096, ks=1, pad=0, engNum, lr=lr_multi)
+        n['drop6' + modality], 4096, engNum, ks=1, pad=0, lr=lr_multi)
     n['drop7' + modality] = L.Dropout(
         n['relu7' + modality], dropout_ratio=dropout_prob, in_place=True)
-    n['score_fr_trip' + modality] = L.Convolution(
-        n['drop7' + modality], num_output=2, kernel_size=1, pad=0,
-        param=[dict(lr_mult=final_multi, decay_mult=1),
-               dict(lr_mult=2 * final_multi, decay_mult=0)],
-        weight_filler=dict(type='msra'))
+    if new_final_fc:
+        n['score_fr_trip' + modality+'_new'] = L.Convolution(
+            n['drop7' + modality], num_output=2, kernel_size=1, pad=0,
+            param=[dict(lr_mult=final_multi, decay_mult=1),
+                   dict(lr_mult=2 * final_multi, decay_mult=0)],
+            weight_filler=dict(type='msra'))
+    else:
+        n['score_fr_trip' + modality] = L.Convolution(
+            n['drop7' + modality], num_output=2, kernel_size=1, pad=0,
+            param=[dict(lr_mult=final_multi, decay_mult=1),
+                   dict(lr_mult=2 * final_multi, decay_mult=0)],
+            weight_filler=dict(type='msra'))
     return n
 
 
@@ -319,20 +326,36 @@ def mixfcn(data_split, tops, dropout_prob=0.5,
                                                  split=data_split, tops=tops,
                                                  seed=1337)))
 # modality_fcn(net_spec, data, modality, engNum, lr_multi, dropout_prob,
-    #  final_multi)
+    #  final_multi, new_final_fc)
     n = modality_fcn(n, 'color', 'color', engineNum, base_lr_multi,
-                     dropout_prob, final_multi)
+                     dropout_prob, final_multi, new_final_fc=True)
     n = modality_fcn(n, tops[1], tops[1], engineNum, base_lr_multi,
-                     dropout_prob, final_multi)
+                     dropout_prob, final_multi, new_final_fc=True)
+
+    # Upscale modality predictions
+    n.upscorecolor = L.Deconvolution(n['score_fr_tripcolor_new'],
+                                     convolution_param=dict(num_output=2,
+                                                            kernel_size=64,
+                                                            stride=32,
+                                                            bias_term=False),
+                                     param=[dict(lr_mult=0)])
+    n.score_color = crop(n.upscorecolor, n.color)
+    n['upscore' + tops[1]] = L.Deconvolution(n['score_fr_trip' + tops[1]+'_new'],
+                                             convolution_param=dict(num_output=2,
+                                                                    kernel_size=64,
+                                                                    stride=32,
+                                                                    bias_term=False),
+                                             param=[dict(lr_mult=0)])
+    n['score_' + tops[1]] = crop(n['upscore' + tops[1]], n[tops[1]])
 
     # find max trip or non trip confidences, cannot use Argmax (no backprop)
     # using eltwise max with split instead
-    n.score_colora, n.score_colorb = L.Slice(
-        n.score_fr_tripcolor, ntop=2,  slice_param=dict(axis=1))
+    n.score_colora, n.score_colorb = L.Slice(n.score_color,
+                                             ntop=2,  slice_param=dict(axis=1))
     n.maxcolor = L.Eltwise(n.score_colora, n.score_colorb,
                            operation=P.Eltwise.MAX)
     n['score_' + tops[1] + 'a'], n['score_' + tops[1] + 'b'] = L.Slice(
-        n['score_fr_trip' + tops[1]], ntop=2,  slice_param=dict(axis=1))
+        n['score_' + tops[1]], ntop=2,  slice_param=dict(axis=1))
     n['max' + tops[1]] = L.Eltwise(n['score_' + tops[1] + 'a'],
                                    n['score_' + tops[1] + 'b'],
                                    operation=P.Eltwise.MAX)
@@ -347,24 +370,18 @@ def mixfcn(data_split, tops, dropout_prob=0.5,
     n.repProbColor = L.Concat(n.probColor, n.probColor)
     n['repProb' + tops[1]] = L.Concat(n['prob' + tops[1]], n['prob' + tops[1]])
     # multiply the 'probabilies' with the color and hha scores
-    n.weightedColor = L.Eltwise(n.score_fr_tripcolor, n.repProbColor,
+    n.weightedColor = L.Eltwise(n.score_color, n.repProbColor,
                                 operation=P.Eltwise.PROD)
-    n['weighted' + tops[1]] = L.Eltwise(n['score_fr_trip' + tops[1]],
+    n['weighted' + tops[1]] = L.Eltwise(n['score_' + tops[1]],
                                         n['repProb' + tops[1]],
                                         operation=P.Eltwise.PROD)
     # combine the prob scores with eltwise summation
     n.score_fused = L.Eltwise(n.weightedColor, n['weighted' + tops[1]],
                               operation=P.Eltwise.SUM, coeff=[1, 1])
-    n.upscore = L.Deconvolution(n.score_fused,
-                                convolution_param=dict(num_output=2,
-                                                       kernel_size=64,
-                                                       stride=32,
-                                                       bias_term=False),
-                                param=[dict(lr_mult=0)])
-    n.score = crop(n.upscore, n.color)
-    n.loss = L.SoftmaxWithLoss(n.score, n.label,
+
+    n.loss = L.SoftmaxWithLoss(n.score_fused, n.label,
                                loss_param=dict(normalize=False))
-    return n.to_proto()
+    return n
 
 
 def print_rgb_nets():
@@ -404,7 +421,7 @@ def print_fcn_conv():
 
 
 def print_mixfcn():
-    tops = ['color', 'depth',  'label']
+    tops = ['color', 'hha2',  'label']
     with open('trainval_mix.prototxt', 'w') as f:
         f.write(str(mixfcn('train', tops).to_proto()))
 
