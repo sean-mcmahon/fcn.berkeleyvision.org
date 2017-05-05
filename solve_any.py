@@ -303,10 +303,11 @@ if __name__ == '__main__':
     test_set = 'test_' + cv_fold
     train_set = 'train_' + cv_fold
     cv_lr_mult_conv11 = 4
-    cv_net_type = 'rgb'
-    cv_weight_init = 'NYU_rgb'
+    cv_final_multi = 5
+    cv_net_type = 'hha2'
+    cv_weight_init = 'NYU_hha'
     params_dict_crossval = {'base_lr': cv_learning_rate, 'solverType': 'SGD',
-                            'f_multi': 5,
+                            'f_multi': cv_final_multi,
                             'dropout': 0.5,
                             'freeze_layers': False,
                             'type': cv_net_type, 'weight_init': cv_weight_init,
