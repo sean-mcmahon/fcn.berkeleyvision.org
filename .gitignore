@@ -26,3 +26,5 @@ hha2_workers/
 worker_live*
 worker_test_2017*
 *_workers/
+nyud_layers.py
+*_crossval/
