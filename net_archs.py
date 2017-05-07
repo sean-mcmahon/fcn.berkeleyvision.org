@@ -93,7 +93,7 @@ def modality_conv_layers(net_spec, data, engNum, lr_multi, modality=''):
     # the base net
     convRelu1_n = 'relu1_1' + modality
     n['conv1_1' + modality], n[convRelu1_n] = conv_relu(n[data], 64, engNum,
-                                                        lr=lr_multi
+                                                        lr=lr_multi,
                                                         pad=100)
     return mid_fcn_layers(n, convRelu1_n, engNum, lr_multi, modality=modality)
 

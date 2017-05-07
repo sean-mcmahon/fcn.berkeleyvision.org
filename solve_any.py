@@ -258,7 +258,7 @@ def run_solver(params_dict, work_dir):
     trainset = np.loadtxt(os.path.join(file_location,
                                        'data/cs-trip/train.txt'), dtype=str)
     val_trip_acc_baseline = 0.45
-    val_loss_buf = 4000000.0
+    val_loss_buf = 5000000.0
 
     for _ in range(100):
         print '------------------------------'
