@@ -352,7 +352,7 @@ if __name__ == '__main__':
     #                'type': 'rgbhha2_early', 'weight_init': 'NYU_hha',
     #                'rand_seed': 3711,
     #                'conv11_multi': lr_mult_conv11}
-    cv_learning_rate = 1e-11
+    cv_learning_rate = 1e-10
     if cv_fold == 'o':
         test_set = 'val2'
         train_set = 'train'
@@ -361,13 +361,14 @@ if __name__ == '__main__':
         train_set = 'train_' + cv_fold
     cv_lr_mult_conv11 = 4
     cv_final_multi = 5
-    cv_net_type = 'rgbd_lateMix'
+    cv_net_type = 'rgbhha2_early'
     # weight_init does not matter for latemix
     cv_weight_init = 'NYU_rgb'
+    cv_freeze = False
     params_dict_crossval = {'base_lr': cv_learning_rate, 'solverType': 'SGD',
                             'f_multi': cv_final_multi,
                             'dropout': 0.5,
-                            'freeze_layers': False,
+                            'freeze_layers': cv_freeze,
                             'type': cv_net_type, 'weight_init': cv_weight_init,
                             'conv11_multi': cv_lr_mult_conv11,
                             'test_set': test_set,

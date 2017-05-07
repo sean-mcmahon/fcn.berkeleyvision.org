@@ -14,8 +14,8 @@ if __name__ == '__main__':
     n_folds = 4
     fold_idx = range(n_folds)
     fold_idx_str = [str(s + 1) + '_4' for s in fold_idx]
-    # fold_idx_str = ['2_4', '3_4', '4_4']
-    n_type = 'rgbd_lateMix'
+    # fold_idx_str = ['4_4']
+    n_type = 'rgbhha_early_nyurgb'
     parent_dir = n_type + '_crossval'
     cross_val_dir = os.path.join(file_location, parent_dir)
     print cross_val_dir
