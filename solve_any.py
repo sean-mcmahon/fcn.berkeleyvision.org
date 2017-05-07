@@ -361,7 +361,7 @@ if __name__ == '__main__':
         train_set = 'train_' + cv_fold
     cv_lr_mult_conv11 = 4
     cv_final_multi = 5
-    cv_net_type = 'rgbhha2_lateMix'
+    cv_net_type = 'rgbd_lateMix'
     # weight_init does not matter for latemix
     cv_weight_init = 'NYU_rgb'
     params_dict_crossval = {'base_lr': cv_learning_rate, 'solverType': 'SGD',
