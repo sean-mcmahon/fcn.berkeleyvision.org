@@ -377,10 +377,10 @@ def mixfcn(data_split, tops, dropout_prob=0.5,
                                         n['repProb' + tops[1]],
                                         operation=P.Eltwise.PROD)
     # combine the prob scores with eltwise summation
-    n.score_fused = L.Eltwise(n.weightedColor, n['weighted' + tops[1]],
-                              operation=P.Eltwise.SUM, coeff=[1, 1])
+    n.score = L.Eltwise(n.weightedColor, n['weighted' + tops[1]],
+                        operation=P.Eltwise.SUM, coeff=[1, 1])
 
-    n.loss = L.SoftmaxWithLoss(n.score_fused, n.label,
+    n.loss = L.SoftmaxWithLoss(n.score, n.label,
                                loss_param=dict(normalize=False))
     return n
 
