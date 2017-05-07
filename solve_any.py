@@ -214,19 +214,39 @@ def run_solver(params_dict, work_dir):
     elif '_conv' in params_dict['type']:
         raise(Exception("Have not written code to initialise conv fusion"))
     elif '_lateMix' in params_dict['type']:
-        color_weights = '/home/n8307628/Fully-Conv-Network/' + \
-            'Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel'
-        color_proto = '/home/n8307628/Fully-Conv-Network/' + \
-            'Resources/FCN_models' + '/cstrip-fcn32s-color/test.prototxt'
-        hha2_weights = '/home/n8307628/Fully-Conv-Network/' + \
-            'Resources/FCN_models/cstrip-fcn32s-hha2/HHA2snapshot/secondTrain_lowerLR_iter_2000.caffemodel'
-        hha2_proto = '/home/n8307628/Fully-Conv-Network/' + \
-            'Resources/FCN_models' + '/cstrip-fcn32s-hha2/test.prototxt'
-        depth_weights = '/home/n8307628/Fully-Conv-Network/Resources/FCN_models' + \
-            '/cstrip-fcn32s-depth/DepthSnapshot/' + \
-            'stepLR2_lowerLR_neg1N_Msub_iter_6000.caffemodel'
-        depth_proto = '/home/n8307628/Fully-Conv-Network/Resources/FCN_models' \
-            + '/cstrip-fcn32s-depth/test.prototxt'
+        if 'CS' in params_dict['weight_init']:
+            color_weights = '/home/n8307628/Fully-Conv-Network/' + \
+                'Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel'
+            color_proto = '/home/n8307628/Fully-Conv-Network/' + \
+                'Resources/FCN_models' + '/cstrip-fcn32s-color/test.prototxt'
+            hha2_weights = '/home/n8307628/Fully-Conv-Network/' + \
+                'Resources/FCN_models/cstrip-fcn32s-hha2/HHA2snapshot/' + \
+                'secondTrain_lowerLR_iter_2000.caffemodel'
+            hha2_proto = '/home/n8307628/Fully-Conv-Network/' + \
+                'Resources/FCN_models' + '/cstrip-fcn32s-hha2/test.prototxt'
+            depth_weights = '/home/n8307628/Fully-Conv-Network/Resources/FCN_models' + \
+                '/cstrip-fcn32s-depth/DepthSnapshot/' + \
+                'stepLR2_lowerLR_neg1N_Msub_iter_6000.caffemodel'
+            depth_proto = '/home/n8307628/Fully-Conv-Network/Resources/FCN_models' \
+                + '/cstrip-fcn32s-depth/test.prototxt'
+        elif 'NYU' in params_dict['weight_init']:
+            color_weights = os.path.join(
+                weights_path,
+                'pretrained_weights/nyud-fcn32s-color-heavy.caffemodel')
+            color_proto = os.path.join(weights_path,
+                                       'nyud-fcn32s-color/test.prototxt')
+            hha2_weights = os.path.join(weights_path,
+                                        'pretrained_weights/' +
+                                        'nyud-fcn32s-hha-heavy.caffemodel')
+            hha2_proto = os.path.join(weights_path,
+                                      'nyud-fcn32s-hha/test.prototxt')
+            # currently have no depth networks trained on NYU
+            depth_weights = hha2_weights
+            depth_proto = hha2_proto
+        else:
+            raise(Exception('"type" param given contains unkown modality: ' +
+                            params_dict['type']))
+
         # surgeries
         color_net = caffe.Net(color_proto, color_weights, caffe.TEST)
         surgery.transplant(solver.net, color_net, suffix='color')
