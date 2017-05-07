@@ -214,16 +214,20 @@ def run_solver(params_dict, work_dir):
     elif '_conv' in params_dict['type']:
         raise(Exception("Have not written code to initialise conv fusion"))
     elif '_lateMix' in params_dict['type']:
+        color_proto = '/home/n8307628/Fully-Conv-Network/' + \
+            'Resources/FCN_models' + '/cstrip-fcn32s-color/test.prototxt'
+        hha2_proto = '/home/n8307628/Fully-Conv-Network/' + \
+            'Resources/FCN_models' + '/cstrip-fcn32s-hha2/test.prototxt'
         if 'CS' in params_dict['weight_init']:
             color_weights = '/home/n8307628/Fully-Conv-Network/' + \
                 'Resources/FCN_models/cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel'
-            color_proto = '/home/n8307628/Fully-Conv-Network/' + \
-                'Resources/FCN_models' + '/cstrip-fcn32s-color/test.prototxt'
+            # color_proto = '/home/n8307628/Fully-Conv-Network/' + \
+            #     'Resources/FCN_models' + '/cstrip-fcn32s-color/test.prototxt'
             hha2_weights = '/home/n8307628/Fully-Conv-Network/' + \
                 'Resources/FCN_models/cstrip-fcn32s-hha2/HHA2snapshot/' + \
                 'secondTrain_lowerLR_iter_2000.caffemodel'
-            hha2_proto = '/home/n8307628/Fully-Conv-Network/' + \
-                'Resources/FCN_models' + '/cstrip-fcn32s-hha2/test.prototxt'
+            # hha2_proto = '/home/n8307628/Fully-Conv-Network/' + \
+            #     'Resources/FCN_models' + '/cstrip-fcn32s-hha2/test.prototxt'
             depth_weights = '/home/n8307628/Fully-Conv-Network/Resources/FCN_models' + \
                 '/cstrip-fcn32s-depth/DepthSnapshot/' + \
                 'stepLR2_lowerLR_neg1N_Msub_iter_6000.caffemodel'
@@ -233,13 +237,13 @@ def run_solver(params_dict, work_dir):
             color_weights = os.path.join(
                 weights_path,
                 'pretrained_weights/nyud-fcn32s-color-heavy.caffemodel')
-            color_proto = os.path.join(weights_path,
-                                       'nyud-fcn32s-color/test.prototxt')
+            # color_proto = os.path.join(weights_path,
+            #                            'nyud-fcn32s-color/test.prototxt')
             hha2_weights = os.path.join(weights_path,
                                         'pretrained_weights/' +
                                         'nyud-fcn32s-hha-heavy.caffemodel')
-            hha2_proto = os.path.join(weights_path,
-                                      'nyud-fcn32s-hha/test.prototxt')
+            # hha2_proto = os.path.join(weights_path,
+            #                           'nyud-fcn32s-hha/test.prototxt')
             # currently have no depth networks trained on NYU
             depth_weights = hha2_weights
             depth_proto = hha2_proto
@@ -349,11 +353,15 @@ if __name__ == '__main__':
     #                'rand_seed': 3711,
     #                'conv11_multi': lr_mult_conv11}
     cv_learning_rate = 1e-10
-    test_set = 'test_' + cv_fold
-    train_set = 'train_' + cv_fold
+    if cv_fold == 'o':
+        test_set = 'val2'
+        train_set = 'train'
+    else:
+        test_set = 'test_' + cv_fold
+        train_set = 'train_' + cv_fold
     cv_lr_mult_conv11 = 4
     cv_final_multi = 5
-    cv_net_type = 'rgbd_early'
+    cv_net_type = 'rgbd_lateMix'
     # weight_init does not matter for latemix
     cv_weight_init = 'NYU_rgb'
     params_dict_crossval = {'base_lr': cv_learning_rate, 'solverType': 'SGD',
