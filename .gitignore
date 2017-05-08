@@ -28,3 +28,6 @@ worker_test_2017*
 *_workers/
 nyud_layers.py
 *_crossval/
+*_crossval2/
+*_cv.py
+*_cv.bash

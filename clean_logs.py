@@ -12,9 +12,10 @@ import os
 import click
 import re
 import time
-import psutil
+# import psutil
 import sys
 import copy
+import vis_finetune
 
 
 def log_search(walk_iterator, pattern):
@@ -121,14 +122,22 @@ def main(log_dir):
 
     logfile_names = log_search(folders, '*.log')
     for log_count, logfile_name in enumerate(logfile_names):
-        print 'backing-up logfile {}/{}'.format(log_count + 1,
-                                                len(logfile_names))
-        with open(logfile_name, 'r') as f:
-            logfile = f.read()
-        save_log_backup(logfile, logfile_name, debug=False)
-        if debug:
-            print 'len of {} is {}'.format(os.path.basename(logfile_name),
-                                           len(logfile))
+        # copied naming code from save_log_backup
+        log_dr, base_name = os.path.split(logfile_name)
+        name, ext = os.path.splitext(base_name)
+        backup_name = os.path.join(log_dr, name + '_BACKUP.txt')
+        if os.path.isfile(backup_name):
+            print 'skipping logfile   {}/{}'.format(log_count + 1,
+                                                    len(logfile_names))
+        else:
+            print 'backing-up logfile {}/{}'.format(log_count + 1,
+                                                    len(logfile_names))
+            with open(logfile_name, 'r') as f:
+                logfile = f.read()
+            save_log_backup(logfile, logfile_name, debug=False)
+            if debug:
+                print 'len of {} is {}'.format(os.path.basename(logfile_name),
+                                               len(logfile))
     logfile = ''
     del logfile
     print '\n{}\n'.format('=' * 50)
@@ -181,6 +190,7 @@ def main(log_dir):
         with open(save_name, 'w') as f:
             for fixed_line in log_copy:
                 f.write(fixed_line)
+        vis_finetune.main((save_name,), printouts=False)
         print '{} matches saved to: {}\n{}'.format(num_matches, save_name,
                                                    '-' * 20)
 
