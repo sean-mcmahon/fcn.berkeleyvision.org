@@ -137,7 +137,7 @@ def run_solver(params_dict, work_dir):
     networks.print_net(work_dir, split='test',
                        net_type=params_dict['type'])
     val_name = 'val2'
-    val_net_name = networks.createNet(params_dict.get('test_set', val_name),
+    val_net_name = networks.createNet(params_dict.get('val_set', val_name),
                                       net_type=params_dict['type'],
                                       f_multi=0, engine=0)
     train_net_name = networks.createNet(params_dict.get('train_set', 'train'),
@@ -279,7 +279,7 @@ def run_solver(params_dict, work_dir):
 
     # scoring
     val = np.loadtxt(os.path.join(
-        file_location, 'data/cs-trip/' + params_dict.get('test_set',
+        file_location, 'data/cs-trip/' + params_dict.get('val_set',
                                                          val_name) + '.txt'),
                      dtype=str)
     trainset = np.loadtxt(os.path.join(file_location,
@@ -316,14 +316,16 @@ def run_solver(params_dict, work_dir):
             # save the outputs!
             # test_img_save = os.path.join(work_dir,
             #                              'output_iter_{}_'.format(solver.iter) +
-            #                              params_dict.get('test_set', val_name))
+            #                              params_dict.get('val_set', val_name))
             # score.seg_tests(solver, test_img_save, val, layer='score')
     # if getting issues on HPC try
     # export MKL_CBWR=AUTO
     # and 'export CUDA_VISIBLE_DEVICES=1'
     # print '\n>>>> Validation <<<<\n'
     print '\n completed colour only train'
-    test_net_name = networks.createNet(params_dict.get('test_set', 'test'),
+    print '-' * 50
+    print 'Testing lowest loss iteration on test set.'
+    test_net_name = networks.createNet(params_dict['test_set'],
                                        net_type=params_dict['type'],
                                        f_multi=params_dict['f_multi'],
                                        dropout_prob=params_dict['dropout'],
@@ -333,14 +335,20 @@ def run_solver(params_dict, work_dir):
                                        conv11_multi=params_dict.get(
                                        'conv11_multi', 2))
     solver_name = createSolver(params_dict,
-                               train_net_name, val_net_name, work_dir)
+                               test_net_name, test_net_name, work_dir)
     solver = caffe.get_solver(solver_name)
+    test_weights = os.path.join(work_dir, 'snapshots',
+                                params_dict['type'] +
+                                '_iter_' + str(min_loss_iter) + '.caffemodel')
     solver.net.copy_from(test_weights)
-    test_net = caffe.SGDSolver()
     test_img_save = os.path.join(work_dir,
-                                 'output_iter_{}_'.format(min_loss_iter) +
-                                 params_dict.get('test_set', val_name))
-    score.seg_tests(solver, test_img_save, val, layer='score')
+                                 'test_iter_{}_'.format(min_loss_iter) +
+                                 params_dict.get['test_set'])
+    test_txt = np.loadtxt(os.path.join(
+        file_location, 'data/cs-trip/' + params_dict['test_set'] + '.txt'),
+        dtype=str)
+    score.seg_tests(solver, test_img_save, test_txt, layer='score')
+    print '\ncompleted testing'
 
 
 if __name__ == '__main__':
@@ -391,11 +399,13 @@ if __name__ == '__main__':
         cv_weight_init = in_net_init
 
     if cv_fold == 'o':
-        test_set = 'val2'
+        val_set = 'val2'
         train_set = 'train'
+        test_set = 'test'
     else:
-        test_set = 'val_' + cv_fold
+        val_set = 'val_' + cv_fold
         train_set = 'train_' + cv_fold
+        test_set = 'test_' + cv_fold
     cv_lr_mult_conv11 = 4
     cv_final_multi = 5
     cv_freeze = False
@@ -405,8 +415,9 @@ if __name__ == '__main__':
                             'freeze_layers': cv_freeze,
                             'type': cv_net_type, 'weight_init': cv_weight_init,
                             'conv11_multi': cv_lr_mult_conv11,
-                            'test_set': test_set,
-                            'train_set': train_set}
+                            'val_set': val_set,
+                            'train_set': train_set,
+                            'test_set': test_set}
     print 'Solver writing to dir: ', work_dir
     write_dict(params_dict_crossval, work_dir)
 
