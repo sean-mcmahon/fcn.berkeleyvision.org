@@ -1,6 +1,3 @@
-2016-08-12-10-24-02_2ndFloorCarPark 0000-5
-2016-08-12-10-24-02_2ndFloorCarPark 0021-0
-2016-08-12-10-24-02_2ndFloorCarPark 0025-5
 2016-08-12-10-24-02_2ndFloorCarPark 0039-5
 2016-08-12-10-24-02_2ndFloorCarPark 0074-5
 2016-08-12-10-24-02_2ndFloorCarPark 0096-0
@@ -30,10 +27,6 @@
 2016-08-12-10-24-02_2ndFloorCarPark 0321-5
 2016-08-12-10-24-02_2ndFloorCarPark 0345-5
 2016-08-12-10-24-02_2ndFloorCarPark 0355-0
-2016-08-12-10-36-59_4thFloorApartments 0011-5
-2016-08-12-10-36-59_4thFloorApartments 0025-0
-2016-08-12-10-36-59_4thFloorApartments 0033-5
-2016-08-12-10-36-59_4thFloorApartments 0036-0
 2016-08-12-10-36-59_4thFloorApartments 0043-5
 2016-08-12-10-36-59_4thFloorApartments 0050-5
 2016-08-12-10-36-59_4thFloorApartments 0072-5
@@ -70,8 +63,6 @@
 2016-08-12-10-36-59_4thFloorApartments 0513-5
 2016-08-12-10-36-59_4thFloorApartments 0517-5
 2016-08-12-10-36-59_4thFloorApartments 0521-5
-2016-08-12-10-49-13_7thFloorApartments 0019-5
-2016-08-12-10-49-13_7thFloorApartments 0042-5
 2016-08-12-10-49-13_7thFloorApartments 0055-0
 2016-08-12-10-49-13_7thFloorApartments 0060-5
 2016-08-12-10-49-13_7thFloorApartments 0066-0

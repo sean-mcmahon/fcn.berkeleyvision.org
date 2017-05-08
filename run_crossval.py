@@ -21,6 +21,9 @@ if __name__ == '__main__':
     print cross_val_dir
     if not os.path.isdir(cross_val_dir):
         os.mkdir(cross_val_dir)
+    base_lr = 1e-10
+    net_type = 'rgbhha2_early'
+    net_init = 'NYU_rgb'
     print '-'*20
     for idx in fold_idx_str:
         worker_dir = os.path.join(cross_val_dir, n_type + '_'+idx)

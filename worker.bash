@@ -79,6 +79,11 @@ set_mode="$3"
 if [[ -z "$set_mode" ]]; then
   set_mode='gpu'
 fi
+
+if [ -z ${MY_BASELR+x} ]; then
+  base_lr_=
+else base_lr_=$MY_BASELR
+fi
 echo "train_folder_="$train_folder_
 mkdir -p $train_folder_
 echo "cv_fold_idx="$MY_CV_FOLD

@@ -30,6 +30,9 @@ parser.add_argument('--mode', default='gpu')
 parser.add_argument('--working_dir', default='rgb_1')
 parser.add_argument('--traintest_fold', default='1_7')
 parser.add_argument('--network_modality', default='rgb')
+parser.add_argument('--base_lr', default=None)
+parser.add_argument('--net_type', default=None)
+parser.add_argument('--net_init', default=None)
 args = parser.parse_args()
 # import support functions
 if 'n8307628' in home_dir:
@@ -308,23 +311,45 @@ def run_solver(params_dict, work_dir):
         if val_loss < val_loss_buf:
             val_loss_buf = val_loss
             print 'Minimum val loss @ iter {}, saving'.format(solver.iter)
+            min_loss_iter = solver.iter
             solver.snapshot()
             # save the outputs!
-            test_img_save = os.path.join(work_dir,
-                                         'output_iter_{}_'.format(solver.iter) +
-                                         params_dict.get('test_set', val_name))
-            score.seg_tests(solver, test_img_save, val, layer='score')
+            # test_img_save = os.path.join(work_dir,
+            #                              'output_iter_{}_'.format(solver.iter) +
+            #                              params_dict.get('test_set', val_name))
+            # score.seg_tests(solver, test_img_save, val, layer='score')
     # if getting issues on HPC try
     # export MKL_CBWR=AUTO
     # and 'export CUDA_VISIBLE_DEVICES=1'
     # print '\n>>>> Validation <<<<\n'
     print '\n completed colour only train'
+    test_net_name = networks.createNet(params_dict.get('test_set', 'test'),
+                                       net_type=params_dict['type'],
+                                       f_multi=params_dict['f_multi'],
+                                       dropout_prob=params_dict['dropout'],
+                                       engine=0,
+                                       freeze=params_dict.get(
+                                       'freeze_layers', False),
+                                       conv11_multi=params_dict.get(
+                                       'conv11_multi', 2))
+    solver_name = createSolver(params_dict,
+                               train_net_name, val_net_name, work_dir)
+    solver = caffe.get_solver(solver_name)
+    solver.net.copy_from(test_weights)
+    test_net = caffe.SGDSolver()
+    test_img_save = os.path.join(work_dir,
+                                 'output_iter_{}_'.format(min_loss_iter) +
+                                 params_dict.get('test_set', val_name))
+    score.seg_tests(solver, test_img_save, val, layer='score')
 
 
 if __name__ == '__main__':
     work_path = args.working_dir
     net_modal = args.network_modality
     cv_fold = args.traintest_fold
+    in_base_lr = args.base_lr
+    in_net_type = args.net_type
+    in_net_init = args.net_init
     # TODO incorporate net_modal into params dict
     print 'Solver given working dir: ', work_path
     if '/home' not in work_path:
@@ -352,18 +377,27 @@ if __name__ == '__main__':
     #                'type': 'rgbhha2_early', 'weight_init': 'NYU_hha',
     #                'rand_seed': 3711,
     #                'conv11_multi': lr_mult_conv11}
-    cv_learning_rate = 1e-10
+    if in_base_lr is None:
+        cv_learning_rate = 1e-10
+    else:
+        cv_learning_rate = in_base_lr
+    if in_net_type is None:
+        cv_net_type = 'rgbhha2_early'
+    else:
+        cv_net_type = in_net_type
+    if in_net_init is None:
+        cv_weight_init = 'NYU_rgb'
+    else:
+        cv_weight_init = in_net_init
+
     if cv_fold == 'o':
         test_set = 'val2'
         train_set = 'train'
     else:
-        test_set = 'test_' + cv_fold
+        test_set = 'val_' + cv_fold
         train_set = 'train_' + cv_fold
     cv_lr_mult_conv11 = 4
     cv_final_multi = 5
-    cv_net_type = 'rgbhha2_early'
-    # weight_init does not matter for latemix
-    cv_weight_init = 'NYU_rgb'
     cv_freeze = False
     params_dict_crossval = {'base_lr': cv_learning_rate, 'solverType': 'SGD',
                             'f_multi': cv_final_multi,
