@@ -14,10 +14,10 @@ if __name__ == '__main__':
     n_folds = 4
     fold_idx = range(n_folds)
     fold_idx_str = [str(s + 1) + '_4' for s in fold_idx]
-    # fold_idx_str = ['4_4']
+    fold_idx_str = ['2_4']
     # n_type = 'hha'
-    net_types = ['lateMixrgbd', 'depth', 'earlyrgbd',
-                 'earlyrgbhha', 'lateMixrgbhha']
+    net_types = ['lateMixrgbd']
+    #, 'depth', 'earlyrgbd', 'earlyrgbhha', 'lateMixrgbhha']
     for n_type in net_types:
         parent_dir = n_type + '_crossval2'
         cross_val_dir = os.path.join(file_location, parent_dir)
