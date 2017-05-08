@@ -285,7 +285,7 @@ def run_solver(params_dict, work_dir):
     trainset = np.loadtxt(os.path.join(file_location,
                                        'data/cs-trip/train.txt'), dtype=str)
     val_trip_acc_baseline = 0.45
-    val_loss_buf = 5000000.0
+    val_loss_buf = 90000000.0
 
     for _ in range(100):
         print '------------------------------'
@@ -308,6 +308,7 @@ def run_solver(params_dict, work_dir):
                 print 'saving snapshot'
                 solver.snapshot()
                 val_trip_acc_baseline = val_trip_acc
+                max_val_acc_iter = solver.iter
         if val_loss < val_loss_buf:
             val_loss_buf = val_loss
             print 'Minimum val loss @ iter {}, saving'.format(solver.iter)
@@ -325,6 +326,12 @@ def run_solver(params_dict, work_dir):
     print '\n completed colour only train'
     print '-' * 50
     print 'Testing lowest loss iteration on test set.'
+    try:
+        min_loss_iter
+    except NameError:
+        # if no min loss found use best val acc
+        min_loss_iter = max_val_acc_iter
+
     test_net_name = networks.createNet(params_dict['test_set'],
                                        net_type=params_dict['type'],
                                        f_multi=params_dict['f_multi'],
@@ -334,20 +341,24 @@ def run_solver(params_dict, work_dir):
                                        'freeze_layers', False),
                                        conv11_multi=params_dict.get(
                                        'conv11_multi', 2))
-    solver_name = createSolver(params_dict,
-                               test_net_name, test_net_name, work_dir)
-    solver = caffe.get_solver(solver_name)
+    # solver_name = createSolver(params_dict,
+    #                            test_net_name, test_net_name, work_dir)
+    # solver = caffe.get_solver(solver_name)
+    del solver
     test_weights = os.path.join(work_dir, 'snapshots',
                                 params_dict['type'] +
                                 '_iter_' + str(min_loss_iter) + '.caffemodel')
-    solver.net.copy_from(test_weights)
+    # solver.net.copy_from(test_weights)
     test_img_save = os.path.join(work_dir,
                                  'test_iter_{}_'.format(min_loss_iter) +
                                  params_dict.get['test_set'])
+    test_net = caffe.Net(test_net_name, test_weights, caffe.TEST)
     test_txt = np.loadtxt(os.path.join(
         file_location, 'data/cs-trip/' + params_dict['test_set'] + '.txt'),
         dtype=str)
-    score.seg_tests(solver, test_img_save, test_txt, layer='score')
+    # score.seg_tests(solver, test_img_save, test_txt, layer='score')
+    score.do_seg_tests(test_net, min_loss_iter, test_img_save,
+                       test_txt, layer='score')
     print '\ncompleted testing'
 
 
@@ -385,18 +396,18 @@ if __name__ == '__main__':
     #                'type': 'rgbhha2_early', 'weight_init': 'NYU_hha',
     #                'rand_seed': 3711,
     #                'conv11_multi': lr_mult_conv11}
-    if in_base_lr is None:
-        cv_learning_rate = 1e-10
-    else:
-        cv_learning_rate = in_base_lr
-    if in_net_type is None:
-        cv_net_type = 'rgbhha2_early'
-    else:
-        cv_net_type = in_net_type
-    if in_net_init is None:
-        cv_weight_init = 'NYU_rgb'
-    else:
-        cv_weight_init = in_net_init
+    # if in_base_lr is None:
+    cv_learning_rate = 1e-11
+    # else:
+    # cv_learning_rate = in_base_lr
+    # if in_net_type is None:
+    cv_net_type = 'depth'
+    # else:
+    # cv_net_type = in_net_type
+    # if in_net_init is None:
+    cv_weight_init = 'NYU_hha'
+    # else:
+    #     cv_weight_init = in_net_init
 
     if cv_fold == 'o':
         val_set = 'val2'
