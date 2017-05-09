@@ -478,7 +478,7 @@ if __name__ == '__main__':
                             'train_set': train_set,
                             'test_set': test_set}
     print 'Solver writing to dir: ', work_dir
-    # write_dict(params_dict_crossval, work_dir)
-    # best_iteration = run_solver(params_dict_crossval, work_dir)
-    # run_test(params_dict_crossval, best_iteration, work_dir)
-    test_all_cv()
+    write_dict(params_dict_crossval, work_dir)
+    best_iteration = run_solver(params_dict_crossval, work_dir)
+    run_test(params_dict_crossval, best_iteration, work_dir)
+    # test_all_cv()
