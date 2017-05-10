@@ -285,7 +285,7 @@ def run_solver(params_dict, work_dir):
                      dtype=str)
     trainset = np.loadtxt(os.path.join(file_location,
                                        'data/cs-trip/train.txt'), dtype=str)
-    val_trip_acc_baseline = 0.45
+    val_trip_acc_baseline = 0.35
     val_loss_buf = 90000000.0
 
     for _ in range(100):
@@ -306,7 +306,7 @@ def run_solver(params_dict, work_dir):
             print 'Checking validation acc'
 
             if val_trip_acc > val_trip_acc_baseline:
-                print 'saving snapshot'
+                print 'Minimum val accuracy @ {}, saving'.format(solver.iter)
                 solver.snapshot()
                 val_trip_acc_baseline = val_trip_acc
                 max_val_acc_iter = solver.iter
