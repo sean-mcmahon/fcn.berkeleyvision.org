@@ -179,6 +179,18 @@ def test_all_cv():
             run_test(params_test_cv, min_loss_iter, work_dir)
 
 
+def checkWeightInit(net, modality='', layers=('conv2_2', 'conv5_3')):
+    eps = 1e-6
+    for raw_layer in layers:
+        layer = raw_layer + modality
+        w_logic = np.absolute(net.params[layer].data[0, :]) < eps
+        if np.all(w_logic.flatten()):
+            print 'layer {} is uninitialised.'.format(layer)
+            return False
+    print 'Layers "{}" are initialised'.format(layers)
+    return True
+
+
 def run_solver(params_dict, work_dir):
     print '\n--------------------------'
     print 'Running solver with parms:'
@@ -303,15 +315,16 @@ def run_solver(params_dict, work_dir):
                 base_net_depth.params['conv1_1'][0].data, axis=1)
         del base_net_depth
     elif '_conv' in params_dict['type']:
-        if 'CS' in params_dict['weight_init']:
+        # ------------------- Initialise Conv Fusion --------------------------
+                if 'CS' in params_dict['weight_init']:
             rgb_weights = CS_rgb_weights_path
             if 'hha2' in params_dict['type'] or 'HHA2' in params_dict['type']:
                 base_depth_name = networks.createNet('val2', net_type='hha2')
-                base_depth_net = caffe.Net(base_depth_name, CS_hha2_weights_path,
+                base_modal_net = caffe.Net(base_depth_name, CS_hha2_weights_path,
                                            caffe.TEST)
             elif 'rgbd' in params_dict['type'] or 'RGBD' in params_dict['type']:
                 base_depth_name = networks.createNet('val2', net_type='depth')
-                base_depth_net = caffe.Net(base_depth_name, CS_depth_weights_path,
+                base_modal_net = caffe.Net(base_depth_name, CS_depth_weights_path,
                                            caffe.TEST)
             else:
                 raise(Exception('Unkown modalities given for conv fusion'))
@@ -320,21 +333,25 @@ def run_solver(params_dict, work_dir):
             # only have hha for NYU. surgery.transplant will fit hha2 weigths to a
             # depth network
             base_depth_name = networks.createNet('val2', net_type='hha2')
-            base_depth_net = caffe.Net(base_depth_name, NYU_hha_weights_path,
+            base_modal_net = caffe.Net(base_depth_name, NYU_hha_weights_path,
                                        caffe.TEST)
         else:
             raise(Exception('Unkown weight initailsation given for conv fusion'))
 
         if 'hha2' in params_dict['type'] or 'HHA2' in params_dict['type']:
-            surgery.transplant(solver.net, base_depth_net, suffix='hha2')
+            surgery.transplant(solver.net, base_modal_net, suffix='hha2')
         elif 'rgbd' in params_dict['type'] or 'RGBD' in params_dict['type']:
-            surgery.transplant(solver.net, base_depth_net, suffix='depth')
-        del base_depth_net
-        print '\n', '-' * 76, '\n'
+            surgery.transplant(solver.net, base_modal_net, suffix='depth')
+        del base_modal_net
+        print '\nRGB Init\n', '-' * 76, '\n'
         base_rgb_name = networks.createNet('val2', net_type='rgb')
         base_rgb_net = caffe.Net(base_rgb_name, rgb_weights, caffe.TEST)
         surgery.transplant(solver.net, base_rgb_net, suffix='color')
         del base_rgb_net
+        status = checkWeightInit(solver.net, modality='color')
+        if status:
+            raise(Exception('weight init check failed'))
+
     elif '_lateMix' in params_dict['type']:
         color_proto = '/home/n8307628/Fully-Conv-Network/' + \
             'Resources/FCN_models' + '/cstrip-fcn32s-color/test.prototxt'
