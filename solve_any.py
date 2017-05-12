@@ -187,20 +187,33 @@ def run_solver(params_dict, work_dir):
     print '--------------------------\n'
     save_weights = params_dict.get('save_weights', True)
 
+    NYU_rgb_weights_path = os.path.join(
+        weights_path,
+        'pretrained_weights/nyud-fcn32s-color-heavy.caffemodel')
+    NYU_hha_weights_path = os.path.join(
+        weights_path,
+        'pretrained_weights/nyud-fcn32s-hha-heavy.caffemodel')
+    CS_rgb_weights_path = os.path.join(
+        weights_path,
+        'cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel')
+    CS_depth_weights_path = os.path.join(
+        weights_path, 'cstrip-fcn32s-depth/' +
+        'DepthSnapshot/negOneNull_mean_sub_iter_8000.caffemodel')
+    CS_hha2_weights_path = os.path.join(
+        weights_path, 'cstrip-fcn32s-hha2/HHA2snapshot/' +
+        'secondTrain_lowerLR_iter_2000.caffemodel')
+
     if params_dict['weight_init'] == "NYU_rgb":
-        weights = os.path.join(
-            weights_path,
-            'pretrained_weights/nyud-fcn32s-color-heavy.caffemodel')
+        weights = NYU_rgb_weights_path
         print 'Pretrain on NYU weights'
     elif params_dict['weight_init'] == "CS_rgb":
-        weights = os.path.join(
-            weights_path,
-            'cstrip-fcn32s-color/colorSnapshot/_iter_2000.caffemodel')
+        weights = CS_rgb_weights_path
         print 'Pretrain on CS weights (_iter_2000.caffemodel)'
     elif params_dict['weight_init'] == "NYU_hha":
-        weights = '/home/n8307628/Fully-Conv-Network/' + \
-            'Resources/FCN_models/pretrained_weights/' + \
-            'nyud-fcn32s-hha-heavy.caffemodel'
+        weights = NYU_hha_weights_path
+        # '/home/n8307628/Fully-Conv-Network/' + \
+        #     'Resources/FCN_models/pretrained_weights/' + \
+        #     'nyud-fcn32s-hha-heavy.caffemodel'
     else:
         Exception('Unrecognised pretrain weights option given ({})'.format(
             params_dict['weight_init']))
@@ -223,7 +236,7 @@ def run_solver(params_dict, work_dir):
                                         freeze=params_dict.get(
                                             'freeze_layers', False),
                                         conv11_multi=params_dict.get(
-        'conv11_multi', 2))
+                                        'conv11_multi', 2))
     # createNet only uses conv11_multiwith early fusion!
 
     # init solver
@@ -290,7 +303,38 @@ def run_solver(params_dict, work_dir):
                 base_net_depth.params['conv1_1'][0].data, axis=1)
         del base_net_depth
     elif '_conv' in params_dict['type']:
-        raise(Exception("Have not written code to initialise conv fusion"))
+        if 'CS' in params_dict['weight_init']:
+            rgb_weights = CS_rgb_weights_path
+            if 'hha2' in params_dict['type'] or 'HHA2' in params_dict['type']:
+                base_depth_name = networks.createNet('val2', net_type='hha2')
+                base_depth_net = caffe.Net(base_depth_name, CS_hha2_weights_path,
+                                           caffe.TEST)
+            elif 'rgbd' in params_dict['type'] or 'RGBD' in params_dict['type']:
+                base_depth_name = networks.createNet('val2', net_type='depth')
+                base_depth_net = caffe.Net(base_depth_name, CS_depth_weights_path,
+                                           caffe.TEST)
+            else:
+                raise(Exception('Unkown modalities given for conv fusion'))
+        elif 'NYU' in params_dict['weight_init']:
+            rgb_weights = NYU_rgb_weights_path
+            # only have hha for NYU. surgery.transplant will fit hha2 weigths to a
+            # depth network
+            base_depth_name = networks.createNet('val2', net_type='hha2')
+            base_depth_net = caffe.Net(base_depth_name, NYU_hha_weights_path,
+                                       caffe.TEST)
+        else:
+            raise(Exception('Unkown weight initailsation given for conv fusion'))
+
+        if 'hha2' in params_dict['type'] or 'HHA2' in params_dict['type']:
+            surgery.transplant(solver.net, base_depth_net, suffix='hha2')
+        elif 'rgbd' in params_dict['type'] or 'RGBD' in params_dict['type']:
+            surgery.transplant(solver.net, base_depth_net, suffix='depth')
+        del base_depth_net
+        print '\n', '-' * 76, '\n'
+        base_rgb_name = networks.createNet('val2', net_type='rgb')
+        base_rgb_net = caffe.Net(base_rgb_name, rgb_weights, caffe.TEST)
+        surgery.transplant(solver.net, base_rgb_net, suffix='color')
+        del base_rgb_net
     elif '_lateMix' in params_dict['type']:
         color_proto = '/home/n8307628/Fully-Conv-Network/' + \
             'Resources/FCN_models' + '/cstrip-fcn32s-color/test.prototxt'
