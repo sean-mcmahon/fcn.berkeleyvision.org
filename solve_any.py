@@ -453,6 +453,9 @@ def run_solver(params_dict, work_dir):
     print '\ncompleted testing'
     return min_loss_iter
 
+# ==============================================================================
+# =========================== Main =======================================
+# ==============================================================================
 
 if __name__ == '__main__':
     work_path = args.working_dir
@@ -474,33 +477,6 @@ if __name__ == '__main__':
                 Exception(
                     'work directoy: ' +
                     '\n"{}"\nalready has logfile, quitting'.format(work_dir)))
-
-    dropout_regularisation = round(np.random.uniform(0.2, 0.9), 3)
-    learning_rate = round(10 ** np.random.uniform(-13, -10), 16)
-    final_learning_multiplier = np.random.randint(1, 10)
-    freeze_lower_layers = bool(np.random.randint(0, 2))  # sometimes false bra
-    # again 'lr_mult_conv11' will only be used for early fusion
-    lr_mult_conv11 = np.random.randint(1, 6)
-    # params_dict = {'base_lr': learning_rate, 'solverType': 'SGD',
-    #                'f_multi': final_learning_multiplier,
-    #                'dropout': dropout_regularisation,
-    #                'freeze_layers': freeze_lower_layers,
-    #                'type': 'rgbhha2_early', 'weight_init': 'NYU_hha',
-    #                'rand_seed': 3711,
-    #                'conv11_multi': lr_mult_conv11}
-    # if in_base_lr is None:
-    cv_learning_rate = 1e-11
-    # else:
-    # cv_learning_rate = in_base_lr
-    # if in_net_type is None:
-    cv_net_type = 'depth'
-    # else:
-    # cv_net_type = in_net_type
-    # if in_net_init is None:
-    cv_weight_init = 'NYU_hha'
-    # else:
-    #     cv_weight_init = in_net_init
-
     if cv_fold == 'o':
         val_set = 'val2'
         train_set = 'train'
@@ -509,6 +485,30 @@ if __name__ == '__main__':
         val_set = 'val_' + cv_fold
         train_set = 'train_' + cv_fold
         test_set = 'test_' + cv_fold
+
+    # --------------------------------------------------------------------------
+    # set network type, net initialisaion and hyperparameters.
+    # --------------------------------------------------------------------------
+    dropout_regularisation = round(np.random.uniform(0.2, 0.9), 3)
+    learning_rate = round(10 ** np.random.uniform(-13, -10), 16)
+    final_learning_multiplier = np.random.randint(1, 10)
+    freeze_lower_layers = bool(np.random.randint(0, 2))  # sometimes false bra
+    # again 'lr_mult_conv11' will only be used for early fusion
+    lr_mult_conv11 = np.random.randint(1, 6)
+    params_dict = {'base_lr': learning_rate, 'solverType': 'SGD',
+                   'f_multi': final_learning_multiplier,
+                   'dropout': dropout_regularisation,
+                   'freeze_layers': freeze_lower_layers,
+                   'type': 'rgbhha2_early', 'weight_init': 'NYU_hha',
+                   'rand_seed': 3711,
+                   'conv11_multi': lr_mult_conv11,
+                   'val_set': val_set,
+                   'train_set': train_set,
+                   'test_set': test_set}
+
+    cv_learning_rate = 1e-11
+    cv_net_type = 'depth'
+    cv_weight_init = 'NYU_hha'
     cv_lr_mult_conv11 = 4
     cv_final_multi = 5
     cv_freeze = False
@@ -522,6 +522,10 @@ if __name__ == '__main__':
                             'train_set': train_set,
                             'test_set': test_set}
     print 'Solver writing to dir: ', work_dir
+
+    # --------------------------------------------------------------------------
+    # Save params to text file, train and validate network, then test net.
+    # --------------------------------------------------------------------------
     write_dict(params_dict_crossval, work_dir)
     best_val_per_iter = run_solver(params_dict_crossval, work_dir)
     run_test(params_dict_crossval, best_val_per_iter, work_dir)
