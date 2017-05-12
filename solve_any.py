@@ -105,6 +105,80 @@ def createSolver(params_dict, train_net_path, test_net_path, work_dir):
         return f.name
 
 
+def run_test(params_dict, test_iter, work_dir, score_layer='score'):
+    """
+    run the trained network on the testset. Using the lowest loss found during
+    training.
+    This function is designed to be used outside of the run solver function.
+    Metrics will be printed, network scores, network labels and network output
+    images will be saved in a new directoy within work_dir.
+    """
+    test_net_name = networks.createNet(params_dict['test_set'],
+                                       net_type=params_dict['type'],
+                                       engine=0)
+    # solver_name = createSolver(params_dict,
+    #                            test_net_name, test_net_name, work_dir)
+    # solver = caffe.get_solver(solver_name)
+    test_weights = os.path.join(work_dir, 'snapshots',
+                                params_dict['type'] +
+                                '_iter_' + str(test_iter) + '.caffemodel')
+    # solver.net.copy_from(test_weights)
+    test_img_save = os.path.join(work_dir,
+                                 'test_iter_{}_'.format(test_iter) +
+                                 params_dict['test_set'])
+    test_net = caffe.Net(test_net_name, test_weights, caffe.TEST)
+    test_txt = np.loadtxt(os.path.join(
+        file_location, 'data/cs-trip/' + params_dict['test_set'] + '.txt'),
+        dtype=str)
+    # score.seg_tests(solver, test_img_save, test_txt, layer='score')
+    score.do_seg_tests(test_net, test_iter, test_img_save,
+                       test_txt, layer=score_layer)
+
+
+def test_all_cv():
+    cross_val_sets = ['1_4', '2_4', '3_4', '4_4']
+    net_types = ['rgb', 'hha2', 'depth',
+                 'rgbd_early', 'rgbhha2_early', 'rgbd_lateMix', 'rgbhha2_lateMix']
+    for test_set in cross_val_sets:
+        net_dirs = ['rgb_crossval2/rgb_' + test_set,
+                    'hha_crossval2/hha_' + test_set,
+                    'depth_crossval2/depth_' + test_set,
+                    'earlyrgbd_crossval2/earlyrgbd_' + test_set,
+                    'earlyrgbhha_crossval2/earlyrgbhha_' + test_set,
+                    'lateMixrgbd_crossval2/lateMixrgbd_' + test_set,
+                    'lateMixrgbhha_crossval2/lateMixrgbhha_' + test_set]
+        min_loss_pattern = r"Minimum val loss @ iter (?P<iter_num>\d+), saving"
+        for work_dir, net_type in zip(net_dirs, net_types):
+            # Get the iteration with best performance
+            logfile = glob.glob(os.path.join(work_dir, '*.log'))
+            if not logfile or len(logfile) > 1:
+                print 'len(logfile)= {}, search str = {}'.format(
+                    len(logfile),
+                    os.path.join(work_dir, '*.log'))
+                raise(Exception('Either no logfile found or too many found.'))
+            with open(logfile[0], 'r') as f:
+                logstr = f.read()
+            try:
+                min_loss_iter = re.findall(min_loss_pattern, logstr)[-1]
+            except IndexError:
+                # find highest iteration snapshot
+                print 'Could not find min loss, ' + \
+                    'searching snapshots for highest iteration'
+                models = glob.glob(os.path.join(work_dir, 'snapshots',
+                                                '*.caffemodel'))
+                min_loss_iter = 0
+                for model in models:
+                    pattern = r'_iter_(?P<iter_num>\d+).caffemodel'
+                    iteration = int(re.findall(pattern, model)[0])
+                    if iteration > min_loss_iter:
+                        min_loss_iter = iteration
+
+            # Run the test, now we have the best iteration
+            # because we're testing only the testset and net type matter
+            params_test_cv = {'type': net_type, 'test_set': 'test_' + test_set}
+            run_test(params_test_cv, min_loss_iter, work_dir)
+
+
 def run_solver(params_dict, work_dir):
     print '\n--------------------------'
     print 'Running solver with parms:'
@@ -336,80 +410,6 @@ def run_solver(params_dict, work_dir):
     return min_loss_iter
 
 
-def run_test(params_dict, test_iter, work_dir, score_layer='score'):
-    """
-    run the trained network on the testset. Using the lowest loss found during
-    training.
-    This function is designed to be used outside of the run solver function.
-    Metrics will be printed, network scores, network labels and network output
-    images will be saved in a new directoy within work_dir.
-    """
-    test_net_name = networks.createNet(params_dict['test_set'],
-                                       net_type=params_dict['type'],
-                                       engine=0)
-    # solver_name = createSolver(params_dict,
-    #                            test_net_name, test_net_name, work_dir)
-    # solver = caffe.get_solver(solver_name)
-    test_weights = os.path.join(work_dir, 'snapshots',
-                                params_dict['type'] +
-                                '_iter_' + str(test_iter) + '.caffemodel')
-    # solver.net.copy_from(test_weights)
-    test_img_save = os.path.join(work_dir,
-                                 'test_iter_{}_'.format(test_iter) +
-                                 params_dict['test_set'])
-    test_net = caffe.Net(test_net_name, test_weights, caffe.TEST)
-    test_txt = np.loadtxt(os.path.join(
-        file_location, 'data/cs-trip/' + params_dict['test_set'] + '.txt'),
-        dtype=str)
-    # score.seg_tests(solver, test_img_save, test_txt, layer='score')
-    score.do_seg_tests(test_net, test_iter, test_img_save,
-                       test_txt, layer=score_layer)
-
-
-def test_all_cv():
-    cross_val_sets = ['1_4', '2_4', '3_4', '4_4']
-    net_types = ['rgb', 'hha2', 'depth',
-                 'rgbd_early', 'rgbhha2_early', 'rgbd_lateMix', 'rgbhha2_lateMix']
-    for test_set in cross_val_sets:
-        net_dirs = ['rgb_crossval2/rgb_' + test_set,
-                    'hha_crossval2/hha_' + test_set,
-                    'depth_crossval2/depth_' + test_set,
-                    'earlyrgbd_crossval2/earlyrgbd_' + test_set,
-                    'earlyrgbhha_crossval2/earlyrgbhha_' + test_set,
-                    'lateMixrgbd_crossval2/lateMixrgbd_' + test_set,
-                    'lateMixrgbhha_crossval2/lateMixrgbhha_' + test_set]
-        min_loss_pattern = r"Minimum val loss @ iter (?P<iter_num>\d+), saving"
-        for work_dir, net_type in zip(net_dirs, net_types):
-            # Get the iteration with best performance
-            logfile = glob.glob(os.path.join(work_dir, '*.log'))
-            if not logfile or len(logfile) > 1:
-                print 'len(logfile)= {}, search str = {}'.format(
-                    len(logfile),
-                    os.path.join(work_dir, '*.log'))
-                raise(Exception('Either no logfile found or too many found.'))
-            with open(logfile[0], 'r') as f:
-                logstr = f.read()
-            try:
-                min_loss_iter = re.findall(min_loss_pattern, logstr)[-1]
-            except IndexError:
-                # find highest iteration snapshot
-                print 'Could not find min loss, ' + \
-                    'searching snapshots for highest iteration'
-                models = glob.glob(os.path.join(work_dir, 'snapshots',
-                                                '*.caffemodel'))
-                min_loss_iter = 0
-                for model in models:
-                    pattern = r'_iter_(?P<iter_num>\d+).caffemodel'
-                    iteration = int(re.findall(pattern, model)[0])
-                    if iteration > min_loss_iter:
-                        min_loss_iter = iteration
-
-            # Run the test, now we have the best iteration
-            # because we're testing only the testset and net type matter
-            params_test_cv = {'type': net_type, 'test_set': 'test_' + test_set}
-            run_test(params_test_cv, min_loss_iter, work_dir)
-
-
 if __name__ == '__main__':
     work_path = args.working_dir
     net_modal = args.network_modality
@@ -479,6 +479,6 @@ if __name__ == '__main__':
                             'test_set': test_set}
     print 'Solver writing to dir: ', work_dir
     write_dict(params_dict_crossval, work_dir)
-    best_iteration = run_solver(params_dict_crossval, work_dir)
-    run_test(params_dict_crossval, best_iteration, work_dir)
+    best_val_per_iter = run_solver(params_dict_crossval, work_dir)
+    run_test(params_dict_crossval, best_val_per_iter, work_dir)
     # test_all_cv()
