@@ -28,8 +28,8 @@ home_dir = expanduser("~")
 # User Input
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', default='gpu')
-parser.add_argument('--working_dir', default='rgb_1')
-parser.add_argument('--traintest_fold', default='1_7')
+parser.add_argument('--working_dir', default='solver_test')
+parser.add_argument('--traintest_fold', default='o')
 parser.add_argument('--network_modality', default='rgb')
 parser.add_argument('--base_lr', default=None)
 parser.add_argument('--net_type', default=None)
@@ -179,13 +179,18 @@ def test_all_cv():
             run_test(params_test_cv, min_loss_iter, work_dir)
 
 
-def checkWeightInit(net, modality='', layers=('conv2_2', 'conv5_3')):
+def checkWeightInit(net, modality='',
+                    layers=('conv1_2', 'conv2_2',
+                            'conv3_1', 'conv4_2', 'conv5_3')):
+    # just check each phase of convolutions, they should always be initialised
     eps = 1e-6
     for raw_layer in layers:
         layer = raw_layer + modality
-        w_logic = np.absolute(net.params[layer].data[0, :]) < eps
+        w_logic = np.absolute(net.params[layer][0].data) < eps
         if np.all(w_logic.flatten()):
-            print 'layer {} is uninitialised.'.format(layer)
+            print 'layer {} is uninitialised. Params:'.format(layer)
+            print net.params[layer][0].data
+            print '-' * 30
             return False
     print 'Layers "{}" are initialised'.format(layers)
     return True
@@ -316,7 +321,7 @@ def run_solver(params_dict, work_dir):
         del base_net_depth
     elif '_conv' in params_dict['type']:
         # ------------------- Initialise Conv Fusion --------------------------
-                if 'CS' in params_dict['weight_init']:
+        if 'CS' in params_dict['weight_init']:
             rgb_weights = CS_rgb_weights_path
             if 'hha2' in params_dict['type'] or 'HHA2' in params_dict['type']:
                 base_depth_name = networks.createNet('val2', net_type='hha2')
@@ -348,9 +353,6 @@ def run_solver(params_dict, work_dir):
         base_rgb_net = caffe.Net(base_rgb_name, rgb_weights, caffe.TEST)
         surgery.transplant(solver.net, base_rgb_net, suffix='color')
         del base_rgb_net
-        status = checkWeightInit(solver.net, modality='color')
-        if status:
-            raise(Exception('weight init check failed'))
 
     elif '_lateMix' in params_dict['type']:
         color_proto = '/home/n8307628/Fully-Conv-Network/' + \
@@ -407,6 +409,27 @@ def run_solver(params_dict, work_dir):
             raise(Exception('Uknown modality for late mix fusion'))
     else:
         solver.net.copy_from(weights)
+
+    # Check if some of the weights are initialised from each modality
+    # TODO write coode to check all. They should all at least have random init
+    if 'rgbd' in params_dict['type'] or 'RGBD' in params_dict['type']:
+        rgb_status = checkWeightInit(solver.net, modality='color')
+        depth_status = checkWeightInit(solver.net, modality='depth')
+        if rgb_status is False:
+            raise(Exception('RGB weight init check failed'))
+        elif depth_status is False:
+            raise(Exception('Depth weight init check failed'))
+    elif 'hha2' in params_dict['type'] or 'HHA2' in params_dict['type']:
+        rgb_status = checkWeightInit(solver.net, modality='color')
+        hha_status = checkWeightInit(solver.net, modality='hha2')
+        if rgb_status is False:
+            raise(Exception('RGB weight init check failed'))
+        elif hha_status is False:
+            raise(Exception('HHA2 weight init check failed'))
+    else:
+        net_status = checkWeightInit(solver.net)
+        if net_status is False:
+            raise(Exception('Weight init check failed'))
 
     # surgeries -> Create weights for deconv (bilinear upsampling)
     interp_layers = [k for k in solver.net.params.keys() if 'up' in k]
@@ -524,8 +547,8 @@ if __name__ == '__main__':
                    'test_set': test_set}
 
     cv_learning_rate = 1e-11
-    cv_net_type = 'depth'
-    cv_weight_init = 'NYU_hha'
+    cv_net_type = 'rgbd_conv'
+    cv_weight_init = 'NYU_rgb'
     cv_lr_mult_conv11 = 4
     cv_final_multi = 5
     cv_freeze = False
