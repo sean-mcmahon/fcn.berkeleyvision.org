@@ -546,14 +546,14 @@ if __name__ == '__main__':
                    'train_set': train_set,
                    'test_set': test_set}
 
-    cv_learning_rate = 1e-12
-    cv_net_type = 'rgbd_conv'
+    cv_learning_rate = 1e-11
+    cv_net_type = 'rgbhha2_conv'
     cv_weight_init = 'NYU_rgb'
     cv_lr_mult_conv11 = 4
     cv_final_multi = 5
     cv_freeze = False
     if '_conv' in cv_net_type:
-        dropout_reg = 0.5
+        dropout_reg = 0.75
     else:
         dropout_reg = 0.5
     params_dict_crossval = {'base_lr': cv_learning_rate, 'solverType': 'SGD',
