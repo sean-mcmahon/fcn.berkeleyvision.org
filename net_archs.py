@@ -4,7 +4,14 @@ file to house all the architectures being used, could get quite large
 By Sean McMahon
 
 """
-import caffe
+try:
+    import caffe
+except ImportError:
+    import imp
+    caffe_root = '/home/n8307628/Fully-Conv-Network/Resources/caffe'
+    filename, path, desc = imp.find_module('caffe', [caffe_root + '/python/'])
+    caffe = imp.load_module('caffe', filename, path, desc)
+    caffe.set_mode_gpu()
 from caffe import layers as L, params as P
 from caffe.coord_map import crop
 import tempfile
@@ -432,4 +439,4 @@ def print_mixfcn():
     with open('test_mix.prototxt', 'w') as f:
         f.write(str(mixfcn('test', tops).to_proto()))
 if __name__ == '__main__':
-    print_mixfcn()
+    print_fcn_conv()
