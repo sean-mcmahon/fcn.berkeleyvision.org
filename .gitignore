@@ -31,3 +31,4 @@ nyud_layers.py
 *_crossval2/
 *_cv.py
 *_cv.bash
+convsearch/
