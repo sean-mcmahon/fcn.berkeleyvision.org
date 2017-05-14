@@ -105,7 +105,8 @@ def createSolver(params_dict, train_net_path, test_net_path, work_dir):
         return f.name
 
 
-def run_test(params_dict, test_iter, work_dir, score_layer='score'):
+def run_test(params_dict, test_iter, work_dir, score_layer='score',
+             data_layer='data'):
     """
     run the trained network on the testset. Using the lowest loss found during
     training.
@@ -132,21 +133,24 @@ def run_test(params_dict, test_iter, work_dir, score_layer='score'):
         dtype=str)
     # score.seg_tests(solver, test_img_save, test_txt, layer='score')
     score.do_seg_tests(test_net, test_iter, test_img_save,
-                       test_txt, layer=score_layer)
+                       test_txt, layer=score_layer, dataL=data_layer)
 
 
 def test_all_cv():
-    cross_val_sets = ['1_4', '2_4', '3_4', '4_4']
-    net_types = ['rgb', 'hha2', 'depth',
-                 'rgbd_early', 'rgbhha2_early', 'rgbd_lateMix', 'rgbhha2_lateMix']
+    cross_val_sets = ['1', '2', '3', '4', '5']  # ['1_4', '2_4', '3_4', '4_4']
+    net_types = ['rgbd_conv', 'rgbhha2_conv']
+    # ['rgb', 'hha2', 'depth',
+    #              'rgbd_early', 'rgbhha2_early', 'rgbd_lateMix', 'rgbhha2_lateMix']
     for test_set in cross_val_sets:
-        net_dirs = ['rgb_crossval2/rgb_' + test_set,
-                    'hha_crossval2/hha_' + test_set,
-                    'depth_crossval2/depth_' + test_set,
-                    'earlyrgbd_crossval2/earlyrgbd_' + test_set,
-                    'earlyrgbhha_crossval2/earlyrgbhha_' + test_set,
-                    'lateMixrgbd_crossval2/lateMixrgbd_' + test_set,
-                    'lateMixrgbhha_crossval2/lateMixrgbhha_' + test_set]
+        net_dirs = ['convsearch/rgbd_conv' + test_set,
+                    'convsearch/rgbhha_conv' + test_set]
+        # ['rgb_crossval2/rgb_' + test_set,
+        #             'hha_crossval2/hha_' + test_set,
+        #             'depth_crossval2/depth_' + test_set,
+        #             'earlyrgbd_crossval2/earlyrgbd_' + test_set,
+        #             'earlyrgbhha_crossval2/earlyrgbhha_' + test_set,
+        #             'lateMixrgbd_crossval2/lateMixrgbd_' + test_set,
+        #             'lateMixrgbhha_crossval2/lateMixrgbhha_' + test_set]
         min_loss_pattern = r"Minimum val loss @ iter (?P<iter_num>\d+), saving"
         for work_dir, net_type in zip(net_dirs, net_types):
             # Get the iteration with best performance
@@ -175,8 +179,9 @@ def test_all_cv():
 
             # Run the test, now we have the best iteration
             # because we're testing only the testset and net type matter
-            params_test_cv = {'type': net_type, 'test_set': 'test_' + test_set}
-            run_test(params_test_cv, min_loss_iter, work_dir)
+            # params_test_cv = {'type': net_type, 'test_set': 'test_' + test_set}
+            params_test_conv = {'type': net_type, 'test_set': 'test'}
+            run_test(params_test_conv, min_loss_iter, work_dir, data_layer='color')
 
 
 def checkWeightInit(net, modality='',
@@ -570,7 +575,7 @@ if __name__ == '__main__':
     # --------------------------------------------------------------------------
     # Save params to text file, train and validate network, then test net.
     # --------------------------------------------------------------------------
-    write_dict(params_dict_crossval, work_dir)
-    best_val_per_iter = run_solver(params_dict_crossval, work_dir)
-    run_test(params_dict_crossval, best_val_per_iter, work_dir)
-    # test_all_cv()
+    # write_dict(params_dict_crossval, work_dir)
+    # best_val_per_iter = run_solver(params_dict_crossval, work_dir)
+    # run_test(params_dict_crossval, best_val_per_iter, work_dir)
+    test_all_cv()
