@@ -29,6 +29,7 @@ worker_test_2017*
 nyud_layers.py
 *_crossval/
 *_crossval2/
+*_crossval3/
 *_cv.py
 *_cv.bash
 convsearch/
