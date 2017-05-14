@@ -131,16 +131,21 @@ def compute_hist(net, save_dir, dataset, layer='score', gt='label',
         #                                           n_cl)
         # print 'Hist format should be \n(num 0"s, num 1"s\nnum 2"s, num
         # 3"s)\nHist value is actually: \n{}\n'.format(hist)
-        in_shape = np.shape(net.blobs[dataL].data[0])
-        # should be 1,(1 or 3 or 4), img_w, img_h
-        out_shape = np.shape(net.blobs[layer].data[0])
-        # should be 1,2,img_w,img_h
-        if out_shape[-2:] != in_shape[-2:]:
-            # spatial dimensions between input img and output seg do not match
-            print 'Input shape: ', in_shape
-            print 'Seg shape  : ', out_shape
-            raise(Exception('Spatial dimensions of input image and' +
-                            ' output segmentation do not match!'))
+        try:
+            # TODO check if dataL in net.params.keys():
+            in_shape = np.shape(net.blobs[dataL].data[0])
+            # should be 1,(1 or 3 or 4), img_w, img_h
+            out_shape = np.shape(net.blobs[layer].data[0])
+            # should be 1,2,img_w,img_h
+            if out_shape[-2:] != in_shape[-2:]:
+                # spatial dimensions between input img and output seg do not match
+                print 'Input shape: ', in_shape
+                print 'Seg shape  : ', out_shape
+                raise(Exception('Spatial dimensions of input image and' +
+                                ' output segmentation do not match!'))
+        except KeyError:
+            print 'crop check skipped.'
+            pass
 
         if save_dir:
             im = Image.fromarray(net.blobs[layer].data[0].argmax(
