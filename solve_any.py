@@ -179,9 +179,12 @@ def test_all_cv():
 
             # Run the test, now we have the best iteration
             # because we're testing only the testset and net type matter
-            # params_test_cv = {'type': net_type, 'test_set': 'test_' + test_set}
-            params_test_conv = {'type': net_type, 'test_set': 'test'}
-            run_test(params_test_conv, min_loss_iter, work_dir, data_layer='color')
+            params_test_cv = {'type': net_type, 'test_set': 'test_' + test_set}
+            # params_test_conv = {'type': net_type, 'test_set': 'test'}
+            print '\n', '=' * 50, '\n', 'testing: {} in {} \n'.format(net_type, work_dir)
+            run_test(params_test_cv, min_loss_iter,
+                     work_dir, data_layer='color')
+            print 'tested {} in {} \n'.format(net_type, work_dir)
 
 
 def checkWeightInit(net, modality='',
