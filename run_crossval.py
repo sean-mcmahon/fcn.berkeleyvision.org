@@ -14,12 +14,12 @@ if __name__ == '__main__':
     n_folds = 4
     fold_idx = range(n_folds)
     fold_idx_str = [str(s + 1) + '_4' for s in fold_idx]
-    fold_idx_str = ['2_4']
+    # fold_idx_str = ['1_4']
     # n_type = 'hha'
-    net_types = ['lateMixrgbd']
+    net_types = ['convrgbd', 'convrgbhha']
     #, 'depth', 'earlyrgbd', 'earlyrgbhha', 'lateMixrgbhha']
     for n_type in net_types:
-        parent_dir = n_type + '_crossval2'
+        parent_dir = n_type + '_crossval3'
         cross_val_dir = os.path.join(file_location, parent_dir)
         print '=' * 50
         print cross_val_dir
@@ -36,5 +36,5 @@ if __name__ == '__main__':
                 worker_dir, 'worker_{}_cv'.format(n_type), fold_idx=idx)
             print 'running worker: {}'.format('worker_{}_cv'.format(n_type))
             print 'job id = ', job_id
-            time.sleep(15)  # my attempt to fix no cuda capable device error
+            time.sleep(60)  # my attempt to fix no cuda capable device error
             # (when there are cuda capable devices)
