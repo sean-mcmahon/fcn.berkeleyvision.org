@@ -14,7 +14,7 @@ if __name__ == '__main__':
     n_folds = 4
     fold_idx = range(n_folds)
     fold_idx_str = [str(s + 1) + '_4' for s in fold_idx]
-    # fold_idx_str = ['1_4']
+    fold_idx_str = ['1_4']
     # n_type = 'hha'
     net_types = ['convrgbd', 'convrgbhha']
     #, 'depth', 'earlyrgbd', 'earlyrgbhha', 'lateMixrgbhha']

@@ -137,13 +137,13 @@ def run_test(params_dict, test_iter, work_dir, score_layer='score',
 
 
 def test_all_cv():
-    cross_val_sets = ['1', '2', '3', '4', '5']  # ['1_4', '2_4', '3_4', '4_4']
-    net_types = ['rgbd_conv', 'rgbhha2_conv']
+    cross_val_sets = ['1_4', '2_4', '3_4', '4_4']
+    net_types = ['rgbd_conv', 'rgbd_conv']
     # ['rgb', 'hha2', 'depth',
     #              'rgbd_early', 'rgbhha2_early', 'rgbd_lateMix', 'rgbhha2_lateMix']
     for test_set in cross_val_sets:
-        net_dirs = ['convsearch/rgbd_conv' + test_set,
-                    'convsearch/rgbhha_conv' + test_set]
+        net_dirs = ['convrgbd_crossval2/convrgbd_' + test_set,
+                    'convrgbd_crossval3/convrgbd_' + test_set]
         # ['rgb_crossval2/rgb_' + test_set,
         #             'hha_crossval2/hha_' + test_set,
         #             'depth_crossval2/depth_' + test_set,
@@ -179,10 +179,10 @@ def test_all_cv():
 
             # Run the test, now we have the best iteration
             # because we're testing only the testset and net type matter
-            # params_test_cv = {'type': net_type, 'test_set': 'test_' + test_set}
-            params_test_conv = {'type': net_type, 'test_set': 'test'}
+            params_test_cv = {'type': net_type, 'test_set': 'test_' + test_set}
+            # params_test_conv = {'type': net_type, 'test_set': 'test'}
             print '\n', '=' * 50, '\n', 'testing: {} in {} \n'.format(net_type, work_dir)
-            run_test(params_test_conv, min_loss_iter,
+            run_test(params_test_cv, min_loss_iter,
                      work_dir, data_layer='color')
             print 'tested {} in {} \n'.format(net_type, work_dir)
 
@@ -524,7 +524,7 @@ if __name__ == '__main__':
             raise(
                 Exception(
                     'work directoy: ' +
-                    '\n"{}"\nalready has logfile, quitting'.format(work_dir)))
+                    '\n"{}"\nAlready has logfile, quitting'.format(work_dir)))
     if cv_fold == 'o':
         val_set = 'val2'
         train_set = 'train'
@@ -578,7 +578,7 @@ if __name__ == '__main__':
     # --------------------------------------------------------------------------
     # Save params to text file, train and validate network, then test net.
     # --------------------------------------------------------------------------
-    write_dict(params_dict_crossval, work_dir)
-    best_val_per_iter = run_solver(params_dict_crossval, work_dir)
-    run_test(params_dict_crossval, best_val_per_iter, work_dir, data_layer='color')
-    # test_all_cv()
+    # write_dict(params_dict_crossval, work_dir)
+    # best_val_per_iter = run_solver(params_dict_crossval, work_dir)
+    # run_test(params_dict_crossval, best_val_per_iter, work_dir, data_layer='color')
+    test_all_cv()
