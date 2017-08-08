@@ -48,7 +48,7 @@ hpc_dir='/home/n8307628'
 local_dir='/home/sean'
 if [[ -d $local_dir ]]; then
   working_dir=$local_dir'/hpc-home/Fully-Conv-Network/Resources/FCN_paramsearch/'
-  python_script=$working_dir'/solve_any.py'
+  python_script=$working_dir'solve_any.py'
 elif [[ -d $hpc_dir ]]; then
   working_dir=$hpc_dir'/Fully-Conv-Network/Resources/FCN_paramsearch/'
   python_script=$working_dir'solve_any.py'
